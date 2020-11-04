@@ -15,16 +15,16 @@ void go(DSU* dsu) {
     for (int i = 0; i < 1; i++) {
         int a = rand() % N;
         int b = rand() % N;
-        std::string output = std::to_string(sched_getcpu()) + " Go union " + std::to_string(a) + " " + std::to_string(b) + "\n";
-        std::cerr << output;
+        //std::string output = std::to_string(sched_getcpu()) + " Go union " + std::to_string(a) + " " + std::to_string(b) + "\n";
+        //std::cerr << output;
         dsu->Union(a, b);
 
-        output = std::to_string(sched_getcpu()) + " Union done \n";
-        std::cerr << output;
+        //output = std::to_string(sched_getcpu()) + " Union done \n";
+        //std::cerr << output;
     }
 
-    std::string output = std::to_string(sched_getcpu()) + " thread done\n";
-    std::cerr << output;
+    //std::string output = std::to_string(sched_getcpu()) + " thread done\n";
+    //std::cerr << output;
 }
 
 
