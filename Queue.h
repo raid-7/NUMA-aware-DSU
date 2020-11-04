@@ -57,7 +57,7 @@ public:
         auto e = (Element*) numa_alloc_onnode(sizeof(Element), node);
         e->Init(p, node);
 
-        if (head == nullptr) {
+        if (tail == nullptr) {
             head = e;
             tail = e;
         } else {
@@ -77,6 +77,7 @@ public:
             std::cerr << "p poped \n";
             if (p == nullptr) {
                 std::cerr << "p is null \n";
+                break;
             }
             result.emplace_back(std::make_pair(*p->GetFirst(), *p->GetSecond()));
             std::cerr << "result updated \n";
@@ -95,6 +96,9 @@ private:
             std::cerr << "e is null \n";
         } else {
             head = head->GetNext();
+            if (head == nullptr) {
+                tail = nullptr;
+            }
         }
         return e;
     }
