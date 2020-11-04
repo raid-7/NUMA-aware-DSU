@@ -74,31 +74,22 @@ public:
         while (!empty()) {
             std::cerr << "in while \n";
             auto p = pop();
-            std::cerr << "p poped \n";
-            if (p == nullptr) {
-                std::cerr << "p is null \n";
-                break;
-            }
-            result.emplace_back(std::make_pair(*p->GetFirst(), *p->GetSecond()));
-            std::cerr << "result updated \n";
-            std::cerr << *p->GetFirst() <<  " " << *p->GetSecond() << "\n";
+            std::cerr << p.first << " " << p.second << " poped \n";
+
+            result.emplace_back(p);
         }
         m.unlock();
         return result;
     }
 
 private:
-    Element* pop() {
+    std::pair<int, int> pop() {
         std::cerr << "in pop \n";
-        auto e = head;
-        std::cerr << "e == head \n";
-        if (e == nullptr) {
-            std::cerr << "e is null \n";
-        } else {
-            head = head->GetNext();
-            if (head == nullptr) {
-                tail = nullptr;
-            }
+
+        auto e = std::make_pair(*head->GetFirst(), *head->GetSecond());
+        head = head->GetNext();
+        if (head == nullptr) {
+            tail = nullptr;
         }
         return e;
     }
