@@ -15,7 +15,8 @@ public:
         data.resize(node_count);
         queues.resize(node_count);
         for (int i = 0; i < node_count; i++) {
-            data[i] = (std::atomic<int> *) numa_alloc_onnode(sizeof(std::atomic<int>) * size, i);
+            //data[i] = (std::atomic<int> *) numa_alloc_onnode(sizeof(std::atomic<int>) * size, i);
+            data[i] = (int*) numa_alloc_onnode(sizeof(int) * size, i);
             for (int j = 0; j < size; j++) {
                 data[i][j] = j;
             }
@@ -110,7 +111,8 @@ private:
 private:
     int size;
     int node_count;
-    std::vector<std::atomic<int>*> data;
+    //std::vector<std::atomic<int>*> data;
+    std::vector<int*> data;
     std::vector<Queue*> queues;
 
     std::mutex m;
