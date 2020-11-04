@@ -34,13 +34,13 @@ public:
 
     void Union(int u, int v) {
         auto cpu = sched_getcpu();
+        auto node = numa_node_of_cpu(cpu);
 
-        auto u_p = find(u, cpu);
-        auto v_p = find(v, cpu);
+        auto u_p = find(u, node);
+        auto v_p = find(v, node);
         if (u_p == v_p)
             return;
 
-        auto node = numa_node_of_cpu(cpu);
         for (int i = 0; i < node_count; i++) {
             if (i == node)
                 continue;
@@ -52,17 +52,22 @@ public:
 
     bool SameSet(int u, int v) {
         auto cpu = sched_getcpu();
-        return find(u, cpu) == find(v, cpu);
+        auto node = numa_node_of_cpu(cpu);
+        return find(u, node) == find(v, node);
     }
 
     int Find(int u) {
         auto cpu = sched_getcpu();
-        return find(u, cpu);
+        auto node = numa_node_of_cpu(cpu);
+        return find(u, node);
+    }
+
+    bool __SameSetOnNode(int u, int v, int node) {
+        return find(u, node) == find(v, node);
     }
 
 private:
-    int find(int u, int cpu) {
-        auto node = numa_node_of_cpu(cpu);
+    int find(int u, int node) {
 
         // old unions
         auto unions = queues[node]->List();
