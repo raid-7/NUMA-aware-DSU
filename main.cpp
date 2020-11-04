@@ -63,7 +63,10 @@ void push(Queue* q, int t) {
     }
 }
 
-void pop(Queue* q, std::vector<int>* result) {
+void pop(Queue* q, int t, std::vector<int>* result) {
+    for (int i = 0; i < 5; i++) {
+        q->Push(std::make_pair(t, t));
+    }
     auto got = q->List();
     for (int i = 0; i < int(got.size()); i++) {
         result->emplace_back(got[i].first);
@@ -78,7 +81,7 @@ void testQueue() {
 
     for (int i = 0; i < THREADS; i++) {
         if (i % 5 == 0) {
-            threads[i] = std::thread(pop, q, &results[i / 5]);
+            threads[i] = std::thread(pop, q, i, &results[i / 5]);
         } else {
             threads[i] = std::thread(push, q, i);
         }
