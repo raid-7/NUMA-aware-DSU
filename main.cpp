@@ -4,11 +4,12 @@
 #include <sched.h>
 #include <thread>
 #include <algorithm>
+#include <chrono>
 
 #include "DSU.h"
 
-int N = 1000;
-int THREADS = 100;
+const int N = 1000;
+const int THREADS = 100;
 
 int node_count;
 
@@ -108,7 +109,7 @@ bool testQueue() {
     }
 
     std::sort(result.begin(), result.end());
-    for (int i = 0; i < result.size(); i++) {
+    for (int i = 0; i < int(result.size()); i++) {
         std::cout << result[i] << " ";
     }
     std::cout << "\n";
@@ -126,9 +127,67 @@ bool testQueue() {
     return true;
 }
 
-int main() {
+void test() {
     testQueue();
     testDSU();
+}
+
+
+
+void thread_routine(std::vector<int> a, int v, DSU* dsu) {
+    for (int i = 0; i < int(a.size()); i++) {
+        if (a[i] == 1) {
+            dsu->Union(i, v);
+        }
+
+        for (int j = 0; j < 1000; j++) {
+            auto x = dsu->Find(v);
+            if (x == v && j > 500) {
+                break;
+            }
+        }
+    }
+}
+
+void benchmark() {
+    int n = 1000;
+    std::vector<int> a[n];
+    for (int i = 0; i < n; i++) {
+        a[i].resize(n);
+        for (int j = 0; j < n; j++) {
+            a[i][j] = 0;
+        }
+    }
+    for (int i = 0; i < 1000000; i++) {
+        int x = rand() % 1000;
+        int y = rand() % 1000;
+        a[x][y] = 1;
+        a[y][x] = 1;
+    }
+
+    node_count = numa_num_configured_nodes();
+    auto dsu = new DSU(N, node_count);
+    std::vector<std::thread> threads(n);
+
+    auto start = std::chrono::high_resolution_clock::now();
+
+    for (int i = 0; i < n; i++) {
+        threads[i] = std::thread(thread_routine, a[i], i, dsu);
+    }
+
+    for (int i = 0; i < n; i++) {
+        threads[i].join();
+    }
+
+    auto stop = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+    std::cout << duration.count() << std::endl;
+}
+
+int main() {
+    //test();
+
+    benchmark();
 
     return 0;
 }
