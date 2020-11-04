@@ -8,14 +8,14 @@
 #include "DSU.h"
 
 const int N = 50;
-const int THREADS = 100;
+const int THREADS = 10;
 int node_count;
 
 void go(DSU* dsu) {
     for (int i = 0; i < 10; i++) {
         int a = rand() % N;
         int b = rand() % N;
-        std::cerr << "Go union " << a << " " << b << "\n";
+        std::cerr << sched_getcpu() << " Go union " << a << " " << b << "\n";
         //std::cout << sched_getcpu() << " " <<  dsu->Find(i) << std::endl;
         dsu->Union(a, b);
         std::cerr << sched_getcpu() << " " << "Union done \n";
