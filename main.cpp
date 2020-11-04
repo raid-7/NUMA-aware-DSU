@@ -7,12 +7,12 @@
 
 #include "DSU.h"
 
-const int N = 50;
+const int N = 10;
 const int THREADS = 10;
 int node_count;
 
 void go(DSU* dsu) {
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 1; i++) {
         int a = rand() % N;
         int b = rand() % N;
         std::string output = std::to_string(sched_getcpu()) + " Go union " + std::to_string(a) + " " + std::to_string(b) + "\n";
