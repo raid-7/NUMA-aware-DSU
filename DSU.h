@@ -33,6 +33,7 @@ public:
     }
 
     void Union(int u, int v) {
+        std::cerr << sched_getcpu() << "in union \n";
         m.lock();
         auto cpu = sched_getcpu();
         auto node = numa_node_of_cpu(cpu);

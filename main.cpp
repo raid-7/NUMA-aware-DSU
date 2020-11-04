@@ -6,7 +6,7 @@
 
 #include "DSU.h"
 
-const int N = 1000;
+const int N = 50;
 const int THREADS = 10;
 int node_count;
 
