@@ -41,6 +41,14 @@ public:
         auto node = numa_node_of_cpu(cpu);
 
         //std::cerr << sched_getcpu() << " " << "got cpu and node \n";
+
+        for (int i = 0; i < node_count; i++) {
+            if (i == node)
+                continue;
+            //std::cerr << sched_getcpu() << " " << "want to push in queue \n";
+            queues[i]->Push(std::make_pair(u, v));
+        }
+
         auto u_p = find(u, node);
         auto v_p = find(v, node);
         //std::cerr << sched_getcpu() << " " << "found parents \n";
@@ -50,13 +58,6 @@ public:
         }
 
         //std::cerr << sched_getcpu() << " " << "found parents \n";
-
-        for (int i = 0; i < node_count; i++) {
-            if (i == node)
-                continue;
-            //std::cerr << sched_getcpu() << " " << "want to push in queue \n";
-            queues[i]->Push(std::make_pair(u_p, v_p));
-        }
 
         union_(u_p, v_p, node);
         m.unlock();
