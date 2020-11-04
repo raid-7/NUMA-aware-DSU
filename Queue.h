@@ -12,7 +12,8 @@ public:
         *first = p.first;
         second = (int*) numa_alloc_onnode(sizeof(int), node);
         *second = p.second;
-        next = nullptr;
+        next = (Element*) numa_alloc_onnode(sizeof(Element*), node);
+        next.store(nullptr);
     }
 
     void SetNext(Element* e) {
@@ -57,7 +58,7 @@ public:
         auto e = (Element*) numa_alloc_onnode(sizeof(Element), node);
         e->Init(p, node);
 
-        if (tail == nullptr) {
+        if (!tail) {
             head = e;
             tail = e;
         } else {
@@ -74,7 +75,7 @@ public:
         while (!empty()) {
             std::cerr << "in while \n";
             auto p = pop();
-            if (p == nullptr) {
+            if (!p) {
                 break;
             }
             std::cerr << p->first << " " << p->second << " poped \n";
@@ -88,20 +89,20 @@ public:
 private:
     std::pair<int, int>* pop() {
         std::cerr << "in pop \n";
-        if (head == nullptr) {
+        if (!head) {
             return nullptr;
         }
 
-        auto e = std::make_pair(*head->GetFirst(), *head->GetSecond());
+        auto e = new std::pair<int, int>(*head->GetFirst(), *head->GetSecond());
         head = head->GetNext();
-        if (head == nullptr) {
+        if (!head) {
             tail = nullptr;
         }
-        return &e;
+        return e;
     }
 
     bool empty() {
-        if (head == nullptr) {
+        if (!head ) {
             return true;
         }
         return false;
