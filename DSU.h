@@ -99,9 +99,11 @@ private:
 
     void union_(int u, int v, int node) {
         if (rand() % 2) {
-            while (!data[node][u].compare_exchange_weak(u, v)) {}
+            data[node][u] = v;
+            //while (!data[node][u].compare_exchange_weak(u, v)) {}
         } else {
-            while (!data[node][v].compare_exchange_weak(v, u)) {}
+            //while (!data[node][v].compare_exchange_weak(v, u)) {}
+            data[node][v] = u;
         }
     }
 
