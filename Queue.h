@@ -12,7 +12,7 @@ public:
         *first = p.first;
         second = (int*) numa_alloc_onnode(sizeof(int), node);
         *second = p.second;
-        next = this;
+        next = nullptr;
     }
 
     void SetNext(Element* e) {
@@ -56,17 +56,31 @@ public:
         m.lock();
         auto e = (Element*) numa_alloc_onnode(sizeof(Element), node);
         e->Init(p, node);
-        tail->SetNext(e);
-        tail = e;
+
+        if (head == nullptr) {
+            head = e;
+            tail = e;
+        } else {
+            tail->SetNext(e);
+            tail = e;
+        }
         m.unlock();
     }
 
     std::vector<std::pair<int, int>> List() {
+        std::cerr << "in Queue List \n";
         m.lock();
         std::vector<std::pair<int, int>> result;
         while (!empty()) {
+            std::cerr << "in while \n";
             auto p = pop();
+            std::cerr << "p poped \n";
+            if (p == nullptr) {
+                std::cerr << "p is null \n";
+            }
             result.emplace_back(std::make_pair(*p->GetFirst(), *p->GetSecond()));
+            std::cerr << "result updated \n";
+            std::cerr << *p->GetFirst() <<  " " << *p->GetSecond() << "\n";
         }
         m.unlock();
         return result;
@@ -74,10 +88,14 @@ public:
 
 private:
     Element* pop() {
-        m.lock();
+        std::cerr << "in pop \n";
         auto e = head;
-        head = head->GetNext();
-        m.unlock();
+        std::cerr << "e == head \n";
+        if (e == nullptr) {
+            std::cerr << "e is null \n";
+        } else {
+            head = head->GetNext();
+        }
         return e;
     }
 

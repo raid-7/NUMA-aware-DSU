@@ -33,21 +33,28 @@ public:
     }
 
     void Union(int u, int v) {
+        m.lock();
         auto cpu = sched_getcpu();
         auto node = numa_node_of_cpu(cpu);
 
+        std::cerr << sched_getcpu() << " " << "got cpu and node \n";
         auto u_p = find(u, node);
         auto v_p = find(v, node);
+        std::cerr << sched_getcpu() << " " << "found parents \n";
         if (u_p == v_p)
             return;
+
+        std::cerr << sched_getcpu() << " " << "found parents \n";
 
         for (int i = 0; i < node_count; i++) {
             if (i == node)
                 continue;
+            std::cerr << sched_getcpu() << " " << "want to push in queue \n";
             queues[i]->Push(std::make_pair(u_p, v_p));
         }
 
         union_(u_p, v_p, node);
+        m.unlock();
     }
 
     bool SameSet(int u, int v) {
@@ -63,22 +70,29 @@ public:
     }
 
     bool __SameSetOnNode(int u, int v, int node) {
-        return find(u, node) == find(v, node);
+        m.lock();
+        auto res = find(u, node) == find(v, node);
+        m.unlock();
+        return res;
     }
 
 private:
     int find(int u, int node) {
-
+        std::cerr << sched_getcpu() << " " << "in find_ \n";
         // old unions
         auto unions = queues[node]->List();
+        std::cerr << "unions got \n";
         for (auto u : unions) {
             union_(u.first, u.second, node);
         }
+        std::cerr << sched_getcpu() << " " << "old unions done \n";
 
         auto par = data[node][u].load();
         while (par != data[node][par]) {
             par = data[node][par];
         }
+
+        std::cerr << sched_getcpu() << " " << "parent found \n";
         return par;
     }
 
@@ -94,8 +108,9 @@ private:
     int size;
     int node_count;
     std::vector<std::atomic<int>*> data;
-
     std::vector<Queue*> queues;
+
+    std::mutex m;
 };
 
 

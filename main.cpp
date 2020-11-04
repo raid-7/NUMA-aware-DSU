@@ -7,15 +7,20 @@
 #include "DSU.h"
 
 const int N = 1000;
+const int THREADS = 10;
 int node_count;
 
 void go(DSU* dsu) {
     for (int i = 0; i < 10; i++) {
         int a = rand() % N;
         int b = rand() % N;
+        std::cerr << "Go union " << a << " " << b << "\n";
         //std::cout << sched_getcpu() << " " <<  dsu->Find(i) << std::endl;
         dsu->Union(a, b);
+        std::cerr << sched_getcpu() << " " << "Union done \n";
     }
+
+    std::cerr << sched_getcpu() << " " << "thread done\n";
 }
 
 bool check(DSU* dsu) {
@@ -36,15 +41,19 @@ void test() {
     node_count = numa_num_configured_nodes();
     auto dsu = new DSU(N, node_count);
 
-    std::vector<std::thread> threads(100);
+    std::cerr << "dsu inited \n";
 
-    for (int i = 0; i < 100; i++) {
+    std::vector<std::thread> threads(THREADS);
+
+    for (int i = 0; i < THREADS; i++) {
         threads[i] = std::thread(go, dsu);
     }
 
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < THREADS; i++) {
         threads[i].join();
     }
+
+    std::cerr << "threads done \n";
 
     if (check(dsu)) {
         std::cout << "OK\n";
