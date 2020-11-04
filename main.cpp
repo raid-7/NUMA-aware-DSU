@@ -7,8 +7,8 @@
 
 #include "DSU.h"
 
-const int N = 10;
-const int THREADS = 10;
+const int N = 1000;
+const int THREADS = 100;
 int node_count;
 
 void go(DSU* dsu) {
@@ -126,7 +126,7 @@ bool testQueue() {
 }
 
 int main() {
-    //testQueue();
+    testQueue();
     testDSU();
 
     return 0;
