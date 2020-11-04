@@ -89,7 +89,7 @@ private:
         }
         std::cerr << sched_getcpu() << " " << "old unions done \n";
 
-        auto par = data[node][u].load();
+        auto par = data[node][u];//.load();
         while (par != data[node][par]) {
             par = data[node][par];
         }
