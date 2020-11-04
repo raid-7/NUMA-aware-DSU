@@ -43,8 +43,10 @@ public:
         auto u_p = find(u, node);
         auto v_p = find(v, node);
         std::cerr << sched_getcpu() << " " << "found parents \n";
-        if (u_p == v_p)
+        if (u_p == v_p) {
+            m.unlock();
             return;
+        }
 
         std::cerr << sched_getcpu() << " " << "found parents \n";
 
