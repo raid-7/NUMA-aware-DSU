@@ -34,26 +34,27 @@ public:
     }
 
     void Union(int u, int v) {
-        std::cerr << sched_getcpu() << "in union \n";
+        //std::string output = std::to_string(sched_getcpu()) + " in union \n";
+        //std::cerr << output;
         m.lock();
         auto cpu = sched_getcpu();
         auto node = numa_node_of_cpu(cpu);
 
-        std::cerr << sched_getcpu() << " " << "got cpu and node \n";
+        //std::cerr << sched_getcpu() << " " << "got cpu and node \n";
         auto u_p = find(u, node);
         auto v_p = find(v, node);
-        std::cerr << sched_getcpu() << " " << "found parents \n";
+        //std::cerr << sched_getcpu() << " " << "found parents \n";
         if (u_p == v_p) {
             m.unlock();
             return;
         }
 
-        std::cerr << sched_getcpu() << " " << "found parents \n";
+        //std::cerr << sched_getcpu() << " " << "found parents \n";
 
         for (int i = 0; i < node_count; i++) {
             if (i == node)
                 continue;
-            std::cerr << sched_getcpu() << " " << "want to push in queue \n";
+            //std::cerr << sched_getcpu() << " " << "want to push in queue \n";
             queues[i]->Push(std::make_pair(u_p, v_p));
         }
 
@@ -82,21 +83,21 @@ public:
 
 private:
     int find(int u, int node) {
-        std::cerr << sched_getcpu() << " " << "in find_ \n";
+        //std::cerr << sched_getcpu() << " " << "in find_ \n";
         // old unions
         auto unions = queues[node]->List();
-        std::cerr << "unions got \n";
+        //std::cerr << "unions got \n";
         for (auto u : unions) {
             union_(u.first, u.second, node);
         }
-        std::cerr << sched_getcpu() << " " << "old unions done \n";
+        //std::cerr << sched_getcpu() << " " << "old unions done \n";
 
         auto par = data[node][u];//.load();
         while (par != data[node][par]) {
             par = data[node][par];
         }
 
-        std::cerr << sched_getcpu() << " " << "parent found \n";
+        //std::cerr << sched_getcpu() << " " << "parent found \n";
         return par;
     }
 

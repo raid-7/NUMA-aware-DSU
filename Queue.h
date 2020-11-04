@@ -73,15 +73,15 @@ public:
 
     std::vector<std::pair<int, int>> List() {
         m.lock();
-        std::cerr << "in Queue List \n";
+        //std::cerr << "in Queue List \n";
         std::vector<std::pair<int, int>> result;
         while (!empty()) {
-            std::cerr << "in while \n";
+            //std::cerr << "in while \n";
             auto p = pop();
             if (!p) {
                 break;
             }
-            std::cerr << p->first << " " << p->second << " poped \n";
+            //std::cerr << p->first << " " << p->second << " poped \n";
 
             result.emplace_back(*p);
         }
@@ -91,7 +91,7 @@ public:
 
 private:
     std::pair<int, int>* pop() {
-        std::cerr << "in pop \n";
+        //std::cerr << "in pop \n";
         if (!head) {
             return nullptr;
         }
