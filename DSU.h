@@ -77,7 +77,7 @@ public:
 
     bool __SameSetOnNode(int u, int v, int node) {
         m.lock();
-        auto res = find(u, node) == find(v, node);
+        auto res = (find(u, node) == find(v, node));
         m.unlock();
         return res;
     }
@@ -93,8 +93,13 @@ private:
         }
         //std::cerr << sched_getcpu() << " " << "old unions done \n";
 
+        return parent(u, node);
+    }
+
+    int parent(int u, int node) {
         auto par = data[node][u];//.load();
         while (par != data[node][par]) {
+
             par = data[node][par];
         }
 
@@ -103,12 +108,17 @@ private:
     }
 
     void union_(int u, int v, int node) {
+        int u_p = parent(u, node);
+        int v_p = parent(v, node);
+        if (u_p == v_p) {
+            return;
+        }
         if (rand() % 2) {
-            data[node][u] = v;
+            data[node][u_p] = v_p;
             //while (!data[node][u].compare_exchange_weak(u, v)) {}
         } else {
             //while (!data[node][v].compare_exchange_weak(v, u)) {}
-            data[node][v] = u;
+            data[node][v_p] = u_p;
         }
     }
 

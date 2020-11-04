@@ -76,12 +76,12 @@ public:
         //std::cerr << "in Queue List \n";
         std::vector<std::pair<int, int>> result;
         while (!empty()) {
-            //std::cerr << "in while \n";
+            std::cerr << "in while \n";
             auto p = pop();
             if (!p) {
                 break;
             }
-            //std::cerr << p->first << " " << p->second << " poped \n";
+            std::cerr << p->first << " " << p->second << " poped \n";
 
             result.emplace_back(*p);
         }
