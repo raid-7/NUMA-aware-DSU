@@ -67,10 +67,10 @@ void pop(Queue* q, int t, std::vector<int>* result) {
     for (int i = 0; i < 5; i++) {
         q->Push(std::make_pair(t, t));
     }
-//    auto got = q->List();
-//    for (int i = 0; i < int(got.size()); i++) {
-//        result->emplace_back(got[i].first);
-//    }
+    auto got = q->List();
+    for (int i = 0; i < int(got.size()); i++) {
+        result->emplace_back(got[i].first);
+    }
 }
 
 void testQueue() {
@@ -97,7 +97,7 @@ void testQueue() {
         result.emplace_back(i.first);
     }
 
-    for (int i = 0; i < int(results->size()); i++) {
+    for (int i = 0; i < THREADS / 5; i++) {
         for (int & j : results[i]) {
             result.emplace_back(j);
         }

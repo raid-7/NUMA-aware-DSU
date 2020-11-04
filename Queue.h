@@ -12,12 +12,14 @@ public:
         *first = p.first;
         second = (int*) numa_alloc_onnode(sizeof(int), node);
         *second = p.second;
-        next = (Element*) numa_alloc_onnode(sizeof(Element*), node);
-        next.store(nullptr);
+        next = nullptr;
+        //next = (Element*) numa_alloc_onnode(sizeof(Element*), node);
+        //next.store(nullptr);
     }
 
     void SetNext(Element* e) {
-        next.store(e);
+        //next.store(e);
+        next = e;
     }
 
     int* GetFirst() {
@@ -29,7 +31,7 @@ public:
     }
 
     Element* GetNext() {
-        return next.load();
+        return next;// .load();
     }
 
     ~Element() {
@@ -40,7 +42,8 @@ public:
 private:
     int* first;
     int* second;
-    std::atomic<Element*> next;
+    //std::atomic<Element*> next;
+    Element* next;
 };
 
 // какая-то очень быстро написанная очередь
