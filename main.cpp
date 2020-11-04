@@ -104,6 +104,11 @@ void testQueue() {
     }
 
     std::sort(result.begin(), result.end());
+    for (int i = 0; i < result.size(); i++) {
+        std::cout << result[i] << " ";
+    }
+    std::cout << "\n";
+
     for (int i = 0; i < THREADS; i++) {
         for (int j = 0; j < 5; j++) {
             if (result[i * 5 + j] != i) {
