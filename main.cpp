@@ -73,7 +73,7 @@ void pop(Queue* q, int t, std::vector<int>* result) {
     }
 }
 
-void testQueue() {
+bool testQueue() {
     auto q = new Queue();
     q->Init(0);
     std::vector<std::thread> threads(THREADS);
@@ -113,17 +113,18 @@ void testQueue() {
         for (int j = 0; j < 5; j++) {
             if (result[i * 5 + j] != i) {
                 std::cout << ":(";
-                return;
+                return false;
             }
         }
     }
 
     std::cout << "OK";
+    return true;
 }
 
 int main() {
-    testQueue();
-    //testDSU();
+    //testQueue();
+    testDSU();
 
     return 0;
 }
