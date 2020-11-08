@@ -1,7 +1,6 @@
 #include <iostream>
 #include <numa.h>
 #include <vector>
-#include <sched.h>
 #include <thread>
 #include <algorithm>
 #include <chrono>
@@ -167,16 +166,16 @@ void benchmark() {
 
     node_count = numa_num_configured_nodes();
     auto dsu = new DSU(N, node_count);
-    std::vector<std::thread> threads(n);
+    std::vector<std::thread> threads(n/10);
 
     auto start = std::chrono::high_resolution_clock::now();
 
-    for (int i = 0; i < n; i++) {
-        threads[i] = std::thread(thread_routine, a[i], i, dsu);
+    for (int i = 0; i < n; i+=10) {
+        threads[i / 10] = std::thread(thread_routine, a[i], i, dsu);
     }
 
-    for (int i = 0; i < n; i++) {
-        threads[i].join();
+    for (int i = 0; i < n; i+=10) {
+        threads[i / 10].join();
     }
 
     auto stop = std::chrono::high_resolution_clock::now();
