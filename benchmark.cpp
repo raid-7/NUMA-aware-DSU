@@ -39,8 +39,8 @@ float runWithTime(DSU* dsu) {
     auto start = std::chrono::high_resolution_clock::now();
     run(dsu);
     auto stop = std::chrono::high_resolution_clock::now();
-    auto durationNUMA = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
-    return durationNUMA.count();
+    auto durationNUMA = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+    return float(durationNUMA.count()) / 1000;
 }
 
 void benchmark() {
