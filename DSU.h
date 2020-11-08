@@ -84,6 +84,7 @@ public:
         if (node_count > 1) {
             auto cpu = sched_getcpu();
             auto node = numa_node_of_cpu(cpu);
+            old_unions(node);
             return find(u, node);
         } else {
             return find(u, 0);
@@ -98,23 +99,17 @@ public:
     }
 
 private:
-    int find(int u, int node) {
-        //std::cerr << sched_getcpu() << " " << "in find_ \n";
-        // old unions
-        if (node_count > 1) {
-            while (true) {
-                auto p = queues[node]->Pop();
-                if (p == nullptr) {
-                    break;
-                }
-                union_(p->first, p->second, node);
+    void old_unions(int node) {
+        while (true) {
+            auto p = queues[node]->Pop();
+            if (p == nullptr) {
+                break;
             }
-            //std::cerr << sched_getcpu() << " " << "old unions done \n";
+            union_(p->first, p->second, node);
         }
-        return parent(u, node);
     }
 
-    int parent(int u, int node) {
+    int find(int u, int node) {
         auto par = data[node][u];//.load();
         while (par != data[node][par]) {
 
@@ -125,8 +120,8 @@ private:
     }
 
     void union_(int u, int v, int node) {
-        int u_p = parent(u, node);
-        int v_p = parent(v, node);
+        int u_p = find(u, node);
+        int v_p = find(v, node);
         if (u_p == v_p) {
             return;
         }
