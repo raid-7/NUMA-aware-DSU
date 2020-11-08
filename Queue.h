@@ -95,20 +95,20 @@ public:
 private:
     std::pair<int, int>* pop() {
         //std::cerr << "in pop \n";
-        if (!head) {
+        if (!head->load()) {
             return nullptr;
         }
 
         auto e = new std::pair<int, int>(*head->load()->GetFirst(), *head->load()->GetSecond());
         head->store(head->load()->GetNext());
-        if (!head) {
+        if (!head->load()) {
             tail = nullptr;
         }
         return e;
     }
 
     bool empty() {
-        if (!head ) {
+        if (!head->load()) {
             return true;
         }
         return false;
