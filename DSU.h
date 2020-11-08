@@ -74,6 +74,9 @@ public:
         if (node_count > 1) {
             auto cpu = sched_getcpu();
             auto node = numa_node_of_cpu(cpu);
+            m.lock();
+            old_unions(node);
+            m.unlock();
             return find(u, node) == find(v, node);
         } else {
             return find(u, 0) == find(v, 0);
@@ -95,6 +98,7 @@ public:
 
     bool __SameSetOnNode(int u, int v, int node) {
         m.lock();
+        old_unions(node);
         auto res = (find(u, node) == find(v, node));
         m.unlock();
         return res;
