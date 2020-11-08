@@ -102,10 +102,12 @@ private:
         //std::cerr << sched_getcpu() << " " << "in find_ \n";
         // old unions
         if (node_count > 1) {
-            auto unions = queues[node]->List();
-            //std::cerr << "unions got \n";
-            for (auto u : unions) {
-                union_(u.first, u.second, node);
+            while (true) {
+                auto p = queues[node]->Pop();
+                if (p == nullptr) {
+                    break;
+                }
+                union_(p->first, p->second, node);
             }
             //std::cerr << sched_getcpu() << " " << "old unions done \n";
         }

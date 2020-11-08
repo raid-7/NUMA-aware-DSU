@@ -13,8 +13,6 @@ public:
         second = (int*) numa_alloc_onnode(sizeof(int), node);
         *second = p.second;
         next = (std::atomic<Element*> *) numa_alloc_onnode(sizeof(std::atomic<Element*>), node) ;
-        //next = (Element*) numa_alloc_onnode(sizeof(Element*), node);
-        //next.store(nullptr);
     }
 
     void SetNext(Element* e) {
@@ -36,13 +34,13 @@ public:
     ~Element() {
         numa_free(first, sizeof(int));
         numa_free(second, sizeof(int));
+        numa_free(next, sizeof(std::atomic<Element*>));
     }
 
 private:
     int* first;
     int* second;
     std::atomic<Element*>* next;
-    //Element* next;
 };
 
 // какая-то очень быстро написанная очередь
@@ -74,41 +72,50 @@ public:
         m.unlock();
     }
 
-    std::vector<std::pair<int, int>> List() {
-        m.lock();
-        //std::cerr << "in Queue List \n";
-        std::vector<std::pair<int, int>> result;
-        while (!empty()) {
-            //std::cerr << "in while \n";
-            auto p = pop();
-            if (!p) {
-                break;
-            }
-            //std::cerr << p->first << " " << p->second << " poped \n";
+//    std::vector<std::pair<int, int>> List() {
+//        m.lock();
+//        //std::cerr << "in Queue List \n";
+//        std::vector<std::pair<int, int>> result;
+//        while (!empty()) {
+//            //std::cerr << "in while \n";
+//            auto p = pop();
+//            if (!p) {
+//                break;
+//            }
+//            //std::cerr << p->first << " " << p->second << " poped \n";
+//
+//            result.emplace_back(*p);
+//        }
+//        m.unlock();
+//        return result;
+//    }
 
-            result.emplace_back(*p);
-        }
-        m.unlock();
-        return result;
-    }
-
-private:
-    std::pair<int, int>* pop() {
+    std::pair<int, int>* Pop() {
         //std::cerr << "in pop \n";
+        m.lock();
         if (head->load() == nullptr) {
+            m.unlock();
             return nullptr;
         }
 
-        auto e = new std::pair<int, int>(*head->load()->GetFirst(), *head->load()->GetSecond());
+        auto e = (std::pair<int, int> *) numa_alloc_onnode(sizeof(std::pair<int, int>), *node);
+
+        //auto e = new std::pair<int, int>(*head->load()->GetFirst(), *head->load()->GetSecond());
+        e->first = *head->load()->GetFirst();
+        e->second = *head->load()->GetSecond();
+
         head->store(head->load()->GetNext());
         if (head->load() == nullptr) {
             tail->store(nullptr);
         }
+        m.unlock();
+
         return e;
     }
 
+private:
     bool empty() {
-        if (!head->load()) {
+        if (head->load() == nullptr) {
             return true;
         }
         return false;
