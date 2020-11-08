@@ -84,7 +84,9 @@ public:
         if (node_count > 1) {
             auto cpu = sched_getcpu();
             auto node = numa_node_of_cpu(cpu);
+            m.lock();
             old_unions(node);
+            m.unlock();
             return find(u, node);
         } else {
             return find(u, 0);
