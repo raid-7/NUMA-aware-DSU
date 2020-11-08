@@ -15,8 +15,8 @@ void thread_routine(std::vector<int> a, int v, DSU* dsu) {
         }
 
         for (int j = 0; j < 1000; j++) {
-            auto x = dsu->Find(v);
-            if (x == v && j > 500) {
+            a[i] = j;
+            if (rand() % 100 == 0) {
                 break;
             }
         }
@@ -53,8 +53,8 @@ void benchmark() {
         }
     }
     for (int i = 0; i < 1000000; i++) {
-        int x = rand() % 1000;
-        int y = rand() % 1000;
+        int x = rand() % N;
+        int y = rand() % N;
         a[x][y] = 1;
         a[y][x] = 1;
     }
