@@ -50,22 +50,26 @@ private:
 class Queue {
 public:
     void Init(int node) {
-        this->node = node;
-        head = nullptr;
-        tail = head;
+        this->node = (int*) numa_alloc_onnode(sizeof(int), node);
+        *this->node = node;
+
+        head = (std::atomic<Element*> *) numa_alloc_onnode(sizeof(std::atomic<Element*>), node);
+        head->store(nullptr);
+        tail = (std::atomic<Element*> *) numa_alloc_onnode(sizeof(std::atomic<Element*>), node);
+        tail->store(nullptr);
     }
 
     void Push(std::pair<int, int> p) {
         m.lock();
-        auto e = (Element*) numa_alloc_onnode(sizeof(Element), node);
-        e->Init(p, node);
+        Element* e = (Element*) numa_alloc_onnode(sizeof(Element), *node);
+        e->Init(p, *node);
 
         if (!tail) {
-            head = e;
-            tail = e;
+            head->store(e);
+            tail->store(e);
         } else {
-            tail->SetNext(e);
-            tail = e;
+            tail->load()->SetNext(e);
+            tail->store(e);
         }
         m.unlock();
     }
@@ -95,8 +99,8 @@ private:
             return nullptr;
         }
 
-        auto e = new std::pair<int, int>(*head->GetFirst(), *head->GetSecond());
-        head = head->GetNext();
+        auto e = new std::pair<int, int>(*head->load()->GetFirst(), *head->load()->GetSecond());
+        head->store(head->load()->GetNext());
         if (!head) {
             tail = nullptr;
         }
@@ -110,9 +114,9 @@ private:
         return false;
     }
 
-    int node;
-    Element* head;
-    Element* tail;
+    int* node;
+    std::atomic<Element*>* head;
+    std::atomic<Element*>* tail;
     std::mutex m;
 };
 
