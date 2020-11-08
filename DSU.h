@@ -47,23 +47,10 @@ public:
                 //std::cerr << sched_getcpu() << " " << "want to push in queue \n";
                 queues[i]->Push(std::make_pair(u, v));
             }
-            auto u_p = find(u, node);
-            auto v_p = find(v, node);
-            //std::cerr << sched_getcpu() << " " << "found parents \n";
-            if (u_p == v_p) {
-                m.unlock();
-                return;
-            }            //std::cerr << sched_getcpu() << " " << "found parents \n";
-            union_(u_p, v_p, node);
+
+            union_(u, v, node);
         } else {
-            auto u_p = find(u, 0);
-            auto v_p = find(v, 0);
-            //std::cerr << sched_getcpu() << " " << "found parents \n";
-            if (u_p == v_p) {
-                m.unlock();
-                return;
-            }            //std::cerr << sched_getcpu() << " " << "found parents \n";
-            union_(u_p, v_p, 0);
+            union_(u, v, 0);
         }
 
 
@@ -118,7 +105,6 @@ private:
     int find(int u, int node) {
         auto par = data[node][u];//.load();
         while (par != data[node][par]) {
-
             par = data[node][par];
         }
         //std::cerr << sched_getcpu() << " " << "parent found \n";
