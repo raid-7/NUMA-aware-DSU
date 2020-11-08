@@ -64,7 +64,7 @@ public:
         Element* e = (Element*) numa_alloc_onnode(sizeof(Element), *node);
         e->Init(p, *node);
 
-        if (!tail) {
+        if (tail->load() == nullptr) {
             head->store(e);
             tail->store(e);
         } else {
@@ -95,14 +95,14 @@ public:
 private:
     std::pair<int, int>* pop() {
         //std::cerr << "in pop \n";
-        if (!head->load()) {
+        if (head->load() == nullptr) {
             return nullptr;
         }
 
         auto e = new std::pair<int, int>(*head->load()->GetFirst(), *head->load()->GetSecond());
         head->store(head->load()->GetNext());
-        if (!head->load()) {
-            tail = nullptr;
+        if (head->load() == nullptr) {
+            tail->store(nullptr);
         }
         return e;
     }
