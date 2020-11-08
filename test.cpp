@@ -29,7 +29,7 @@ void testDSU() {
     node_count = numa_num_configured_nodes();
     auto dsu = new DSU(N, node_count);
 
-    std::cerr << "dsu inited \n";
+    // std::cerr << "dsu inited \n";
 
     std::vector<std::thread> threads(THREADS);
 
@@ -41,20 +41,20 @@ void testDSU() {
         threads[i].join();
     }
 
-    std::cerr << "threads done \n";
+    //std::cerr << "threads done \n";
 
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
             auto ans = dsu->__SameSetOnNode(i, j, 0);
             for (int nd = 1; nd < node_count; nd++) {
                 if (dsu->__SameSetOnNode(i, j, nd) != ans) {
-                    std::cout << ":(";
+                    std::cout << "DSU :(";
                     return;
                 }
             }
         }
     }
-    std::cout << "OK\n";
+    std::cout << "DSU OK\n";
 }
 
 void push(Queue* q, int t) {
@@ -104,21 +104,17 @@ bool testQueue() {
     }
 
     std::sort(result.begin(), result.end());
-    for (int i = 0; i < int(result.size()); i++) {
-        std::cout << result[i] << " ";
-    }
-    std::cout << "\n";
 
     for (int i = 0; i < THREADS; i++) {
         for (int j = 0; j < 5; j++) {
             if (result[i * 5 + j] != i) {
-                std::cout << ":(";
+                std::cout << "Queue :(";
                 return false;
             }
         }
     }
 
-    std::cout << "OK";
+    std::cout << "Queue OK";
     return true;
 }
 
