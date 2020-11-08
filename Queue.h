@@ -71,7 +71,7 @@ public:
     std::pair<int, int>* Pop() {
         //std::cerr << "in pop \n";
         m.lock();
-        if (head->load() == tail->load()) {
+        if (head->load()->GetNext() == nullptr) {
             m.unlock();
             return nullptr;
         }
