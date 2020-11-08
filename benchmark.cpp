@@ -3,10 +3,10 @@
 
 #include "DSU.h"
 
-//const int N = 1000;
-const int THREADS = 100;
+int N = 1000;
+int THREADS = 100;
 
-int node_count;
+std::vector< std::vector<int>> a;
 
 void thread_routine(std::vector<int> a, int v, DSU* dsu) {
     for (int i = 0; i < int(a.size()); i++) {
@@ -23,14 +23,32 @@ void thread_routine(std::vector<int> a, int v, DSU* dsu) {
     }
 }
 
-void benchmark() {
-    int n = 1000;
-    std::vector< std::vector<int>> a;
-    a.resize(n);
+void run(DSU *dsu) {
+    std::vector<std::thread> threads;
 
-    for (int i = 0; i < n; i++) {
-        a[i].resize(n);
-        for (int j = 0; j < n; j++) {
+    for (int i = 0; i < N; i += (N / THREADS)) {
+        threads.emplace_back(std::thread(thread_routine, a[i], i, dsu));
+    }
+
+    for (int i = 0; i < int(threads.size()); i++) {
+        threads[i].join();
+    }
+}
+
+float runWithTime(DSU* dsu) {
+    auto start = std::chrono::high_resolution_clock::now();
+    run(dsu);
+    auto stop = std::chrono::high_resolution_clock::now();
+    auto durationNUMA = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
+    return durationNUMA.count();
+}
+
+void benchmark() {
+    a.resize(N);
+
+    for (int i = 0; i < N; i++) {
+        a[i].resize(N);
+        for (int j = 0; j < N; j++) {
             a[i][j] = 0;
         }
     }
@@ -41,26 +59,25 @@ void benchmark() {
         a[y][x] = 1;
     }
 
-    node_count = numa_num_configured_nodes();
-    auto dsu = new DSU(n, node_count);
-    std::vector<std::thread> threads(n/10);
+    int node_count = numa_num_configured_nodes();
+    auto dsuNUMA = new DSU(N, node_count);
+    auto dsuUsual = new DSU(N, 1);
 
-    auto start = std::chrono::high_resolution_clock::now();
+    std::cout << runWithTime(dsuNUMA) << std::endl;
+    std::cout << runWithTime(dsuUsual) << std::endl;
 
-    for (int i = 0; i < n; i+=10) {
-        threads[i / 10] = std::thread(thread_routine, a[i], i, dsu);
-    }
 
-    for (int i = 0; i < n; i+=10) {
-        threads[i / 10].join();
-    }
-
-    auto stop = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
-    std::cout << duration.count() << std::endl;
 }
 
-int main() {
+int main(int argc, char* argv[]) {
+    if (argc > 1) {
+        auto nStr = argv[1];
+        auto threadsStr = argv[2];
+
+        N = std::stoi(nStr);
+        THREADS = std::stoi(threadsStr);
+    }
+
     benchmark();
 
     return 0;

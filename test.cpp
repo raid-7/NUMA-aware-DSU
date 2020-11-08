@@ -48,7 +48,7 @@ void testDSU() {
             auto ans = dsu->__SameSetOnNode(i, j, 0);
             for (int nd = 1; nd < node_count; nd++) {
                 if (dsu->__SameSetOnNode(i, j, nd) != ans) {
-                    std::cout << "DSU :(";
+                    std::cout << "DSU :(\n";
                     return;
                 }
             }
@@ -108,13 +108,13 @@ bool testQueue() {
     for (int i = 0; i < THREADS; i++) {
         for (int j = 0; j < 5; j++) {
             if (result[i * 5 + j] != i) {
-                std::cout << "Queue :(";
+                std::cout << "Queue :(\n";
                 return false;
             }
         }
     }
 
-    std::cout << "Queue OK";
+    std::cout << "Queue OK\n";
     return true;
 }
 
