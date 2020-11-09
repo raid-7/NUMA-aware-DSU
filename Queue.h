@@ -72,14 +72,9 @@ public:
                 tail->compare_exchange_weak(t, e);
                 break;
             } else {
-                tail->compare_exchange_weak(t, t->next->load());
+                tail->compare_exchange_weak(t, t->GetNext());
             }
         }
-
-//        m.lock();
-//        tail->load()->SetNext(e);
-//        tail->store(e);
-//        m.unlock();
     }
 
     std::pair<int, int>* Pop() {
@@ -104,21 +99,6 @@ public:
                 }
             }
         }
-
-//        m.lock();
-//        if (head->load()->GetNext() == nullptr) {
-//            m.unlock();
-//            return nullptr;
-//        }
-//
-//        auto e = (std::pair<int, int> *) numa_alloc_onnode(sizeof(std::pair<int, int>), *node);
-//        e->first = *head->load()->GetNext()->GetFirst();
-//        e->second = *head->load()->GetNext()->GetSecond();
-//
-//        head->store(head->load()->GetNext());
-//        m.unlock();
-
-//        return e;
     }
 
 private:
