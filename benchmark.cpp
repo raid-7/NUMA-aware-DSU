@@ -21,6 +21,9 @@ void thread_routine(std::vector<int> a, int v, DSU* dsu) {
             }
         }
     }
+    for (int i = 0; i < 100; i++) {
+        dsu->Find(rand() % a.size());
+    }
 }
 
 void run(DSU *dsu) {
