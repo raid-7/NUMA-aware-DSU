@@ -38,7 +38,7 @@ public:
         numa_free(next, sizeof(std::atomic<Element*>));
     }
 
-private:
+public:
     int* first;
     int* second;
     std::atomic<Element*>* next;
@@ -62,40 +62,70 @@ public:
     }
 
     void Push(std::pair<int, int> p) {
-        Element* e = (Element*) numa_alloc_onnode(sizeof(Element), *node);
+        auto e = (Element*) numa_alloc_onnode(sizeof(Element), *node);
         e->Init(p, *node);
-        m.lock();
-        tail->load()->SetNext(e);
-        tail->store(e);
-        m.unlock();
+
+        Element* null = nullptr;
+        while (true) {
+            auto t = tail->load();
+            if (t->next->compare_exchange_weak(null, e)) {
+                tail->compare_exchange_weak(t, e);
+                break;
+            } else {
+                tail->compare_exchange_weak(t, t->next->load());
+            }
+        }
+
+//        m.lock();
+//        tail->load()->SetNext(e);
+//        tail->store(e);
+//        m.unlock();
     }
 
     std::pair<int, int>* Pop() {
         //std::cerr << "in pop \n";
-        m.lock();
-        if (head->load()->GetNext() == nullptr) {
-            m.unlock();
-            return nullptr;
+        while (true) {
+            auto h = head->load();
+            auto t = tail->load();
+            auto first = h->GetNext();
+
+            if (h == t) {
+                if (first == nullptr) {
+                    return nullptr;
+                } else {
+                    tail->compare_exchange_weak(t, t->GetNext());
+                }
+            } else {
+                auto e = (std::pair<int, int> *) numa_alloc_onnode(sizeof(std::pair<int, int>), *node);
+                e->first = *first->GetFirst();
+                e->second = *first->GetSecond();
+                if (head->compare_exchange_weak(h, first)) {
+                    return e;
+                }
+            }
         }
 
-        auto e = (std::pair<int, int> *) numa_alloc_onnode(sizeof(std::pair<int, int>), *node);
-        e->first = *head->load()->GetNext()->GetFirst();
-        e->second = *head->load()->GetNext()->GetSecond();
-
-        head->store(head->load()->GetNext());
-//        if (head->load() == nullptr) {
-//            tail->store(nullptr);
+//        m.lock();
+//        if (head->load()->GetNext() == nullptr) {
+//            m.unlock();
+//            return nullptr;
 //        }
-        m.unlock();
+//
+//        auto e = (std::pair<int, int> *) numa_alloc_onnode(sizeof(std::pair<int, int>), *node);
+//        e->first = *head->load()->GetNext()->GetFirst();
+//        e->second = *head->load()->GetNext()->GetSecond();
+//
+//        head->store(head->load()->GetNext());
+//        m.unlock();
 
-        return e;
+//        return e;
     }
 
 private:
     int* node;
     std::atomic<Element*>* head;
     std::atomic<Element*>* tail;
-    std::mutex m;
+    //std::mutex m;
 };
 
 #endif //TRY_QUEUE_H
