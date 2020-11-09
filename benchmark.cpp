@@ -1,5 +1,6 @@
 #include <iostream>
 #include <thread>
+#include <fstream>
 
 #include "DSU.h"
 
@@ -8,7 +9,7 @@ int THREADS = 100;
 
 std::vector< std::vector<int>> a;
 
-void thread_routine(std::vector<int> a, int v, DSU* dsu) {
+void thread_routine(std::vector<int> a, int v, DSU* dsu, std::vector<int>* result) {
     for (int i = 0; i < int(a.size()); i++) {
         if (a[i] == 1) {
             dsu->Union(i, v);
@@ -21,8 +22,9 @@ void thread_routine(std::vector<int> a, int v, DSU* dsu) {
             }
         }
     }
+
     for (int i = 0; i < 100; i++) {
-        dsu->Find(rand() % a.size());
+        result->emplace_back(dsu->Find(rand() % a.size()));
     }
 }
 
@@ -30,7 +32,7 @@ void run(DSU *dsu) {
     std::vector<std::thread> threads;
 
     for (int i = 0; i < N; i += (N / THREADS)) {
-        threads.emplace_back(std::thread(thread_routine, a[i], i, dsu));
+        threads.emplace_back(std::thread(thread_routine, a[i], i, dsu, new std::vector<int>));
     }
 
     for (int i = 0; i < int(threads.size()); i++) {
