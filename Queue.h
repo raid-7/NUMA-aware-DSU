@@ -13,6 +13,7 @@ public:
         second = (int*) numa_alloc_onnode(sizeof(int), node);
         *second = p.second;
         next = (std::atomic<Element*> *) numa_alloc_onnode(sizeof(std::atomic<Element*>), node) ;
+        next->store(nullptr);
     }
 
     void SetNext(Element* e) {
@@ -52,6 +53,7 @@ public:
         *this->node = node;
 
         auto fake = (Element*) numa_alloc_onnode(sizeof(Element), node);
+        fake->Init(std::make_pair(0, 0), node);
 
         head = (std::atomic<Element*> *) numa_alloc_onnode(sizeof(std::atomic<Element*>), node);
         head->store(fake);
