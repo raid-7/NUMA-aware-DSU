@@ -65,16 +65,28 @@ public:
         auto e = (Element*) numa_alloc_onnode(sizeof(Element), *node);
         e->Init(p, *node);
 
-        Element* null = nullptr;
+        //Element* null = nullptr;
         while (true) {
             auto t = tail->load();
             auto next = t->GetNext();
-            if (t->next->compare_exchange_weak(null, e)) {
-                tail->compare_exchange_weak(t, e);
-                break;
-            } else {
-                tail->compare_exchange_weak(t, t->GetNext());
+
+            if (t == tail->load()) {
+                if (next == nullptr) {
+                    if (t->next->compare_exchange_weak(next, e)) {
+                        tail->compare_exchange_weak(t, e);
+                        break;
+                    }
+                } else {
+                    tail->compare_exchange_weak(t, next);
+                }
             }
+
+//            if (t->next->compare_exchange_weak(null, e)) {
+//                tail->compare_exchange_weak(t, e);
+//                break;
+//            } else {
+//                tail->compare_exchange_weak(t, t->GetNext());
+//            }
         }
     }
 
@@ -85,18 +97,20 @@ public:
             auto t = tail->load();
             auto first = h->GetNext();
 
-            if (h == t) {
-                if (first == nullptr) {
-                    return nullptr;
+            if (h == head->load()) {
+                if (h == t) {
+                    if (first == nullptr) {
+                        return nullptr;
+                    } else {
+                        tail->compare_exchange_weak(t, t->GetNext());
+                    }
                 } else {
-                    tail->compare_exchange_weak(t, t->GetNext());
-                }
-            } else {
-                auto e = (std::pair<int, int> *) numa_alloc_onnode(sizeof(std::pair<int, int>), *node);
-                e->first = *first->GetFirst();
-                e->second = *first->GetSecond();
-                if (head->compare_exchange_weak(h, first)) {
-                    return e;
+                    auto e = (std::pair<int, int> *) numa_alloc_onnode(sizeof(std::pair<int, int>), *node);
+                    e->first = *first->GetFirst();
+                    e->second = *first->GetSecond();
+                    if (head->compare_exchange_weak(h, first)) {
+                        return e;
+                    }
                 }
             }
         }
