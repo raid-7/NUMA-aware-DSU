@@ -68,7 +68,7 @@ public:
         Element* null = nullptr;
         while (true) {
             auto t = tail->load();
-            if (t->next->compare_exchange_weak(null, e)) {
+            if (t->next->compare_exchange_strong(null, e)) {
                 tail->compare_exchange_weak(t, e);
                 break;
             } else {
