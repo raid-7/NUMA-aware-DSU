@@ -77,10 +77,13 @@ public:
         }
 
         auto e = (std::pair<int, int> *) numa_alloc_onnode(sizeof(std::pair<int, int>), *node);
-        e->first = *head->load()->GetNext()->GetFirst();
-        e->second = *head->load()->GetNext()->GetSecond();
+        e->first = *head->load()->GetFirst();
+        e->second = *head->load()->GetSecond();
 
         head->store(head->load()->GetNext());
+//        if (head->load() == nullptr) {
+//            tail->store(nullptr);
+//        }
         m.unlock();
 
         return e;
