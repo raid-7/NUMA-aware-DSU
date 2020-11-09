@@ -1,6 +1,3 @@
-#ifndef TRY_QUEUE_H
-#define TRY_QUEUE_H
-
 #include <queue>
 #include <mutex>
 
@@ -38,14 +35,14 @@ public:
         numa_free(next, sizeof(std::atomic<Element*>));
     }
 
-public:
+friend class Queue;
+
+protected:
     int* first;
     int* second;
     std::atomic<Element*>* next;
 };
 
-// какая-то очень быстро написанная очередь
-// ее надо бы проверить и пофиксить как минимум мьютекс
 class Queue {
 public:
     void Init(int node) {
@@ -65,7 +62,6 @@ public:
         auto e = (Element*) numa_alloc_onnode(sizeof(Element), *node);
         e->Init(p, *node);
 
-        //Element* null = nullptr;
         while (true) {
             auto t = tail->load();
             auto next = t->GetNext();
@@ -80,18 +76,10 @@ public:
                     tail->compare_exchange_weak(t, next);
                 }
             }
-
-//            if (t->next->compare_exchange_weak(null, e)) {
-//                tail->compare_exchange_weak(t, e);
-//                break;
-//            } else {
-//                tail->compare_exchange_weak(t, t->GetNext());
-//            }
         }
     }
 
     std::pair<int, int>* Pop() {
-        //std::cerr << "in pop \n";
         while (true) {
             auto h = head->load();
             auto t = tail->load();
@@ -120,7 +108,4 @@ private:
     int* node;
     std::atomic<Element*>* head;
     std::atomic<Element*>* tail;
-    //std::mutex m;
 };
-
-#endif //TRY_QUEUE_H
