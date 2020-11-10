@@ -14,6 +14,7 @@ public:
     DSU(int size, int node_count) : size(size), node_count(node_count) {
         data.resize(node_count);
         queues.resize(node_count);
+        mutexes.resize(node_count);
         for (int i = 0; i < node_count; i++) {
             data[i] = (std::atomic<int> *) numa_alloc_onnode(sizeof(std::atomic<int>) * size, i);
             for (int j = 0; j < size; j++) {
