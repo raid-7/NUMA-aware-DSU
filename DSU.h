@@ -15,10 +15,11 @@ public:
         data.resize(node_count);
         queues.resize(node_count);
         for (int i = 0; i < node_count; i++) {
-            //data[i] = (std::atomic<int> *) numa_alloc_onnode(sizeof(std::atomic<int>) * size, i);
-            data[i] = (int*) numa_alloc_onnode(sizeof(int) * size, i);
+            data[i] = (std::atomic<int> *) numa_alloc_onnode(sizeof(std::atomic<int>) * size, i);
+            //data[i] = (int*) numa_alloc_onnode(sizeof(int) * size, i);
             for (int j = 0; j < size; j++) {
-                data[i][j] = j;
+                //data[i][j] = j;
+                data[i][j].store(j);
             }
 
             queues[i] = (Queue*) numa_alloc_onnode(sizeof(Queue), i);
@@ -103,9 +104,10 @@ private:
     }
 
     int find(int u, int node) {
-        auto par = data[node][u];//.load();
-        while (par != data[node][par]) {
-            par = data[node][par];
+        //auto par = data[node][u];//.load();
+        auto par = data[node][u].load();
+        while (par != data[node][par].load()) {
+            par = data[node][par].load();
         }
         //std::cerr << sched_getcpu() << " " << "parent found \n";
         return par;
@@ -118,19 +120,19 @@ private:
             return;
         }
         if (rand() % 2) {
-            data[node][u_p] = v_p;
+            data[node][u_p].store(v_p);
             //while (!data[node][u].compare_exchange_weak(u, v)) {}
         } else {
             //while (!data[node][v].compare_exchange_weak(v, u)) {}
-            data[node][v_p] = u_p;
+            data[node][v_p].store(u_p);// = u_p;
         }
     }
 
 private:
     int size;
     int node_count;
-    //std::vector<std::atomic<int>*> data;
-    std::vector<int*> data;
+    std::vector<std::atomic<int>*> data;
+    //std::vector<int*> data;
     std::vector<Queue*> queues;
 
     std::mutex m;
