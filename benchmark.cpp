@@ -26,7 +26,7 @@ void doSmth() {
 void thread_routine(Context* ctx, int v1, int v2) {
     for (int v = v1; v < v2; v++) {
         for (int i = 0; i < int(ctx->graph[v].size()); i++) {
-            if (rand() % 100 < ctx->ratio) {
+            if (i % 100 < ctx->ratio) {
                 ctx->dsu->SameSet(v, ctx->graph[v][i]);
             } else {
                 ctx->dsu->Union(v, ctx->graph[v][i]);

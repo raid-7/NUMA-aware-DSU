@@ -44,7 +44,6 @@ public:
         if (node_count == 1) {
             node = 0;
         }
-        mutexes[node]->lock();
         if (node_count > 1) {
             for (int i = 0; i < node_count; i++) {
                 if (i == node)
@@ -52,7 +51,7 @@ public:
                 queues[i]->Push(std::make_pair(u, v));
             }
         }
-
+        mutexes[node]->lock();
         union_(u, v, node);
         mutexes[node]->unlock();
     }
@@ -63,10 +62,16 @@ public:
             auto node = numa_node_of_cpu(cpu);
             mutexes[node]->lock();
             old_unions(node);
+            auto u_p = find(u, node);
+            auto v_p = find(v, node);
             mutexes[node]->unlock();
-            return find(u, node) == find(v, node);
+            return u_p == v_p;
         } else {
-            return find(u, 0) == find(v, 0);
+            mutexes[0]->lock();
+            auto u_p = find(u, 0);
+            auto v_p = find(v, 0);
+            mutexes[0]->unlock();
+            return u_p == v_p;
         }
     }
 

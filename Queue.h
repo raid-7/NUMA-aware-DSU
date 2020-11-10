@@ -83,20 +83,20 @@ public:
         while (true) {
             auto h = head->load();
             auto t = tail->load();
-            auto first = h->GetNext();
+            auto next = h->GetNext();
 
             if (h == head->load()) {
                 if (h == t) {
-                    if (first == nullptr) {
+                    if (next == nullptr) {
                         return nullptr;
                     } else {
-                        tail->compare_exchange_weak(t, t->GetNext());
+                        tail->compare_exchange_weak(t, next);
                     }
                 } else {
                     auto e = (std::pair<int, int> *) numa_alloc_onnode(sizeof(std::pair<int, int>), *node);
-                    e->first = *first->GetFirst();
-                    e->second = *first->GetSecond();
-                    if (head->compare_exchange_weak(h, first)) {
+                    e->first = *next->GetFirst();
+                    e->second = *next->GetSecond();
+                    if (head->compare_exchange_weak(h, next)) {
                         return e;
                     }
                 }
