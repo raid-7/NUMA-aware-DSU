@@ -72,8 +72,25 @@ std::vector<std::vector<int>> graphRandom() {
     return g;
 }
 
+std::vector<std::vector<int>> graphLJ() {
+    std::ifstream file;
+    file.open("LG.txt");
+
+    file >> N >> E;
+    std::vector<std::vector<int>> g;
+    g.resize(N);
+    for (int i = 0; i < E; i++) {
+        int a, b;
+        file >> a >> b;
+        g[a].emplace_back(b);
+        g[b].emplace_back(a);
+    }
+    return g;
+}
+
 void benchmark() {
-    auto g = graphRandom();
+    //auto g = graphRandom();
+    auto g = graphLJ();
 
     int node_count = numa_num_configured_nodes();
     auto dsuNUMA = new DSU(N, node_count);
