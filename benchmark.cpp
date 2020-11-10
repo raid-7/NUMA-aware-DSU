@@ -41,7 +41,7 @@ void run(Context* ctx) {
     std::vector<std::thread> threads;
 
     int step = N / THREADS;
-    for (int i = 0; i < N; i += step) {
+    for (int i = 0; i < THREADS; i++) {
         threads.emplace_back(std::thread(thread_routine, ctx, i*step, std::min(i*step + step, N)));
     }
 
