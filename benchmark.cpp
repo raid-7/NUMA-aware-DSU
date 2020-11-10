@@ -82,6 +82,14 @@ std::vector<std::vector<int>> graphLJ() {
     for (int i = 0; i < E; i++) {
         int a, b;
         file >> a >> b;
+        if (a > N) {
+            N = a;
+            g.resize(N);
+        }
+        if (b > N) {
+            N = b;
+            g.resize(N);
+        }
         g[a].emplace_back(b);
         g[b].emplace_back(a);
     }
