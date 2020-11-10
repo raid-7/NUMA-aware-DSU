@@ -41,6 +41,9 @@ public:
         //std::cerr << output;
         auto cpu = sched_getcpu();
         auto node = numa_node_of_cpu(cpu);
+        if (node_count == 1) {
+            node = 0;
+        }
         mutexes[node]->lock();
         if (node_count > 1) {
             for (int i = 0; i < node_count; i++) {
@@ -48,11 +51,9 @@ public:
                     continue;
                 queues[i]->Push(std::make_pair(u, v));
             }
-            union_(u, v, node);
-        } else {
-            union_(u, v, 0);
         }
 
+        union_(u, v, node);
         mutexes[node]->unlock();
     }
 
