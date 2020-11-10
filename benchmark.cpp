@@ -58,9 +58,9 @@ float runWithTime(Context* ctx) {
     return float(durationNUMA.count()) / 1000;
 }
 
-std::vector<std::vector<int>>* graphRandom() {
-    auto g = new std::vector<std::vector<int>>;
-    g->resize(N);
+std::vector<std::vector<int>> graphRandom() {
+    std::vector<std::vector<int>> g;
+    g.resize(N);
 
     for (int i = 0; i < E ; i++) {
         int x = rand() % N;
@@ -78,8 +78,8 @@ void benchmark() {
     int node_count = numa_num_configured_nodes();
     auto dsuNUMA = new DSU(N, node_count);
     auto dsuUsual = new DSU(N, 1);
-    auto ctxNUMA = new Context(g, dsuNUMA, RATIO);
-    auto ctxUsual = new Context(g, dsuUsual, RATIO);
+    auto ctxNUMA = new Context(&g, dsuNUMA, RATIO);
+    auto ctxUsual = new Context(&g, dsuUsual, RATIO);
 
     std::cout << runWithTime(ctxNUMA) << std::endl;
     std::cout << runWithTime(ctxUsual) << std::endl;
