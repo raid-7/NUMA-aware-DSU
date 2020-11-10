@@ -59,8 +59,8 @@ float runWithTime(Context* ctx) {
 }
 
 std::vector<std::vector<int>>* graphRandom() {
-    std::vector< std::vector<int>> g;
-    g.resize(N);
+    auto g = new std::vector<std::vector<int>>;
+    g->resize(N);
 
     for (int i = 0; i < E ; i++) {
         int x = rand() % N;
@@ -69,7 +69,7 @@ std::vector<std::vector<int>>* graphRandom() {
         g[y].emplace_back(x);
     }
 
-    return &g;
+    return g;
 }
 
 void benchmark() {
