@@ -68,6 +68,8 @@ std::vector<std::vector<int>>* graphRandom() {
         g[x].emplace_back(y);
         g[y].emplace_back(x);
     }
+
+    return &g;
 }
 
 void benchmark() {
