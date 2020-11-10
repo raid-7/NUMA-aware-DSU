@@ -32,7 +32,7 @@ void thread_routine(Context* ctx, int v1, int v2) {
                 ctx->dsu->Union(v, ctx->graph[v][i]);
             }
 
-            doSmth();
+            //doSmth();
         }
     }
 }
@@ -42,7 +42,7 @@ void run(Context* ctx) {
 
     int step = N / THREADS;
     for (int i = 0; i < N; i += step) {
-        threads.emplace_back(std::thread(thread_routine, ctx, i*step, i*step + step));
+        threads.emplace_back(std::thread(thread_routine, ctx, i*step, std::min(i*step + step, N)));
     }
 
     for (int i = 0; i < int(threads.size()); i++) {
