@@ -4,35 +4,45 @@
 
 #include "DSU.h"
 
-int N = 1000;
+int N = 100000;
+int E = 100000000;
 int THREADS = 100;
+int RATIO = 80;
 
-std::vector< std::vector<int>> a;
+//std::vector< std::vector<int>> a;
 
-void thread_routine(std::vector<int> a, int v, DSU* dsu, std::vector<int>* result) {
-    for (int i = 0; i < int(a.size()); i++) {
-        if (a[i] == 1) {
-            dsu->Union(i, v);
-        }
+struct Context {
+    std::vector<std::vector<int>> graph;
+    DSU* dsu;
+    int ratio; // процент SameSet среди всех запросов
 
-        for (int j = 0; j < 1000; j++) {
-            a[i] = j;
-            if (rand() % 100 == 0) {
-                break;
+    Context(std::vector<std::vector<int>>* graph, DSU* dsu, int ratio) : graph(*graph), dsu(dsu), ratio(ratio) {};
+};
+
+void doSmth() {
+
+}
+
+void thread_routine(Context* ctx, int v1, int v2) {
+    for (int v = v1; v < v2; v++) {
+        for (int i = 0; i < int(ctx->graph[v].size()); i++) {
+            if (rand() % 100 < ctx->ratio) {
+                ctx->dsu->SameSet(v, ctx->graph[v][i]);
+            } else {
+                ctx->dsu->Union(v, ctx->graph[v][i]);
             }
-        }
-    }
 
-    for (int i = 0; i < 100; i++) {
-        result->emplace_back(dsu->Find(rand() % a.size()));
+            doSmth();
+        }
     }
 }
 
-void run(DSU *dsu) {
+void run(Context* ctx) {
     std::vector<std::thread> threads;
 
-    for (int i = 0; i < N; i += (N / THREADS)) {
-        threads.emplace_back(std::thread(thread_routine, a[i], i, dsu, new std::vector<int>));
+    int step = N / THREADS;
+    for (int i = 0; i < N; i += step) {
+        threads.emplace_back(std::thread(thread_routine, ctx, i*step, i*step + step));
     }
 
     for (int i = 0; i < int(threads.size()); i++) {
@@ -40,47 +50,50 @@ void run(DSU *dsu) {
     }
 }
 
-float runWithTime(DSU* dsu) {
+float runWithTime(Context* ctx) {
     auto start = std::chrono::high_resolution_clock::now();
-    run(dsu);
+    run(ctx);
     auto stop = std::chrono::high_resolution_clock::now();
     auto durationNUMA = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
     return float(durationNUMA.count()) / 1000;
 }
 
-void benchmark() {
-    a.resize(N);
+std::vector<std::vector<int>>* graphRandom() {
+    std::vector< std::vector<int>> g;
+    g.resize(N);
 
-    for (int i = 0; i < N; i++) {
-        a[i].resize(N);
-        for (int j = 0; j < N; j++) {
-            a[i][j] = 0;
-        }
-    }
-    for (int i = 0; i < 1000000; i++) {
+    for (int i = 0; i < E ; i++) {
         int x = rand() % N;
         int y = rand() % N;
-        a[x][y] = 1;
-        a[y][x] = 1;
+        g[x].emplace_back(y);
+        g[y].emplace_back(x);
     }
+}
+
+void benchmark() {
+    auto g = graphRandom();
 
     int node_count = numa_num_configured_nodes();
     auto dsuNUMA = new DSU(N, node_count);
     auto dsuUsual = new DSU(N, 1);
+    auto ctxNUMA = new Context(g, dsuNUMA, RATIO);
+    auto ctxUsual = new Context(g, dsuUsual, RATIO);
 
-    std::cout << runWithTime(dsuNUMA) << std::endl;
-    std::cout << runWithTime(dsuUsual) << std::endl;
-
-
+    std::cout << runWithTime(ctxNUMA) << std::endl;
+    std::cout << runWithTime(ctxUsual) << std::endl;
 }
 
 int main(int argc, char* argv[]) {
     if (argc > 1) {
         auto nStr = argv[1];
-        auto threadsStr = argv[2];
-
+        auto eStr = argv[2];
         N = std::stoi(nStr);
-        THREADS = std::stoi(threadsStr);
+        E = std::stoi(eStr);
+
+        if (argc >= 3) {
+            auto threadsStr = argv[3];
+            THREADS = std::stoi(threadsStr);
+        }
     }
 
     benchmark();

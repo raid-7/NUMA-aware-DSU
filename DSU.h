@@ -54,7 +54,6 @@ public:
             union_(u, v, 0);
         }
 
-
         m.unlock();
     }
 
