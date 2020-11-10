@@ -92,7 +92,7 @@ int main(int argc, char* argv[]) {
         N = std::stoi(nStr);
         E = std::stoi(eStr);
 
-        if (argc >= 3) {
+        if (argc > 3) {
             auto threadsStr = argv[3];
             THREADS = std::stoi(threadsStr);
         }
