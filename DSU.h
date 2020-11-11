@@ -112,7 +112,16 @@ private:
         while (par != data[node][par].load()) {
             par = data[node][par].load();
         }
-        return par;
+        auto res = par;
+
+        par = data[node][u].load();
+        while (par != data[node][par].load()) {
+            auto next = data[node][par].load();
+            data[node][par].store(res);
+            par = next;
+        }
+
+        return res;
     }
 
     void union_(int u, int v, int node) {

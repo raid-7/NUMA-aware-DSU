@@ -97,8 +97,8 @@ std::vector<std::vector<int>> graphLJ() {
 }
 
 void benchmark() {
-    //auto g = graphRandom();
-    auto g = graphLJ();
+    auto g = graphRandom();
+    //auto g = graphLJ();
 
     int node_count = numa_num_configured_nodes();
     auto dsuNUMA = new DSU(N, node_count);
