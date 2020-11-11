@@ -98,6 +98,8 @@ public:
                     e->second = *next->GetSecond();
                     if (head->compare_exchange_weak(h, next)) {
                         return e;
+                    } else {
+                        numa_free(e, sizeof(std::pair<int, int>));
                     }
                 }
             }

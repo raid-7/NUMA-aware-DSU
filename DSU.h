@@ -104,6 +104,7 @@ private:
                 break;
             }
             union_(p->first, p->second, node);
+            numa_free(p, sizeof(std::pair<int, int>));
         }
     }
 
