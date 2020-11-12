@@ -39,18 +39,19 @@ public:
     void Union(int u, int v) {
         //std::string output = std::to_string(sched_getcpu()) + " in union \n";
         //std::cerr << output;
+
         auto cpu = sched_getcpu();
         auto node = numa_node_of_cpu(cpu);
         if (node_count == 1) {
             node = 0;
         }
-        if (node_count > 1) {
+        //if (node_count > 1) {
             for (int i = 0; i < node_count; i++) {
                 if (i == node)
                     continue;
                 queues[i]->Push(std::make_pair(u, v));
             }
-        }
+        //}
         mutexes[node]->lock();
         union_(u, v, node);
         mutexes[node]->unlock();
@@ -75,18 +76,18 @@ public:
         }
     }
 
-    int Find(int u) {
-        if (node_count > 1) {
-            auto cpu = sched_getcpu();
-            auto node = numa_node_of_cpu(cpu);
-            mutexes[node]->lock();
-            old_unions(node);
-            mutexes[node]->unlock();
-            return find(u, node);
-        } else {
-            return find(u, 0);
-        }
-    }
+//    int Find(int u) {
+//        if (node_count > 1) {
+//            auto cpu = sched_getcpu();
+//            auto node = numa_node_of_cpu(cpu);
+//            mutexes[node]->lock();
+//            old_unions(node);
+//            mutexes[node]->unlock();
+//            return find(u, node);
+//        } else {
+//            return find(u, 0);
+//        }
+//    }
 
     bool __SameSetOnNode(int u, int v, int node) {
         mutexes[node]->lock();
@@ -97,6 +98,7 @@ public:
     }
 
 private:
+    // перед всеми приватными операциями должен быть взят лок
     void old_unions(int node) {
         while (true) {
             auto p = queues[node]->Pop();
