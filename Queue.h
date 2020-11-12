@@ -97,6 +97,7 @@ public:
                     e->first = *next->GetFirst();
                     e->second = *next->GetSecond();
                     if (head->compare_exchange_weak(h, next)) {
+                        numa_free(h, sizeof(Element));
                         return e;
                     } else {
                         numa_free(e, sizeof(std::pair<int, int>));
