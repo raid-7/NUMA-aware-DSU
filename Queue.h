@@ -1,9 +1,9 @@
 #include <queue>
 #include <mutex>
+#include <cds/gc/hp.h>
 
 class Element {
 public:
-
     void Init(std::pair<int, int> p, int node) {
         first = (int*) numa_alloc_onnode(sizeof(int), node);
         *first = p.first;
@@ -11,18 +11,6 @@ public:
         *second = p.second;
         next = (std::atomic<Element*> *) numa_alloc_onnode(sizeof(std::atomic<Element*>), node) ;
         next->store(nullptr);
-    }
-
-    void SetNext(Element* e) {
-        next->store(e);
-    }
-
-    int* GetFirst() {
-        return first;
-    }
-
-    int* GetSecond() {
-        return second;
     }
 
     Element* GetNext() {
@@ -94,10 +82,10 @@ public:
                     }
                 } else {
                     auto e = (std::pair<int, int> *) numa_alloc_onnode(sizeof(std::pair<int, int>), *node);
-                    e->first = *next->GetFirst();
-                    e->second = *next->GetSecond();
+                    e->first = *next->first;
+                    e->second = *next->second;
                     if (head->compare_exchange_weak(h, next)) {
-                        numa_free(h, sizeof(Element));
+                        //numa_free(h, sizeof(Element));
                         return e;
                     } else {
                         numa_free(e, sizeof(std::pair<int, int>));

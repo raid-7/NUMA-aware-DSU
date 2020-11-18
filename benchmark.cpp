@@ -4,6 +4,8 @@
 
 #include "DSU.h"
 
+const std::string RANDOM = "random";
+
 int N = 100000;
 int E = 100000000;
 int THREADS = 100;
@@ -72,9 +74,9 @@ std::vector<std::vector<int>> graphRandom() {
     return g;
 }
 
-std::vector<std::vector<int>> graphLJ() {
+std::vector<std::vector<int>> graphFromFile(std::string filename) {
     std::ifstream file;
-    file.open("LG.txt");
+    file.open("LJ.txt");
 
     file >> N >> E;
     std::vector<std::vector<int>> g;
@@ -96,9 +98,13 @@ std::vector<std::vector<int>> graphLJ() {
     return g;
 }
 
-void benchmark() {
-    auto g = graphRandom();
-    //auto g = graphLJ();
+void benchmark(std::string graph) {
+    std::vector<std::vector<int>> g;
+    if (graph == RANDOM) {
+        g = graphRandom();
+    } else {
+        g = graphFromFile("LJ.txt");
+    }
 
     int node_count = numa_num_configured_nodes();
     auto dsuNUMA = new DSU(N, node_count);
@@ -112,18 +118,25 @@ void benchmark() {
 
 int main(int argc, char* argv[]) {
     if (argc > 1) {
-        auto nStr = argv[1];
-        auto eStr = argv[2];
-        N = std::stoi(nStr);
-        E = std::stoi(eStr);
-
-        if (argc > 3) {
-            auto threadsStr = argv[3];
-            THREADS = std::stoi(threadsStr);
+        auto graph = argv[1];
+        if (graph == RANDOM) {
+            auto nStr = argv[2];
+            auto eStr = argv[3];
+            N = std::stoi(nStr);
+            E = std::stoi(eStr);
+            if (argc > 4) {
+                auto threadsStr = argv[4];
+                THREADS = std::stoi(threadsStr);
+            }
+        } else {
+            if (argc > 2) {
+                auto threadsStr = argv[2];
+                THREADS = std::stoi(threadsStr);
+            }
         }
-    }
 
-    benchmark();
+        benchmark(graph);
+    }
 
     return 0;
 }
