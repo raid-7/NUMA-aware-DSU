@@ -45,9 +45,9 @@ void testDSU() {
 
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
-            auto ans = dsu->__SameSetOnNode(i, j, 0);
+            auto ans = dsu->SameSetOnNode(i, j, 0);
             for (int nd = 1; nd < node_count; nd++) {
-                if (dsu->__SameSetOnNode(i, j, nd) != ans) {
+                if (dsu->SameSetOnNode(i, j, nd) != ans) {
                     std::cout << "DSU :(\n";
                     return;
                 }
