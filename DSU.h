@@ -52,17 +52,17 @@ public:
             queues[i]->Push(std::make_pair(u, v));
         }
 
-        mutexes[node]->lock();
+        //mutexes[node]->lock();
         union_(u, v, node);
-        mutexes[node]->unlock();
+        //mutexes[node]->unlock();
     }
 
     bool SameSet(int u, int v) {
         auto node = numa_node_of_cpu(sched_getcpu());
         if (node_count > 1) {
-            mutexes[node]->lock();
+            //mutexes[node]->lock();
             old_unions(node);
-            mutexes[node]->unlock();
+            //mutexes[node]->unlock();
         } else {
             node = 0;
         }
