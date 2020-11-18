@@ -14,7 +14,6 @@ public:
     DSU(int size, int node_count) : size(size), node_count(node_count) {
         data.resize(node_count);
         queues.resize(node_count);
-        mutexes.resize(node_count);
         for (int i = 0; i < node_count; i++) {
             data[i] = (std::atomic<int> *) numa_alloc_onnode(sizeof(std::atomic<int>) * size, i);
             for (int j = 0; j < size; j++) {
@@ -23,8 +22,6 @@ public:
 
             queues[i] = (Queue*) numa_alloc_onnode(sizeof(Queue), i);
             queues[i]->Init(i);
-
-            mutexes[i] = (std::mutex*) numa_alloc_onnode(sizeof(std::mutex), i);
         }
     }
 
@@ -32,14 +29,10 @@ public:
         for (int i = 0; i < node_count; i++) {
             numa_free(data[i], sizeof(int) * size);
             numa_free(queues[i], sizeof(Queue));
-            numa_free(mutexes[i], sizeof(std::mutex));
         }
     }
 
     void Union(int u, int v) {
-        //std::string output = std::to_string(sched_getcpu()) + " in union \n";
-        //std::cerr << output;
-
         auto node = numa_node_of_cpu(sched_getcpu());
         if (node_count == 1) {
             node = 0;
@@ -52,26 +45,34 @@ public:
             queues[i]->Push(std::make_pair(u, v));
         }
 
-        //mutexes[node]->lock();
         union_(u, v, node);
-        //mutexes[node]->unlock();
     }
 
     bool SameSet(int u, int v) {
         auto node = numa_node_of_cpu(sched_getcpu());
+        if (node_count == 1) {
+            node = 0;
+        }
+
+        return SameSetOnNode(u, v, node);
+    }
+
+    int Find(int u) {
+        auto node = numa_node_of_cpu(sched_getcpu());
         if (node_count > 1) {
-            //mutexes[node]->lock();
             old_unions(node);
-            //mutexes[node]->unlock();
         } else {
             node = 0;
         }
 
-        //mutexes[node]->lock();
-        //auto u_p = find(u, node);
-        //auto v_p = find(v, node);
-        //mutexes[node]->unlock();
-        //return u_p == v_p;
+        return find(u, node);
+    }
+
+    bool SameSetOnNode(int u, int v, int node) {
+        if (node_count > 1) {
+            old_unions(node);
+        }
+
         auto u_p = u;
         auto v_p = v;
         while (true) {
@@ -85,30 +86,7 @@ public:
             }
         }
     }
-
-//    int Find(int u) {
-//        if (node_count > 1) {
-//            auto cpu = sched_getcpu();
-//            auto node = numa_node_of_cpu(cpu);
-//            mutexes[node]->lock();
-//            old_unions(node);
-//            mutexes[node]->unlock();
-//            return find(u, node);
-//        } else {
-//            return find(u, 0);
-//        }
-//    }
-
-    bool __SameSetOnNode(int u, int v, int node) {
-        mutexes[node]->lock();
-        old_unions(node);
-        auto res = (find(u, node) == find(v, node));
-        mutexes[node]->unlock();
-        return res;
-    }
-
 private:
-    // перед всеми приватными операциями должен быть взят лок
     void old_unions(int node) {
         while (true) {
             auto p = queues[node]->Pop();
@@ -121,20 +99,6 @@ private:
     }
 
     int find(int u, int node) {
-//        auto par = data[node][u].load();
-//        while (par != data[node][par].load()) {
-//            par = data[node][par].load();
-//        }
-//        auto res = par;
-//
-//        par = data[node][u].load();
-//        while (par != data[node][par].load()) {
-//            auto next = data[node][par].load();
-//            data[node][par].store(res);
-//            par = next;
-//        }
-        //return res;
-
         auto cur = u;
         while (true) {
             auto par = data[node][cur].load();
@@ -150,11 +114,8 @@ private:
     }
 
     void union_(int u, int v, int node) {
-        int u_p = u;//find(u, node);
-        int v_p = v;//find(v, node);
-//        if (u_p == v_p) {
-//            return;
-//        }
+        int u_p = u;
+        int v_p = v;
         while (true) {
             u_p = find(u_p, node);
             v_p = find(v_p, node);
@@ -172,11 +133,6 @@ private:
             }
 
         }
-//        if (rand() % 2) {
-//            data[node][u_p].store(v_p);
-//        } else {
-//            data[node][v_p].store(u_p);
-//        }
     }
 
 private:
@@ -184,8 +140,6 @@ private:
     int node_count;
     std::vector<std::atomic<int>*> data;
     std::vector<Queue*> queues;
-
-    std::vector<std::mutex*> mutexes;
 };
 
 
