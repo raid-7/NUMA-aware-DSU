@@ -40,39 +40,49 @@ public:
         //std::string output = std::to_string(sched_getcpu()) + " in union \n";
         //std::cerr << output;
 
-        auto cpu = sched_getcpu();
-        auto node = numa_node_of_cpu(cpu);
+        auto node = numa_node_of_cpu(sched_getcpu());
         if (node_count == 1) {
             node = 0;
         }
-        //if (node_count > 1) {
-            for (int i = 0; i < node_count; i++) {
-                if (i == node)
-                    continue;
-                queues[i]->Push(std::make_pair(u, v));
+
+        for (int i = 0; i < node_count; i++) {
+            if (i == node) {
+                continue;
             }
-        //}
+            queues[i]->Push(std::make_pair(u, v));
+        }
+
         mutexes[node]->lock();
         union_(u, v, node);
         mutexes[node]->unlock();
     }
 
     bool SameSet(int u, int v) {
+        auto node = numa_node_of_cpu(sched_getcpu());
         if (node_count > 1) {
-            auto cpu = sched_getcpu();
-            auto node = numa_node_of_cpu(cpu);
             mutexes[node]->lock();
             old_unions(node);
-            auto u_p = find(u, node);
-            auto v_p = find(v, node);
             mutexes[node]->unlock();
-            return u_p == v_p;
         } else {
-            mutexes[0]->lock();
-            auto u_p = find(u, 0);
-            auto v_p = find(v, 0);
-            mutexes[0]->unlock();
-            return u_p == v_p;
+            node = 0;
+        }
+
+        //mutexes[node]->lock();
+        //auto u_p = find(u, node);
+        //auto v_p = find(v, node);
+        //mutexes[node]->unlock();
+        //return u_p == v_p;
+        auto u_p = u;
+        auto v_p = v;
+        while (true) {
+            u_p = find(u_p, node);
+            v_p = find(v_p, node);
+            if (u_p == v_p) {
+                return true;
+            }
+            if (data[node][u_p].load() == u_p) {
+                return false;
+            }
         }
     }
 
@@ -111,33 +121,62 @@ private:
     }
 
     int find(int u, int node) {
-        auto par = data[node][u].load();
-        while (par != data[node][par].load()) {
-            par = data[node][par].load();
-        }
-        auto res = par;
+//        auto par = data[node][u].load();
+//        while (par != data[node][par].load()) {
+//            par = data[node][par].load();
+//        }
+//        auto res = par;
+//
+//        par = data[node][u].load();
+//        while (par != data[node][par].load()) {
+//            auto next = data[node][par].load();
+//            data[node][par].store(res);
+//            par = next;
+//        }
+        //return res;
 
-        par = data[node][u].load();
-        while (par != data[node][par].load()) {
-            auto next = data[node][par].load();
-            data[node][par].store(res);
-            par = next;
+        auto cur = u;
+        while (true) {
+            auto par = data[node][cur].load();
+            auto grand = data[node][par].load();
+            if (par == grand) {
+                return par;
+            } else {
+                data[node][cur].compare_exchange_weak(par, grand);
+            }
+            cur = par;
         }
 
-        return res;
     }
 
     void union_(int u, int v, int node) {
-        int u_p = find(u, node);
-        int v_p = find(v, node);
-        if (u_p == v_p) {
-            return;
+        int u_p = u;//find(u, node);
+        int v_p = v;//find(v, node);
+//        if (u_p == v_p) {
+//            return;
+//        }
+        while (true) {
+            u_p = find(u_p, node);
+            v_p = find(v_p, node);
+            if (u_p == v_p) {
+                return;
+            }
+            if (rand() % 2) {
+                if (data[node][u_p].compare_exchange_weak(u_p, v_p)) {
+                    return;
+                }
+            } else {
+                if (data[node][v_p].compare_exchange_weak(v_p, u_p)) {
+                    return;
+                }
+            }
+
         }
-        if (rand() % 2) {
-            data[node][u_p].store(v_p);
-        } else {
-            data[node][v_p].store(u_p);
-        }
+//        if (rand() % 2) {
+//            data[node][u_p].store(v_p);
+//        } else {
+//            data[node][v_p].store(u_p);
+//        }
     }
 
 private:
