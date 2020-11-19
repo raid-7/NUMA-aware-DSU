@@ -97,9 +97,8 @@ std::vector<std::vector<int>> graphFromFile(std::string filename) {
     return g;
 }
 
-void runSequential() {
+void runSequential(DSU* dsu) {
     std::vector<std::vector<int>> g;
-    auto dsu = new DSU_Sequential(g.size());
 
     auto start = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < int(g.size()); i++) {
@@ -130,7 +129,8 @@ void benchmark(std::string graph) {
     auto ctxNUMA = new Context(&g, dsuNUMA, RATIO);
     auto ctxUsual = new Context(&g, dsuUsual, RATIO);
 
-    runSequential();
+    auto dsuSeq = new DSU_Sequential(N);
+    runSequential(dsuSeq);
 
     float resultNUMA = 0;
     float resultUsual = 0;
