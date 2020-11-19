@@ -36,11 +36,13 @@ public:
     }
 
     int Find(int u) override {
-        int res = u;
-        while (data[res] != res) {
-            res = data[res];
+        int cur = u;
+        while (data[cur] != cur) {
+            auto par = data[cur];
+            data[cur] = data[par];
+            cur = par;
         }
-        return res;
+        return cur;
     }
 
     bool SameSet(int u, int v) override {
