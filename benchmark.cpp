@@ -5,18 +5,19 @@
 #include "DSU.h"
 
 const std::string RANDOM = "random";
+const int RUNS = 3;
 
 int N = 100000;
 int E = 100000000;
-int THREADS = 100;
+int THREADS = 192;
 int RATIO = 80;
 
 struct Context {
     std::vector<std::vector<int>> graph;
-    DSU_Helper* dsu;
+    DSU* dsu;
     int ratio; // процент SameSet среди всех запросов
 
-    Context(std::vector<std::vector<int>>* graph, DSU_Helper* dsu, int ratio) : graph(*graph), dsu(dsu), ratio(ratio) {};
+    Context(std::vector<std::vector<int>>* graph, DSU* dsu, int ratio) : graph(*graph), dsu(dsu), ratio(ratio) {};
 };
 
 void doSmth() {
@@ -55,7 +56,7 @@ float runWithTime(Context* ctx) {
     run(ctx);
     auto stop = std::chrono::high_resolution_clock::now();
     auto durationNUMA = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-    return float(durationNUMA.count()) / 1000;
+    return float(durationNUMA.count());// / 1000;
 }
 
 std::vector<std::vector<int>> graphRandom() {
@@ -74,7 +75,7 @@ std::vector<std::vector<int>> graphRandom() {
 
 std::vector<std::vector<int>> graphFromFile(std::string filename) {
     std::ifstream file;
-    file.open("LJ.txt");
+    file.open(filename);
 
     file >> N >> E;
     std::vector<std::vector<int>> g;
@@ -96,12 +97,31 @@ std::vector<std::vector<int>> graphFromFile(std::string filename) {
     return g;
 }
 
+void runSequential() {
+    std::vector<std::vector<int>> g;
+    auto dsu = new DSU_Sequential(g.size());
+
+    auto start = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < int(g.size()); i++) {
+        for (int j = 0; j < int(g[i].size()); j++) {
+            if (i % 100 < RATIO) {
+                dsu->SameSet(i, g[i][j]);
+            } else {
+                dsu->Union(i, g[i][j]);
+            }
+        }
+    }
+    auto stop = std::chrono::high_resolution_clock::now();
+    auto durationNUMA = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+    std::cout << "Sequential " << float(durationNUMA.count()) << std::endl;
+}
+
 void benchmark(std::string graph) {
     std::vector<std::vector<int>> g;
     if (graph == RANDOM) {
         g = graphRandom();
     } else {
-        g = graphFromFile("LJ.txt");
+        g = graphFromFile(graph);
     }
 
     int node_count = numa_num_configured_nodes();
@@ -110,8 +130,20 @@ void benchmark(std::string graph) {
     auto ctxNUMA = new Context(&g, dsuNUMA, RATIO);
     auto ctxUsual = new Context(&g, dsuUsual, RATIO);
 
-    std::cout << runWithTime(ctxNUMA) << std::endl;
-    std::cout << runWithTime(ctxUsual) << std::endl;
+    runSequential();
+
+    float resultNUMA = 0;
+    float resultUsual = 0;
+    // три раза повторяем запуск чтобы получить более правдивый результат
+    for (int i = 0; i < RUNS; i++) {
+        //std::cout << runWithTime(ctxNUMA) << std::endl;
+        resultNUMA += runWithTime(ctxNUMA);
+        //std::cout << runWithTime(ctxUsual) << std::endl;
+        resultUsual += runWithTime(ctxUsual);
+    }
+
+    std::cout << "NUMA " << resultNUMA / RUNS << "\n";
+    std::cout << "Usual " << resultUsual / RUNS << "\n";
 }
 
 int main(int argc, char* argv[]) {

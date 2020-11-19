@@ -6,7 +6,52 @@
 
 #include "Queue.h"
 
-class DSU_Helper {
+class DSU {
+public:
+    virtual void Union(int u, int v) = 0;
+    virtual int Find(int u) = 0;
+    virtual bool SameSet(int u, int v) = 0;
+};
+
+class DSU_Sequential : public DSU {
+public:
+    DSU_Sequential(int size) {
+        data.resize(size);
+        for (int i = 0; i < size; i++) {
+            data[i] = i;
+        }
+    }
+
+    void Union(int u, int v) override {
+        int u_p = Find(u);
+        int v_p = Find(v);
+        if (u_p == v_p) {
+            return;
+        }
+        if (rand() % 2) {
+            data[u_p] = v_p;
+        } else {
+            data[v_p] = u_p;
+        }
+    }
+
+    int Find(int u) override {
+        int res = u;
+        while (data[res] != res) {
+            res = data[res];
+        }
+        return res;
+    }
+
+    bool SameSet(int u, int v) override {
+        return Find(u) == Find(v);
+    }
+
+private:
+    std::vector<int> data;
+};
+
+class DSU_Helper : public DSU {
 public:
     DSU_Helper(int size, int node_count) :size(size), node_count(node_count) {
         data.resize(node_count);
@@ -25,7 +70,7 @@ public:
         }
     }
 
-    void Union(int u, int v) {
+    void Union(int u, int v) override {
         auto node = numa_node_of_cpu(sched_getcpu());
         if (node_count == 1) {
             node = 0;
@@ -46,7 +91,7 @@ public:
         //union_(u, v, node);
     }
 
-    bool SameSet(int u, int v) {
+    bool SameSet(int u, int v) override {
         auto node = numa_node_of_cpu(sched_getcpu());
         if (node_count == 1) {
             node = 0;
@@ -55,7 +100,7 @@ public:
         return SameSetOnNode(u, v, node);
     }
 
-    int Find(int u) {
+    int Find(int u) override {
         auto node = numa_node_of_cpu(sched_getcpu());
         if (node_count > 1) {
             old_unions(node);
@@ -137,7 +182,7 @@ private:
             if (u_p == v_p) {
                 return;
             }
-            if (rand() % 2) {
+            if (u_p < v_p) {
                 if (data[node][u_p].compare_exchange_weak(u_p, v_p)) {
                     return;
                 }
@@ -155,7 +200,7 @@ private:
     std::atomic<__int64_t> to_union;
 };
 
-class DSU_MSQ {
+class DSU_MSQ : public DSU {
 public:
     DSU_MSQ(int size, int node_count) : size(size), node_count(node_count) {
         data.resize(node_count);
@@ -178,7 +223,7 @@ public:
         }
     }
 
-    void Union(int u, int v) {
+    void Union(int u, int v) override {
         auto node = numa_node_of_cpu(sched_getcpu());
         if (node_count == 1) {
             node = 0;
@@ -194,7 +239,7 @@ public:
         union_(u, v, node);
     }
 
-    bool SameSet(int u, int v) {
+    bool SameSet(int u, int v) override {
         auto node = numa_node_of_cpu(sched_getcpu());
         if (node_count == 1) {
             node = 0;
@@ -203,7 +248,7 @@ public:
         return SameSetOnNode(u, v, node);
     }
 
-    int Find(int u) {
+    int Find(int u) override {
         auto node = numa_node_of_cpu(sched_getcpu());
         if (node_count > 1) {
             old_unions(node);
