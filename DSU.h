@@ -126,7 +126,7 @@ public:
             if (u_p == v_p) {
                 return true;
             }
-            if (data[node][u_p].load() == u_p) {
+            if (data[node][u_p].load(std::memory_order_acquire) == u_p) {
                 return false;
             }
         }
@@ -135,7 +135,7 @@ public:
 private:
     void old_unions(int node) {
         while (true) {
-            auto uv = to_union.load();
+            auto uv = to_union.load(std::memory_order_acquire);
             if (uv == 0) {
                 break;
             }
@@ -154,8 +154,8 @@ private:
         if (is_local) {
             auto cur = u;
             while (true) {
-                auto par = data[node][cur].load();
-                auto grand = data[node][par].load();
+                auto par = data[node][cur].load(std::memory_order_acquire);
+                auto grand = data[node][par].load(std::memory_order_acquire);
                 if (par == grand) {
                     return par;
                 } else {
@@ -166,7 +166,7 @@ private:
         } else {
             auto cur = u;
             while (true) {
-                auto par = data[node][cur].load();
+                auto par = data[node][cur].load(std::memory_order_acquire);
                 if (par == cur) {
                     return par;
                 }
