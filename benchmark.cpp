@@ -11,14 +11,12 @@ int E = 100000000;
 int THREADS = 100;
 int RATIO = 80;
 
-//std::vector< std::vector<int>> a;
-
 struct Context {
     std::vector<std::vector<int>> graph;
-    DSU* dsu;
+    DSU_Helper* dsu;
     int ratio; // процент SameSet среди всех запросов
 
-    Context(std::vector<std::vector<int>>* graph, DSU* dsu, int ratio) : graph(*graph), dsu(dsu), ratio(ratio) {};
+    Context(std::vector<std::vector<int>>* graph, DSU_Helper* dsu, int ratio) : graph(*graph), dsu(dsu), ratio(ratio) {};
 };
 
 void doSmth() {
@@ -107,8 +105,8 @@ void benchmark(std::string graph) {
     }
 
     int node_count = numa_num_configured_nodes();
-    auto dsuNUMA = new DSU(N, node_count);
-    auto dsuUsual = new DSU(N, 1);
+    auto dsuNUMA = new DSU_Helper(N, node_count);
+    auto dsuUsual = new DSU_Helper(N, 1);
     auto ctxNUMA = new Context(&g, dsuNUMA, RATIO);
     auto ctxUsual = new Context(&g, dsuUsual, RATIO);
 
@@ -137,6 +135,5 @@ int main(int argc, char* argv[]) {
 
         benchmark(graph);
     }
-
     return 0;
 }

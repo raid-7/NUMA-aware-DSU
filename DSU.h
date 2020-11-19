@@ -1,6 +1,3 @@
-#ifndef TRY_DSU_H
-#define TRY_DSU_H
-
 #include <sched.h>
 #include <thread>
 #include <numa.h>
@@ -9,9 +6,158 @@
 
 #include "Queue.h"
 
-class DSU{
+class DSU_Helper {
 public:
-    DSU(int size, int node_count) : size(size), node_count(node_count) {
+    DSU_Helper(int size, int node_count) :size(size), node_count(node_count) {
+        data.resize(node_count);
+        for (int i = 0; i < node_count; i++) {
+            data[i] = (std::atomic<int> *) numa_alloc_onnode(sizeof(std::atomic<int>) * size, i);
+            for (int j = 0; j < size; j++) {
+                data[i][j].store(j);
+            }
+        }
+        to_union.store(0);
+    }
+
+    ~DSU_Helper() {
+        for (int i = 0; i < node_count; i++) {
+            numa_free(data[i], sizeof(int) * size);
+        }
+    }
+
+    void Union(int u, int v) {
+        auto node = numa_node_of_cpu(sched_getcpu());
+        if (node_count == 1) {
+            node = 0;
+        }
+
+        __int64_t uv = (__int64_t(u) << 32) + v;
+        __int64_t zero = 0;
+
+        while (true) {
+            if (to_union.compare_exchange_weak(zero, uv)) {
+                break;
+            } else {
+                old_unions(node);
+            }
+        }
+
+        old_unions(node);
+        //union_(u, v, node);
+    }
+
+    bool SameSet(int u, int v) {
+        auto node = numa_node_of_cpu(sched_getcpu());
+        if (node_count == 1) {
+            node = 0;
+        }
+
+        return SameSetOnNode(u, v, node);
+    }
+
+    int Find(int u) {
+        auto node = numa_node_of_cpu(sched_getcpu());
+        if (node_count > 1) {
+            old_unions(node);
+        } else {
+            node = 0;
+        }
+
+        return find(u, node, true);
+    }
+
+    bool SameSetOnNode(int u, int v, int node) {
+        if (node_count > 1) {
+            old_unions(node);
+        }
+
+        auto u_p = u;
+        auto v_p = v;
+        while (true) {
+            u_p = find(u_p, node, true);
+            v_p = find(v_p, node, true);
+            if (u_p == v_p) {
+                return true;
+            }
+            if (data[node][u_p].load() == u_p) {
+                return false;
+            }
+        }
+    }
+
+private:
+    void old_unions(int node) {
+        while (true) {
+            auto uv = to_union.load();
+            if (uv == 0) {
+                break;
+            }
+            __int64_t u = uv >> 32;
+            __int64_t v = uv - (u << 32);
+
+            for (int i = 0; i < node_count; i++) {
+                union_(u, v, i, (i == node));
+            }
+
+            to_union.compare_exchange_weak(uv, 0);
+        }
+    }
+
+    int find(int u, int node, bool is_local) {
+        if (is_local) {
+            auto cur = u;
+            while (true) {
+                auto par = data[node][cur].load();
+                auto grand = data[node][par].load();
+                if (par == grand) {
+                    return par;
+                } else {
+                    data[node][cur].compare_exchange_weak(par, grand);
+                }
+                cur = par;
+            }
+        } else {
+            auto cur = u;
+            while (true) {
+                auto par = data[node][cur].load();
+                if (par == cur) {
+                    return par;
+                }
+                cur = par;
+            }
+        }
+    }
+
+    void union_(int u, int v, int node, bool is_local) {
+        int u_p = u;
+        int v_p = v;
+        while (true) {
+            u_p = find(u_p, node, is_local);
+            v_p = find(v_p, node, is_local);
+            if (u_p == v_p) {
+                return;
+            }
+            if (rand() % 2) {
+                if (data[node][u_p].compare_exchange_weak(u_p, v_p)) {
+                    return;
+                }
+            } else {
+                if (data[node][v_p].compare_exchange_weak(v_p, u_p)) {
+                    return;
+                }
+            }
+        }
+    }
+
+    int size;
+    int node_count;
+    std::vector<std::atomic<int>*> data;
+    std::atomic<__int64_t> to_union;
+};
+
+class DSU_MSQ {
+public:
+    DSU_MSQ(int size, int node_count) : size(size), node_count(node_count) {
         data.resize(node_count);
         queues.resize(node_count);
         for (int i = 0; i < node_count; i++) {
@@ -25,7 +171,7 @@ public:
         }
     }
 
-    ~DSU() {
+    ~DSU_MSQ() {
         for (int i = 0; i < node_count; i++) {
             numa_free(data[i], sizeof(int) * size);
             numa_free(queues[i], sizeof(Queue));
@@ -141,6 +287,3 @@ private:
     std::vector<std::atomic<int>*> data;
     std::vector<Queue*> queues;
 };
-
-
-#endif //TRY_DSU_H

@@ -1,5 +1,6 @@
 #include <queue>
 #include <mutex>
+#include <cds/init.h>
 #include <cds/gc/hp.h>
 
 class Element {
@@ -34,6 +35,10 @@ protected:
 class Queue {
 public:
     void Init(int node) {
+        cds::Initialize();
+        cds::gc::HP hp;
+        this->hp = &hp;
+
         this->node = (int*) numa_alloc_onnode(sizeof(int), node);
         *this->node = node;
 
@@ -46,9 +51,15 @@ public:
         tail->store(fake);
     }
 
+    ~Queue() {
+        cds::Terminate();
+    }
+
     void Push(std::pair<int, int> p) {
         auto e = (Element*) numa_alloc_onnode(sizeof(Element), *node);
         e->Init(p, *node);
+
+        cds::gc::HP::Guard guard;
 
         while (true) {
             auto t = tail->load();
@@ -99,4 +110,5 @@ private:
     int* node;
     std::atomic<Element*>* head;
     std::atomic<Element*>* tail;
+    cds::gc::HP* hp;
 };
