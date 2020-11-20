@@ -5,12 +5,14 @@
 #include "DSU.h"
 
 const std::string RANDOM = "random";
-const int RUNS = 3;
+const int RUNS = 10;
 
 int N = 100000;
 int E = 100000000;
 int THREADS = 192;
+int node_count = numa_num_configured_nodes();
 int RATIO = 80;
+bool RUN_ALL_RATIOS = false;
 
 struct Context {
     std::vector<std::vector<int>> graph;
@@ -52,11 +54,18 @@ void run(Context* ctx) {
 }
 
 float runWithTime(Context* ctx) {
-    auto start = std::chrono::high_resolution_clock::now();
-    run(ctx);
-    auto stop = std::chrono::high_resolution_clock::now();
-    auto durationNUMA = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-    return float(durationNUMA.count());// / 1000;
+    float result = 0;
+
+    for (int i = 0; i < RUNS; i++) {
+        auto start = std::chrono::high_resolution_clock::now();
+        run(ctx);
+        auto stop = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+        result += duration.count();
+    }
+
+    result = result / RUNS;
+    return result;
 }
 
 std::vector<std::vector<int>> graphRandom() {
@@ -121,27 +130,45 @@ void benchmark(std::string graph) {
         g = graphFromFile(graph);
     }
 
-    int node_count = numa_num_configured_nodes();
-    auto dsuNUMA = new DSU_Helper(N, node_count);
-    auto dsuUsual = new DSU_Helper(N, 1);
-    auto ctxNUMA = new Context(&g, dsuNUMA, RATIO);
-    auto ctxUsual = new Context(&g, dsuUsual, RATIO);
 
-    auto dsuSeq = new DSU_Sequential(N);
-    runSequential(dsuSeq, g);
 
-    float resultNUMA = 0;
-    float resultUsual = 0;
-    // три раза повторяем запуск чтобы получить более правдивый результат
-    for (int i = 0; i < RUNS; i++) {
-        //std::cout << runWithTime(ctxNUMA) << std::endl;
-        resultNUMA += runWithTime(ctxNUMA);
-        //std::cout << runWithTime(ctxUsual) << std::endl;
-        resultUsual += runWithTime(ctxUsual);
+    if (RUN_ALL_RATIOS) {
+        std::ofstream out;
+        out.open("results.txt");
+
+        for (int i = 0; i <= 100; i += 5) {
+            RATIO = i;
+
+            auto dsuNUMAHelper = new DSU_Helper(N, node_count);
+            auto ctxNUMAHelper = new Context(&g, dsuNUMAHelper, RATIO);
+            out << "NUMAHelper " << RATIO << " " << runWithTime(ctxNUMAHelper) << "\n";
+
+            auto dsuUsual = new DSU_Helper(N, 1);
+            auto ctxUsual = new Context(&g, dsuUsual, RATIO);
+            out << "Usual " << RATIO << " " << runWithTime(ctxUsual) << "\n";
+
+            auto dsuNUMAMSQueue = new DSU_MSQ(N, node_count);
+            auto ctxNUMAMSQueue = new Context(&g, dsuNUMAMSQueue, RATIO);
+            out << "NUMAMSQueue " << RATIO << " " << runWithTime(ctxNUMAMSQueue) << "\n";
+        }
+
+        out.close();
+    } else {
+        auto dsuNUMAHelper = new DSU_Helper(N, node_count);
+        auto ctxNUMAHelper = new Context(&g, dsuNUMAHelper, RATIO);
+        std::cout << "NUMAHelper " << runWithTime(ctxNUMAHelper) << "\n";
+
+        auto dsuUsual = new DSU_Helper(N, 1);
+        auto ctxUsual = new Context(&g, dsuUsual, RATIO);
+        std::cout << "Usual " << runWithTime(ctxUsual) << "\n";
+
+        auto dsuNUMAMSQueue = new DSU_MSQ(N, node_count);
+        auto ctxNUMAMSQueue = new Context(&g, dsuNUMAMSQueue, RATIO);
+        std::cout << "NUMAMSQueue " << runWithTime(ctxNUMAMSQueue) << "\n";
     }
 
-    std::cout << "NUMA " << resultNUMA / RUNS << "\n";
-    std::cout << "Usual " << resultUsual / RUNS << "\n";
+    // auto dsuSeq = new DSU_Sequential(N);
+    // runSequential(dsuSeq, g);
 }
 
 int main(int argc, char* argv[]) {
@@ -160,6 +187,10 @@ int main(int argc, char* argv[]) {
             if (argc > 2) {
                 auto threadsStr = argv[2];
                 THREADS = std::stoi(threadsStr);
+
+                if (argc > 3) {
+                    RUN_ALL_RATIOS = (strcmp(argv[3], "all") == 0);
+                }
             }
         }
 

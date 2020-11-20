@@ -4,7 +4,7 @@
 #include <atomic>
 #include <vector>
 
-#include "Queue.h"
+#include "./utils/ConcurrencyFreaks/queues/MichaelScottQueue.hpp"
 
 class DSU {
 public:
@@ -213,15 +213,15 @@ public:
                 data[i][j].store(j);
             }
 
-            queues[i] = (Queue*) numa_alloc_onnode(sizeof(Queue), i);
-            queues[i]->Init(i);
+            queues[i] = (MichaelScottQueue<std::pair<int, int>>*) numa_alloc_onnode(sizeof(MichaelScottQueue<std::pair<int, int>>), i);
+            //queues[i]->Init(i);
         }
     }
 
     ~DSU_MSQ() {
         for (int i = 0; i < node_count; i++) {
             numa_free(data[i], sizeof(int) * size);
-            numa_free(queues[i], sizeof(Queue));
+            numa_free(queues[i], sizeof(MichaelScottQueue<std::pair<int, int>>));
         }
     }
 
@@ -235,7 +235,8 @@ public:
             if (i == node) {
                 continue;
             }
-            queues[i]->Push(std::make_pair(u, v));
+            auto p = std::make_pair(u, v);
+            queues[i]->enqueue(&p, hasher(std::this_thread::get_id()));
         }
 
         union_(u, v, node);
@@ -282,7 +283,7 @@ public:
 private:
     void old_unions(int node) {
         while (true) {
-            auto p = queues[node]->Pop();
+            auto p = queues[node]->dequeue(hasher(std::this_thread::get_id()));
             if (p == nullptr) {
                 break;
             }
@@ -332,5 +333,7 @@ private:
     int size;
     int node_count;
     std::vector<std::atomic<int>*> data;
-    std::vector<Queue*> queues;
+
+    std::vector<MichaelScottQueue<std::pair<int, int>>*> queues;
+    std::hash<std::thread::id> hasher;
 };
