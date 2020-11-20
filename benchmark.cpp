@@ -96,20 +96,42 @@ std::vector<std::vector<int>> graphFromFile(std::string filename) {
     file >> N >> E;
     std::vector<std::vector<int>> g;
     g.resize(N);
-    for (int i = 0; i < E; i++) {
-        int a, b;
-        file >> a >> b;
-        if (a > N) {
-            N = a;
-            g.resize(N);
+
+    if (filename[0] == 'W') {
+        for (int i = 0; i < E; i++) {
+            char c;
+            file >> c;
+            int a, b;
+            file >> a >> b;
+            if (a > N) {
+                N = a;
+                g.resize(N);
+            }
+            if (b > N) {
+                N = b;
+                g.resize(N);
+            }
+            g[a].emplace_back(b);
+            g[b].emplace_back(a);
+            file >> a;
         }
-        if (b > N) {
-            N = b;
-            g.resize(N);
+    } else {
+        for (int i = 0; i < E; i++) {
+            int a, b;
+            file >> a >> b;
+            if (a > N) {
+                N = a;
+                g.resize(N);
+            }
+            if (b > N) {
+                N = b;
+                g.resize(N);
+            }
+            g[a].emplace_back(b);
+            g[b].emplace_back(a);
         }
-        g[a].emplace_back(b);
-        g[b].emplace_back(a);
     }
+
     return g;
 }
 

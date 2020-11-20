@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "./utils/ConcurrencyFreaks/queues/MichaelScottQueue.hpp"
+#include "./utils/ConcurrencyFreaks/queues/array/FAAArrayQueue.hpp"
 
 class DSU {
 public:
@@ -213,16 +214,16 @@ public:
                 data[i][j].store(j);
             }
 
-            auto addr = (MichaelScottQueue<std::pair<int, int>>*) numa_alloc_onnode(sizeof(MichaelScottQueue<std::pair<int, int>>), i);
+            auto addr = (FAAArrayQueue<std::pair<int, int>>*) numa_alloc_onnode(sizeof(FAAArrayQueue<std::pair<int, int>>), i);
             //queues[i]->Init(i);
-            queues[i] = new (addr) MichaelScottQueue<std::pair<int, int>>();
+            queues[i] = new (addr) FAAArrayQueue<std::pair<int, int>>();
         }
     }
 
     ~DSU_MSQ() {
         for (int i = 0; i < node_count; i++) {
             numa_free(data[i], sizeof(int) * size);
-            numa_free(queues[i], sizeof(MichaelScottQueue<std::pair<int, int>>));
+            numa_free(queues[i], sizeof(FAAArrayQueue<std::pair<int, int>>));
         }
     }
 
@@ -340,5 +341,5 @@ private:
     int node_count;
     std::vector<std::atomic<int>*> data;
 
-    std::vector<MichaelScottQueue<std::pair<int, int>>*> queues;
+    std::vector<FAAArrayQueue<std::pair<int, int>>*> queues;
 };
