@@ -2,6 +2,7 @@
 #include <algorithm>
 
 #include "DSU.h"
+#include "Queue.h"
 
 const int N = 1000;
 const int THREADS = 100;
@@ -57,12 +58,12 @@ void testDSU() {
     std::cout << "DSU OK\n";
 }
 
-void push(Queue* q, int t) {
+void push(MSQueue* q, int t) {
     for (int i = 0; i < 5; i++) {
         q->Push(std::make_pair(t, t));
     }
 }
-void pop(Queue* q, int t, std::vector<int>* result) {
+void pop(MSQueue* q, int t, std::vector<int>* result) {
     for (int i = 0; i < 5; i++) {
         q->Push(std::make_pair(t, t));
     }
@@ -77,7 +78,7 @@ void pop(Queue* q, int t, std::vector<int>* result) {
 }
 
 bool testQueue() {
-    auto q = new Queue();
+    auto q = new MSQueue();
     q->Init(0);
     std::vector<std::thread> threads(THREADS);
     std::vector<int> results[THREADS / 5];

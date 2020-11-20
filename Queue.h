@@ -1,5 +1,7 @@
 #include <queue>
 #include <mutex>
+#include <numa.h>
+#include <atomic>
 
 class Element {
 public:
@@ -22,7 +24,7 @@ public:
         numa_free(next, sizeof(std::atomic<Element*>));
     }
 
-friend class Queue;
+friend class MSQueue;
 
 protected:
     int* first;
@@ -30,7 +32,7 @@ protected:
     std::atomic<Element*>* next;
 };
 
-class Queue {
+class MSQueue {
 public:
     void Init(int node) {
         this->node = (int*) numa_alloc_onnode(sizeof(int), node);
@@ -45,7 +47,7 @@ public:
         tail->store(fake);
     }
 
-    ~Queue() {
+    ~MSQueue() {
     }
 
     void Push(std::pair<int, int> p) {
