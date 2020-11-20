@@ -1,6 +1,7 @@
 #include <iostream>
 #include <thread>
 #include <fstream>
+#include <random>
 
 #include "DSU.h"
 
@@ -27,9 +28,12 @@ void doSmth() {
 }
 
 void thread_routine(Context* ctx, int v1, int v2) {
+    std::default_random_engine generator;
+    std::uniform_int_distribution<int> distribution(0,99);
+
     for (int v = v1; v < v2; v++) {
         for (int i = 0; i < int(ctx->graph[v].size()); i++) {
-            if (i % 100 < ctx->ratio) {
+            if ( distribution(generator) < ctx->ratio) {
                 ctx->dsu->SameSet(v, ctx->graph[v][i]);
             } else {
                 ctx->dsu->Union(v, ctx->graph[v][i]);
@@ -136,9 +140,9 @@ void benchmark(std::string graph) {
         std::ofstream out;
         out.open("results.txt");
 
-        for (int i = 0; i <= 100; i += 5) {
+        for (int i = 40; i <= 100; i += 5) {
             RATIO = i;
-
+            std::cerr << i << std::endl;
             auto dsuNUMAHelper = new DSU_Helper(N, node_count);
             auto ctxNUMAHelper = new Context(&g, dsuNUMAHelper, RATIO);
             out << "NUMAHelper " << RATIO << " " << runWithTime(ctxNUMAHelper) << "\n";
@@ -147,9 +151,9 @@ void benchmark(std::string graph) {
             auto ctxUsual = new Context(&g, dsuUsual, RATIO);
             out << "Usual " << RATIO << " " << runWithTime(ctxUsual) << "\n";
 
-            auto dsuNUMAMSQueue = new DSU_MSQ(N, node_count);
-            auto ctxNUMAMSQueue = new Context(&g, dsuNUMAMSQueue, RATIO);
-            out << "NUMAMSQueue " << RATIO << " " << runWithTime(ctxNUMAMSQueue) << "\n";
+//            auto dsuNUMAMSQueue = new DSU_MSQ(N, node_count);
+//            auto ctxNUMAMSQueue = new Context(&g, dsuNUMAMSQueue, RATIO);
+//            out << "NUMAMSQueue " << RATIO << " " << runWithTime(ctxNUMAMSQueue) << "\n";
         }
 
         out.close();
@@ -162,9 +166,9 @@ void benchmark(std::string graph) {
         auto ctxUsual = new Context(&g, dsuUsual, RATIO);
         std::cout << "Usual " << runWithTime(ctxUsual) << "\n";
 
-        auto dsuNUMAMSQueue = new DSU_MSQ(N, node_count);
-        auto ctxNUMAMSQueue = new Context(&g, dsuNUMAMSQueue, RATIO);
-        std::cout << "NUMAMSQueue " << runWithTime(ctxNUMAMSQueue) << "\n";
+//        auto dsuNUMAMSQueue = new DSU_MSQ(N, node_count);
+//        auto ctxNUMAMSQueue = new Context(&g, dsuNUMAMSQueue, RATIO);
+//        std::cout << "NUMAMSQueue " << runWithTime(ctxNUMAMSQueue) << "\n";
     }
 
     // auto dsuSeq = new DSU_Sequential(N);
