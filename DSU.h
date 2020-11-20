@@ -237,7 +237,7 @@ public:
                 continue;
             }
             auto p = std::make_pair(u, v);
-            queues[i]->enqueue(&p, hasher(std::this_thread::get_id()));
+            queues[i]->enqueue(&p, get_tid());
         }
 
         union_(u, v, node);
@@ -283,7 +283,7 @@ public:
 private:
     void old_unions(int node) {
         while (true) {
-            auto p = queues[node]->dequeue(hasher(std::this_thread::get_id()));
+            auto p = queues[node]->dequeue(get_tid());
             if (p == nullptr) {
                 break;
             }
@@ -329,10 +329,16 @@ private:
     }
 
 private:
+    int get_tid() {
+        static std::atomic_int counter;
+        counter = 0;
+        thread_local static std::unique_ptr<int> tid = std::make_unique<int>(++counter);
+        return *tid;
+    }
+
     int size;
     int node_count;
     std::vector<std::atomic<int>*> data;
 
     std::vector<MichaelScottQueue<std::pair<int, int>>*> queues;
-    std::hash<std::thread::id> hasher;
 };
