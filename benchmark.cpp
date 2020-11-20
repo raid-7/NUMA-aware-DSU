@@ -28,17 +28,15 @@ void doSmth() {
 }
 
 void thread_routine(Context* ctx, int v1, int v2) {
-    std::default_random_engine generator;
-    std::uniform_int_distribution<int> distribution(0,99);
-
+    int cnt = 0;
     for (int v = v1; v < v2; v++) {
         for (int i = 0; i < int(ctx->graph[v].size()); i++) {
-            if ( distribution(generator) < ctx->ratio) {
+            if (cnt % 100 < ctx->ratio) {
                 ctx->dsu->SameSet(v, ctx->graph[v][i]);
             } else {
                 ctx->dsu->Union(v, ctx->graph[v][i]);
             }
-
+            cnt = cnt + 1;
             //doSmth();
         }
     }
@@ -50,6 +48,11 @@ void run(Context* ctx) {
     int step = N / THREADS;
     for (int i = 0; i < THREADS; i++) {
         threads.emplace_back(std::thread(thread_routine, ctx, i*step, std::min(i*step + step, N)));
+
+        cpu_set_t cpuset;
+        CPU_ZERO(&cpuset);
+        CPU_SET(i, &cpuset);
+        pthread_setaffinity_np(threads[i].native_handle(), sizeof(cpu_set_t), &cpuset);
     }
 
     for (int i = 0; i < int(threads.size()); i++) {
