@@ -213,8 +213,9 @@ public:
                 data[i][j].store(j);
             }
 
-            queues[i] = (MichaelScottQueue<std::pair<int, int>>*) numa_alloc_onnode(sizeof(MichaelScottQueue<std::pair<int, int>>), i);
+            auto addr = (MichaelScottQueue<std::pair<int, int>>*) numa_alloc_onnode(sizeof(MichaelScottQueue<std::pair<int, int>>), i);
             //queues[i]->Init(i);
+            queues[i] = new (addr) MichaelScottQueue<std::pair<int, int>>();
         }
     }
 
@@ -247,7 +248,6 @@ public:
         if (node_count == 1) {
             node = 0;
         }
-
         return SameSetOnNode(u, v, node);
     }
 
