@@ -159,13 +159,13 @@ void runSequential(DSU* dsu, std::vector<std::vector<int>> g) {
 
 void preUnite(DSU* dsu) {
     for (int i = 0; i < E / 3; i++) {
-        int x = rand() % N;
-        int y = rand() % N;
+        int x = random() % N;
+        int y = random() % N;
         dsu->Union(x, y);
     }
 }
 
-void benchmark(std::string graph) {
+void benchmark(const std::string& graph, const std::string& outfile) {
     std::vector<std::pair<int, int>>* g;
     if (graph == RANDOM) {
         g = graphRandom();
@@ -177,7 +177,7 @@ void benchmark(std::string graph) {
 
     if (RUN_ALL_RATIOS) {
         std::ofstream out;
-        out.open("results.txt");
+        out.open(outfile);
 
         for (int i = 40; i <= 100; i += 5) {
             RATIO = i;
@@ -218,31 +218,26 @@ void benchmark(std::string graph) {
 }
 
 int main(int argc, char* argv[]) {
+    std::string graph = RANDOM;
+    std::string outfile = "";
     if (argc > 1) {
-        auto graph = argv[1];
+        graph = argv[1];
         if (graph == RANDOM) {
             auto nStr = argv[2];
             auto eStr = argv[3];
             N = std::stoi(nStr);
             E = std::stoi(eStr);
             if (argc > 4) {
-                auto threadsStr = argv[4];
-                THREADS = std::stoi(threadsStr);
+                outfile = argv[4];
             }
         } else {
             if (argc > 2) {
-                auto threadsStr = argv[2];
-                THREADS = std::stoi(threadsStr);
-
-                if (argc > 3) {
-                    RUN_ALL_RATIOS = (strcmp(argv[3], "all") == 0);
-                }
+                RUN_ALL_RATIOS = (strcmp(argv[2], "all") == 0);
+                outfile = argv[3];
             }
         }
-
-        benchmark(graph);
-    } else {
-        benchmark(RANDOM);
     }
+
+    benchmark(graph, outfile);
     return 0;
 }
