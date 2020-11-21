@@ -114,11 +114,9 @@ std::vector<std::pair<int, int>>* graphFromFile(std::string filename) {
             file >> a >> b;
             if (a > N) {
                 N = a;
-                g->resize(N);
             }
             if (b > N) {
                 N = b;
-                g->resize(N);
             }
             g->emplace_back(std::make_pair(a, b));
             file >> a;
@@ -129,11 +127,9 @@ std::vector<std::pair<int, int>>* graphFromFile(std::string filename) {
             file >> a >> b;
             if (a > N) {
                 N = a;
-                g->resize(N);
             }
             if (b > N) {
                 N = b;
-                g->resize(N);
             }
             g->emplace_back(std::make_pair(a, b));
         }
