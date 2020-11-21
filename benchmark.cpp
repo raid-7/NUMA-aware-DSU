@@ -157,6 +157,14 @@ void runSequential(DSU* dsu, std::vector<std::vector<int>> g) {
     std::cout << "Sequential " << float(durationNUMA.count()) << std::endl;
 }
 
+void preUnite(DSU* dsu) {
+    for (int i = 0; i < E / 3; i++) {
+        int x = rand() % N;
+        int y = rand() % N;
+        dsu->Union(x, y);
+    }
+}
+
 void benchmark(std::string graph) {
     std::vector<std::pair<int, int>>* g;
     if (graph == RANDOM) {
@@ -174,11 +182,14 @@ void benchmark(std::string graph) {
         for (int i = 40; i <= 100; i += 5) {
             RATIO = i;
             std::cerr << i << std::endl;
+
             auto dsuNUMAHelper = new DSU_Helper(N, node_count);
+            preUnite(dsuNUMAHelper);
             auto ctxNUMAHelper = new Context(g, dsuNUMAHelper, RATIO);
             out << "NUMAHelper " << RATIO << " " << runWithTime(ctxNUMAHelper) << "\n";
 
             auto dsuUsual = new DSU_Helper(N, 1);
+            preUnite(dsuUsual);
             auto ctxUsual = new Context(g, dsuUsual, RATIO);
             out << "Usual " << RATIO << " " << runWithTime(ctxUsual) << "\n";
 
