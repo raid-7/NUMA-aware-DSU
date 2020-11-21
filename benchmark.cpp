@@ -106,7 +106,7 @@ std::vector<std::pair<int, int>>* graphFromFile(std::string filename) {
 
     file >> N >> E;
     auto g = new std::vector<std::pair<int, int>>();
-    g->resize(N);
+    g->resize(E);
 
     if (filename[0] == 'W') {
         for (int i = 0; i < E; i++) {
