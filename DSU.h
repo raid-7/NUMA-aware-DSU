@@ -155,8 +155,8 @@ private:
         if (is_local) {
             auto cur = u;
             while (true) {
-                auto par = data[node][cur].load(std::memory_order_acquire);
-                auto grand = data[node][par].load(std::memory_order_acquire);
+                auto par = data[node][cur].load(std::memory_order_relaxed);
+                auto grand = data[node][par].load(std::memory_order_relaxed);
                 if (par == grand) {
                     return par;
                 } else {
@@ -167,7 +167,7 @@ private:
         } else {
             auto cur = u;
             while (true) {
-                auto par = data[node][cur].load(std::memory_order_acquire);
+                auto par = data[node][cur].load(std::memory_order_relaxed);
                 if (par == cur) {
                     return par;
                 }
