@@ -81,6 +81,10 @@ float runWithTime(Context* ctx) {
         auto stop = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
         result += duration.count();
+
+        std::random_device rd;
+        std::mt19937 q(rd());
+        std::shuffle(ctx->edges->begin(), ctx->edges->end(), q);
     }
 
     result = result / RUNS;
