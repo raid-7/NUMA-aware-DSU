@@ -2,6 +2,7 @@
 #include <thread>
 #include <fstream>
 #include <random>
+#include <algorithm>
 
 #include "DSU.h"
 
@@ -16,11 +17,12 @@ int RATIO = 80;
 bool RUN_ALL_RATIOS = false;
 
 struct Context {
-    std::vector<std::vector<int>> graph;
+    //std::vector<std::vector<int>> graph;
+    std::vector<std::pair<int, int>>* edges;
     DSU* dsu;
     int ratio; // процент SameSet среди всех запросов
 
-    Context(std::vector<std::vector<int>>* graph, DSU* dsu, int ratio) : graph(*graph), dsu(dsu), ratio(ratio) {};
+    Context(std::vector<std::pair<int, int>>* edges, DSU* dsu, int ratio) : edges(edges), dsu(dsu), ratio(ratio) {};
 };
 
 void doSmth() {
@@ -29,25 +31,35 @@ void doSmth() {
 
 void thread_routine(Context* ctx, int v1, int v2) {
     int cnt = 0;
-    for (int v = v1; v < v2; v++) {
-        for (int i = 0; i < int(ctx->graph[v].size()); i++) {
-            if (cnt % 100 < ctx->ratio) {
-                ctx->dsu->SameSet(v, ctx->graph[v][i]);
-            } else {
-                ctx->dsu->Union(v, ctx->graph[v][i]);
-            }
-            cnt = cnt + 1;
-            //doSmth();
+//    for (int v = v1; v < v2; v++) {
+//        for (int i = 0; i < int(ctx->graph[v].size()); i++) {
+//            if (cnt % 100 < ctx->ratio) {
+//                ctx->dsu->SameSet(v, ctx->graph[v][i]);
+//            } else {
+//                ctx->dsu->Union(v, ctx->graph[v][i]);
+//            }
+//            cnt = cnt + 1;
+//            //doSmth();
+//        }
+//    }
+
+    for (int i = v1; i < v2; i++) {
+        auto e = ctx->edges->at(i);
+        if (cnt % 100 < ctx->ratio) {
+            ctx->dsu->SameSet(e.first, e.second);
+        } else {
+            ctx->dsu->Union(e.first, e.second);
         }
+        cnt = 1 + cnt;
     }
 }
 
 void run(Context* ctx) {
     std::vector<std::thread> threads;
 
-    int step = N / THREADS;
+    int step = E / THREADS;
     for (int i = 0; i < THREADS; i++) {
-        threads.emplace_back(std::thread(thread_routine, ctx, i*step, std::min(i*step + step, N)));
+        threads.emplace_back(std::thread(thread_routine, ctx, i*step, std::min(i*step + step, E)));
 
         cpu_set_t cpuset;
         CPU_ZERO(&cpuset);
@@ -75,27 +87,26 @@ float runWithTime(Context* ctx) {
     return result;
 }
 
-std::vector<std::vector<int>> graphRandom() {
-    std::vector<std::vector<int>> g;
-    g.resize(N);
+std::vector<std::pair<int, int>>* graphRandom() {
+    auto g = new std::vector<std::pair<int, int>>();
+    g->resize(N);
 
     for (int i = 0; i < E ; i++) {
         int x = rand() % N;
         int y = rand() % N;
-        g[x].emplace_back(y);
-        g[y].emplace_back(x);
+        g->emplace_back(std::make_pair(x, y));
     }
 
     return g;
 }
 
-std::vector<std::vector<int>> graphFromFile(std::string filename) {
+std::vector<std::pair<int, int>>* graphFromFile(std::string filename) {
     std::ifstream file;
     file.open(filename);
 
     file >> N >> E;
-    std::vector<std::vector<int>> g;
-    g.resize(N);
+    auto g = new std::vector<std::pair<int, int>>();
+    g->resize(N);
 
     if (filename[0] == 'W') {
         for (int i = 0; i < E; i++) {
@@ -105,14 +116,13 @@ std::vector<std::vector<int>> graphFromFile(std::string filename) {
             file >> a >> b;
             if (a > N) {
                 N = a;
-                g.resize(N);
+                g->resize(N);
             }
             if (b > N) {
                 N = b;
-                g.resize(N);
+                g->resize(N);
             }
-            g[a].emplace_back(b);
-            g[b].emplace_back(a);
+            g->emplace_back(std::make_pair(a, b));
             file >> a;
         }
     } else {
@@ -121,17 +131,19 @@ std::vector<std::vector<int>> graphFromFile(std::string filename) {
             file >> a >> b;
             if (a > N) {
                 N = a;
-                g.resize(N);
+                g->resize(N);
             }
             if (b > N) {
                 N = b;
-                g.resize(N);
+                g->resize(N);
             }
-            g[a].emplace_back(b);
-            g[b].emplace_back(a);
+            g->emplace_back(std::make_pair(a, b));
         }
     }
 
+    std::random_device rd;
+    std::mt19937 q(rd());
+    std::shuffle(g->begin(), g->end(), q);
     return g;
 }
 
@@ -152,7 +164,7 @@ void runSequential(DSU* dsu, std::vector<std::vector<int>> g) {
 }
 
 void benchmark(std::string graph) {
-    std::vector<std::vector<int>> g;
+    std::vector<std::pair<int, int>>* g;
     if (graph == RANDOM) {
         g = graphRandom();
     } else {
@@ -169,11 +181,11 @@ void benchmark(std::string graph) {
             RATIO = i;
             std::cerr << i << std::endl;
             auto dsuNUMAHelper = new DSU_Helper(N, node_count);
-            auto ctxNUMAHelper = new Context(&g, dsuNUMAHelper, RATIO);
+            auto ctxNUMAHelper = new Context(g, dsuNUMAHelper, RATIO);
             out << "NUMAHelper " << RATIO << " " << runWithTime(ctxNUMAHelper) << "\n";
 
             auto dsuUsual = new DSU_Helper(N, 1);
-            auto ctxUsual = new Context(&g, dsuUsual, RATIO);
+            auto ctxUsual = new Context(g, dsuUsual, RATIO);
             out << "Usual " << RATIO << " " << runWithTime(ctxUsual) << "\n";
 
 //            auto dsuNUMAMSQueue = new DSU_MSQ(N, node_count);
@@ -184,11 +196,11 @@ void benchmark(std::string graph) {
         out.close();
     } else {
         auto dsuNUMAHelper = new DSU_Helper(N, node_count);
-        auto ctxNUMAHelper = new Context(&g, dsuNUMAHelper, RATIO);
+        auto ctxNUMAHelper = new Context(g, dsuNUMAHelper, RATIO);
         std::cout << "NUMAHelper " << runWithTime(ctxNUMAHelper) << "\n";
 
         auto dsuUsual = new DSU_Helper(N, 1);
-        auto ctxUsual = new Context(&g, dsuUsual, RATIO);
+        auto ctxUsual = new Context(g, dsuUsual, RATIO);
         std::cout << "Usual " << runWithTime(ctxUsual) << "\n";
 
 //        auto dsuNUMAMSQueue = new DSU_MSQ(N, node_count);
