@@ -9,8 +9,8 @@
 const std::string RANDOM = "random";
 const int RUNS = 10;
 
-int N = 100000;
-int E = 100000000;
+int N = 10000;
+int E = 100000;
 int THREADS = 192;
 int node_count = numa_num_configured_nodes();
 int RATIO = 80;
@@ -89,7 +89,6 @@ float runWithTime(Context* ctx) {
 
 std::vector<std::pair<int, int>>* graphRandom() {
     auto g = new std::vector<std::pair<int, int>>();
-    g->resize(N);
 
     for (int i = 0; i < E ; i++) {
         int x = rand() % N;
@@ -106,7 +105,6 @@ std::vector<std::pair<int, int>>* graphFromFile(std::string filename) {
 
     file >> N >> E;
     auto g = new std::vector<std::pair<int, int>>();
-    g->resize(E);
 
     if (filename[0] == 'W') {
         for (int i = 0; i < E; i++) {
@@ -236,6 +234,8 @@ int main(int argc, char* argv[]) {
         }
 
         benchmark(graph);
+    } else {
+        benchmark(RANDOM);
     }
     return 0;
 }
