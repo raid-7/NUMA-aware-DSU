@@ -9,6 +9,7 @@
 
 class DSU {
 public:
+    virtual void Init() = 0;
     virtual void Union(int u, int v) = 0;
     virtual int Find(int u) = 0;
     virtual bool SameSet(int u, int v) = 0;
@@ -17,6 +18,14 @@ public:
 class DSU_Sequential : public DSU {
 public:
     DSU_Sequential(int size) {
+        this->size = size;
+        data.resize(size);
+        for (int i = 0; i < size; i++) {
+            data[i] = i;
+        }
+    }
+
+    void Init() override {
         data.resize(size);
         for (int i = 0; i < size; i++) {
             data[i] = i;
@@ -51,12 +60,24 @@ public:
     }
 
 private:
+    int size;
     std::vector<int> data;
 };
 
 class DSU_Helper : public DSU {
 public:
     DSU_Helper(int size, int node_count) :size(size), node_count(node_count) {
+        data.resize(node_count);
+        for (int i = 0; i < node_count; i++) {
+            data[i] = (std::atomic<int> *) numa_alloc_onnode(sizeof(std::atomic<int>) * size, i);
+            for (int j = 0; j < size; j++) {
+                data[i][j].store(j);
+            }
+        }
+        to_union.store(0);
+    }
+
+    void Init() override {
         data.resize(node_count);
         for (int i = 0; i < node_count; i++) {
             data[i] = (std::atomic<int> *) numa_alloc_onnode(sizeof(std::atomic<int>) * size, i);

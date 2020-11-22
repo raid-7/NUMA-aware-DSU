@@ -85,6 +85,8 @@ float runWithTime(Context* ctx) {
         std::random_device rd;
         std::mt19937 q(rd());
         std::shuffle(ctx->edges->begin(), ctx->edges->end(), q);
+
+        ctx->dsu->Init();
     }
 
     result = result / RUNS;
@@ -176,8 +178,6 @@ void benchmark(const std::string& graph, const std::string& outfile) {
     } else {
         g = graphFromFile(graph);
     }
-
-
 
     if (RUN_ALL_RATIOS) {
         std::ofstream out;
