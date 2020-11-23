@@ -27,8 +27,18 @@ struct Context {
     Context(std::vector<std::pair<int, int>>* edges, DSU* dsu, int ratio) : edges(edges), dsu(dsu), ratio(ratio) {};
 };
 
-void doSmth() {
+int intRand(const int & min, const int & max) {
+    static thread_local std::mt19937 generator;
+    std::uniform_int_distribution<int> distribution(min,max);
+    return distribution(generator);
+}
 
+void doSmth() {
+    while (true) {
+        if (intRand(0, 1000) < 10) {
+            break;
+        }
+    }
 }
 
 void thread_routine(Context* ctx, int v1, int v2) {
@@ -53,6 +63,7 @@ void thread_routine(Context* ctx, int v1, int v2) {
             ctx->dsu->Union(e.first, e.second);
         }
         cnt = 1 + cnt;
+        doSmth();
     }
 }
 
