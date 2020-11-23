@@ -9,7 +9,7 @@ const int THREADS = 100;
 
 int node_count;
 
-void go(DSU_Helper* dsu) {
+void go(DSU_MSQ* dsu) {
     for (int i = 0; i < 10; i++) {
         int a = rand() % N;
         int b = rand() % N;
@@ -28,7 +28,7 @@ void go(DSU_Helper* dsu) {
 
 void testDSU() {
     node_count = numa_num_configured_nodes();
-    auto dsu = new DSU_Helper(N, node_count);
+    auto dsu = new DSU_MSQ(N, node_count);
 
     // std::cerr << "dsu inited \n";
 

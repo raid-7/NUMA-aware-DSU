@@ -6,10 +6,11 @@
 
 #include "./utils/ConcurrencyFreaks/queues/MichaelScottQueue.hpp"
 #include "./utils/ConcurrencyFreaks/queues/array/FAAArrayQueue.hpp"
+#include "tbb/concurrent_queue.h"
 
 class DSU {
 public:
-    virtual void Init() = 0;
+    virtual void ReInit() = 0;
     virtual void Union(int u, int v) = 0;
     virtual int Find(int u) = 0;
     virtual bool SameSet(int u, int v) = 0;
@@ -25,7 +26,7 @@ public:
         }
     }
 
-    void Init() override {
+    void ReInit() override {
         data.resize(size);
         for (int i = 0; i < size; i++) {
             data[i] = i;
@@ -77,7 +78,11 @@ public:
         to_union.store(0);
     }
 
-    void Init() override {
+    void ReInit() override {
+        for (int i = 0; i < node_count; i++) {
+            numa_free(data[i], sizeof(int) * size);
+        }
+
         data.resize(node_count);
         for (int i = 0; i < node_count; i++) {
             data[i] = (std::atomic<int> *) numa_alloc_onnode(sizeof(std::atomic<int>) * size, i);
@@ -168,7 +173,7 @@ private:
                 union_(u, v, i, (i == node));
             }
 
-            to_union.compare_exchange_weak(uv, 0);
+            to_union.compare_exchange_strong(uv, 0);
         }
     }
 
@@ -235,16 +240,35 @@ public:
                 data[i][j].store(j);
             }
 
-            auto addr = (FAAArrayQueue<std::pair<int, int>>*) numa_alloc_onnode(sizeof(FAAArrayQueue<std::pair<int, int>>), i);
+            auto addr = (tbb::concurrent_queue<std::pair<int, int>>*) numa_alloc_onnode(sizeof(tbb::concurrent_queue<std::pair<int, int>>), i);
             //queues[i]->Init(i);
-            queues[i] = new (addr) FAAArrayQueue<std::pair<int, int>>();
+            queues[i] = new (addr) tbb::concurrent_queue<std::pair<int, int>>();
+        }
+    }
+
+    void ReInit() {
+        for (int i = 0; i < node_count; i++) {
+            numa_free(data[i], sizeof(int) * size);
+            //numa_free(queues[i], sizeof(FAAArrayQueue<std::pair<int, int>>));
+            numa_free(queues[i], sizeof(tbb::concurrent_queue<std::pair<int, int>>));
+        }
+        for (int i = 0; i < node_count; i++) {
+            data[i] = (std::atomic<int> *) numa_alloc_onnode(sizeof(std::atomic<int>) * size, i);
+            for (int j = 0; j < size; j++) {
+                data[i][j].store(j);
+            }
+
+            auto addr = (tbb::concurrent_queue<std::pair<int, int>>*) numa_alloc_onnode(sizeof(tbb::concurrent_queue<std::pair<int, int>>), i);
+            //queues[i]->Init(i);
+            queues[i] = new (addr) tbb::concurrent_queue<std::pair<int, int>>();
         }
     }
 
     ~DSU_MSQ() {
         for (int i = 0; i < node_count; i++) {
             numa_free(data[i], sizeof(int) * size);
-            numa_free(queues[i], sizeof(FAAArrayQueue<std::pair<int, int>>));
+            //numa_free(queues[i], sizeof(FAAArrayQueue<std::pair<int, int>>));
+            numa_free(queues[i], sizeof(tbb::concurrent_queue<std::pair<int, int>>));
         }
     }
 
@@ -259,7 +283,8 @@ public:
                 continue;
             }
             auto p = std::make_pair(u, v);
-            queues[i]->enqueue(&p, get_tid());
+            //queues[i]->enqueue(&p, get_tid());
+            queues[i]->push(p);
         }
 
         union_(u, v, node);
@@ -305,11 +330,16 @@ public:
 private:
     void old_unions(int node) {
         while (true) {
-            auto p = queues[node]->dequeue(get_tid());
-            if (p == nullptr) {
+            //auto p = queues[node]->dequeue(get_tid());
+//            if (p == nullptr) {
+//                break;
+//            }
+            std::pair<int, int> p;
+            auto done = queues[node]->try_pop(p);
+            if (!done) {
                 break;
             }
-            union_(p->first, p->second, node);
+            union_(p.first, p.second, node);
         }
     }
 
@@ -362,5 +392,6 @@ private:
     int node_count;
     std::vector<std::atomic<int>*> data;
 
-    std::vector<FAAArrayQueue<std::pair<int, int>>*> queues;
+    //std::vector<FAAArrayQueue<std::pair<int, int>>*> queues;
+    std::vector<tbb::concurrent_queue<std::pair<int, int>>*> queues;
 };

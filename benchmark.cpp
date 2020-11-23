@@ -106,7 +106,7 @@ float runWithTime(ContextRatio* ctx) {
         std::random_device rd;
         std::mt19937 q(rd());
         std::shuffle(ctx->edges->begin(), ctx->edges->end(), q);
-        ctx->dsu->Init();
+        ctx->dsu->ReInit();
         preUnite(ctx->dsu, ctx->edges);
 
         auto start = std::chrono::high_resolution_clock::now();
@@ -216,9 +216,9 @@ void benchmark(const std::string& graph, const std::string& outfile) {
         auto ctxUsual = new ContextRatio(g, dsuUsual, RATIO);
         std::cout << "Usual " << runWithTime(ctxUsual) << "\n";
 
-//        auto dsuNUMAMSQueue = new DSU_MSQ(N, node_count);
-//        auto ctxNUMAMSQueue = new Context(&g, dsuNUMAMSQueue, RATIO);
-//        std::cout << "NUMAMSQueue " << runWithTime(ctxNUMAMSQueue) << "\n";
+        auto dsuNUMAMSQueue = new DSU_MSQ(N, node_count);
+        auto ctxNUMAMSQueue = new ContextRatio(g, dsuNUMAMSQueue, RATIO);
+        std::cout << "NUMAMSQueue " << runWithTime(ctxNUMAMSQueue) << "\n";
     }
 
     // auto dsuSeq = new DSU_Sequential(N);
