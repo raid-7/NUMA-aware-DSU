@@ -11,6 +11,7 @@ const int RUNS = 10;
 
 int N = 10000;
 int E = 100000;
+int E2 = 50000;
 int THREADS = 192;
 int node_count = numa_num_configured_nodes();
 int RATIO = 80;
@@ -19,6 +20,7 @@ bool RUN_ALL_RATIOS = false;
 struct Context {
     //std::vector<std::vector<int>> graph;
     std::vector<std::pair<int, int>>* edges;
+    std::vector<std::pair<int, int>>* pre_edges;
     DSU* dsu;
     int ratio; // процент SameSet среди всех запросов
 
@@ -57,9 +59,9 @@ void thread_routine(Context* ctx, int v1, int v2) {
 void run(Context* ctx) {
     std::vector<std::thread> threads;
 
-    int step = E / THREADS;
+    int step = E2 / THREADS;
     for (int i = 0; i < THREADS; i++) {
-        threads.emplace_back(std::thread(thread_routine, ctx, i*step, std::min(i*step + step, E)));
+        threads.emplace_back(std::thread(thread_routine, ctx, i*step, std::min(i*step + step, E2)));
 
         cpu_set_t cpuset;
         CPU_ZERO(&cpuset);
@@ -72,25 +74,31 @@ void run(Context* ctx) {
     }
 }
 
+void preUnite(DSU* dsu, std::vector<std::pair<int, int>>* edges) {
+    for (int i = E2; i < E; i++) {
+        dsu->Union(edges->at(i).first, edges->at(i).second);
+    }
+}
+
 float runWithTime(Context* ctx) {
-    float result = 0;
+    std::vector<float> results(10);
 
     for (int i = 0; i < RUNS; i++) {
-        auto start = std::chrono::high_resolution_clock::now();
-        run(ctx);
-        auto stop = std::chrono::high_resolution_clock::now();
-        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-        result += duration.count();
-
         std::random_device rd;
         std::mt19937 q(rd());
         std::shuffle(ctx->edges->begin(), ctx->edges->end(), q);
 
         ctx->dsu->Init();
+        preUnite(ctx->dsu, ctx->edges);
+
+        auto start = std::chrono::high_resolution_clock::now();
+        run(ctx);
+        auto stop = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+        results[i] = duration.count();
     }
 
-    result = result / RUNS;
-    return result;
+    return (results[4] + results[5]) / 2;
 }
 
 std::vector<std::pair<int, int>>* graphRandom() {
@@ -110,6 +118,7 @@ std::vector<std::pair<int, int>>* graphFromFile(std::string filename) {
     file.open(filename);
 
     file >> N >> E;
+    E2 = E / 2;
     auto g = new std::vector<std::pair<int, int>>();
 
     if (filename[0] == 'W') {
@@ -163,14 +172,6 @@ void runSequential(DSU* dsu, std::vector<std::vector<int>> g) {
     std::cout << "Sequential " << float(durationNUMA.count()) << std::endl;
 }
 
-void preUnite(DSU* dsu) {
-    for (int i = 0; i < E / 3; i++) {
-        int x = random() % N;
-        int y = random() % N;
-        dsu->Union(x, y);
-    }
-}
-
 void benchmark(const std::string& graph, const std::string& outfile) {
     std::vector<std::pair<int, int>>* g;
     if (graph == RANDOM) {
@@ -183,17 +184,17 @@ void benchmark(const std::string& graph, const std::string& outfile) {
         std::ofstream out;
         out.open(outfile);
 
-        for (int i = 40; i <= 100; i += 5) {
+        for (int i = 40; i <= 100; i += 2) {
             RATIO = i;
             std::cerr << i << std::endl;
 
             auto dsuNUMAHelper = new DSU_Helper(N, node_count);
-            preUnite(dsuNUMAHelper);
+            //preUnite(dsuNUMAHelper);
             auto ctxNUMAHelper = new Context(g, dsuNUMAHelper, RATIO);
             out << "NUMAHelper " << RATIO << " " << runWithTime(ctxNUMAHelper) << "\n";
 
             auto dsuUsual = new DSU_Helper(N, 1);
-            preUnite(dsuUsual);
+            //preUnite(dsuUsual);
             auto ctxUsual = new Context(g, dsuUsual, RATIO);
             out << "Usual " << RATIO << " " << runWithTime(ctxUsual) << "\n";
 
@@ -231,6 +232,7 @@ int main(int argc, char* argv[]) {
             auto eStr = argv[3];
             N = std::stoi(nStr);
             E = std::stoi(eStr);
+            E2 = E / 2;
             if (argc > 4) {
                 outfile = argv[4];
             }
