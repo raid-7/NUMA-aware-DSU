@@ -3,6 +3,7 @@
 #include <fstream>
 #include <random>
 #include <algorithm>
+#include "tbb/concurrent_priority_queue.h"
 
 #include "DSU.h"
 
@@ -17,14 +18,12 @@ int node_count = numa_num_configured_nodes();
 int RATIO = 80;
 bool RUN_ALL_RATIOS = false;
 
-struct Context {
-    //std::vector<std::vector<int>> graph;
+struct ContextRatio {
     std::vector<std::pair<int, int>>* edges;
-    std::vector<std::pair<int, int>>* pre_edges;
     DSU* dsu;
     int ratio; // процент SameSet среди всех запросов
 
-    Context(std::vector<std::pair<int, int>>* edges, DSU* dsu, int ratio) : edges(edges), dsu(dsu), ratio(ratio) {};
+    ContextRatio(std::vector<std::pair<int, int>>* edges, DSU* dsu, int ratio) : edges(edges), dsu(dsu), ratio(ratio) {};
 };
 
 int intRand(const int & min, const int & max) {
@@ -35,39 +34,48 @@ int intRand(const int & min, const int & max) {
 
 void doSmth() {
     while (true) {
-        if (intRand(0, 1000) < 10) {
+        if (intRand(0, 1000) < 10)
             break;
-        }
     }
 }
 
-void thread_routine(Context* ctx, int v1, int v2) {
-    int cnt = 0;
-//    for (int v = v1; v < v2; v++) {
-//        for (int i = 0; i < int(ctx->graph[v].size()); i++) {
-//            if (cnt % 100 < ctx->ratio) {
-//                ctx->dsu->SameSet(v, ctx->graph[v][i]);
-//            } else {
-//                ctx->dsu->Union(v, ctx->graph[v][i]);
-//            }
-//            cnt = cnt + 1;
-//            //doSmth();
-//        }
-//    }
-
+void thread_routine(ContextRatio* ctx, int v1, int v2) {
     for (int i = v1; i < v2; i++) {
         auto e = ctx->edges->at(i);
-        if (cnt % 100 < ctx->ratio) {
+        if (i % 100 < ctx->ratio) {
             ctx->dsu->SameSet(e.first, e.second);
         } else {
             ctx->dsu->Union(e.first, e.second);
         }
-        cnt = 1 + cnt;
         doSmth();
     }
 }
 
-void run(Context* ctx) {
+struct ContextMST {
+    DSU* dsu;
+    tbb::concurrent_priority_queue<std::tuple<int, int, int>>* pq;
+
+    ContextMST(DSU* dsu, tbb::concurrent_priority_queue<std::tuple<int, int, int>>* pq) : dsu(dsu), pq(pq) {};
+};
+
+void mst(ContextMST* ctx) {
+    int result = 0;
+    while (!ctx->pq->empty()) {
+        std::tuple<int, int, int> e;
+        auto done = ctx->pq->try_pop(e);
+        if (!done) {
+            break;
+        }
+        int u = std::get<1>(e);
+        int v = std::get<2>(e);
+        if (!ctx->dsu->SameSet(u, v)) {
+            result = std::get<0>(e) + result;
+            ctx->dsu->Union(u, v);
+        }
+    }
+}
+
+void run(ContextRatio* ctx) {
     std::vector<std::thread> threads;
 
     int step = E2 / THREADS;
@@ -91,14 +99,13 @@ void preUnite(DSU* dsu, std::vector<std::pair<int, int>>* edges) {
     }
 }
 
-float runWithTime(Context* ctx) {
+float runWithTime(ContextRatio* ctx) {
     std::vector<float> results(10);
 
     for (int i = 0; i < RUNS; i++) {
         std::random_device rd;
         std::mt19937 q(rd());
         std::shuffle(ctx->edges->begin(), ctx->edges->end(), q);
-
         ctx->dsu->Init();
         preUnite(ctx->dsu, ctx->edges);
 
@@ -110,6 +117,22 @@ float runWithTime(Context* ctx) {
     }
 
     return (results[4] + results[5]) / 2;
+}
+
+void runSequential(DSU* dsu, std::vector<std::vector<int>> g) {
+    auto start = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < int(g.size()); i++) {
+        for (int j = 0; j < int(g[i].size()); j++) {
+            if (i % 100 < RATIO) {
+                dsu->SameSet(i, g[i][j]);
+            } else {
+                dsu->Union(i, g[i][j]);
+            }
+        }
+    }
+    auto stop = std::chrono::high_resolution_clock::now();
+    auto durationNUMA = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+    std::cout << "Sequential " << float(durationNUMA.count()) << std::endl;
 }
 
 std::vector<std::pair<int, int>>* graphRandom() {
@@ -132,55 +155,26 @@ std::vector<std::pair<int, int>>* graphFromFile(std::string filename) {
     E2 = E / 2;
     auto g = new std::vector<std::pair<int, int>>();
 
+    int a, b;
+    char c;
+
     if (filename[0] == 'W') {
         for (int i = 0; i < E; i++) {
-            char c;
             file >> c;
-            int a, b;
             file >> a >> b;
-            if (a > N) {
-                N = a;
-            }
-            if (b > N) {
-                N = b;
-            }
+            N = std::max(N, std::max(a, b));
             g->emplace_back(std::make_pair(a, b));
             file >> a;
         }
     } else {
         for (int i = 0; i < E; i++) {
-            int a, b;
             file >> a >> b;
-            if (a > N) {
-                N = a;
-            }
-            if (b > N) {
-                N = b;
-            }
+            N = std::max(N, std::max(a, b));
             g->emplace_back(std::make_pair(a, b));
         }
     }
 
-    std::random_device rd;
-    std::mt19937 q(rd());
-    std::shuffle(g->begin(), g->end(), q);
     return g;
-}
-
-void runSequential(DSU* dsu, std::vector<std::vector<int>> g) {
-    auto start = std::chrono::high_resolution_clock::now();
-    for (int i = 0; i < int(g.size()); i++) {
-        for (int j = 0; j < int(g[i].size()); j++) {
-            if (i % 100 < RATIO) {
-                dsu->SameSet(i, g[i][j]);
-            } else {
-                dsu->Union(i, g[i][j]);
-            }
-        }
-    }
-    auto stop = std::chrono::high_resolution_clock::now();
-    auto durationNUMA = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-    std::cout << "Sequential " << float(durationNUMA.count()) << std::endl;
 }
 
 void benchmark(const std::string& graph, const std::string& outfile) {
@@ -195,18 +189,16 @@ void benchmark(const std::string& graph, const std::string& outfile) {
         std::ofstream out;
         out.open(outfile);
 
-        for (int i = 40; i <= 100; i += 2) {
+        for (int i = 70; i <= 100; i += 2) {
             RATIO = i;
             std::cerr << i << std::endl;
 
             auto dsuNUMAHelper = new DSU_Helper(N, node_count);
-            //preUnite(dsuNUMAHelper);
-            auto ctxNUMAHelper = new Context(g, dsuNUMAHelper, RATIO);
+            auto ctxNUMAHelper = new ContextRatio(g, dsuNUMAHelper, RATIO);
             out << "NUMAHelper " << RATIO << " " << runWithTime(ctxNUMAHelper) << "\n";
 
             auto dsuUsual = new DSU_Helper(N, 1);
-            //preUnite(dsuUsual);
-            auto ctxUsual = new Context(g, dsuUsual, RATIO);
+            auto ctxUsual = new ContextRatio(g, dsuUsual, RATIO);
             out << "Usual " << RATIO << " " << runWithTime(ctxUsual) << "\n";
 
 //            auto dsuNUMAMSQueue = new DSU_MSQ(N, node_count);
@@ -217,11 +209,11 @@ void benchmark(const std::string& graph, const std::string& outfile) {
         out.close();
     } else {
         auto dsuNUMAHelper = new DSU_Helper(N, node_count);
-        auto ctxNUMAHelper = new Context(g, dsuNUMAHelper, RATIO);
+        auto ctxNUMAHelper = new ContextRatio(g, dsuNUMAHelper, RATIO);
         std::cout << "NUMAHelper " << runWithTime(ctxNUMAHelper) << "\n";
 
         auto dsuUsual = new DSU_Helper(N, 1);
-        auto ctxUsual = new Context(g, dsuUsual, RATIO);
+        auto ctxUsual = new ContextRatio(g, dsuUsual, RATIO);
         std::cout << "Usual " << runWithTime(ctxUsual) << "\n";
 
 //        auto dsuNUMAMSQueue = new DSU_MSQ(N, node_count);
@@ -235,7 +227,7 @@ void benchmark(const std::string& graph, const std::string& outfile) {
 
 int main(int argc, char* argv[]) {
     std::string graph = RANDOM;
-    std::string outfile = "";
+    std::string outfile;
     if (argc > 1) {
         graph = argv[1];
         if (graph == RANDOM) {
