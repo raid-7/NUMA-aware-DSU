@@ -161,8 +161,9 @@ public:
 
 private:
     void old_unions(int node) {
+        __int64_t uv;
         while (true) {
-            auto uv = to_union.load(std::memory_order_acquire);
+            uv = to_union.load(std::memory_order_acquire);
             if (uv == 0) {
                 break;
             }
@@ -240,9 +241,9 @@ public:
                 data[i][j].store(j);
             }
 
-            auto addr = (tbb::concurrent_queue<std::pair<int, int>>*) numa_alloc_onnode(sizeof(tbb::concurrent_queue<std::pair<int, int>>), i);
+            auto addr = (tbb::concurrent_queue<__int64_t>*) numa_alloc_onnode(sizeof(tbb::concurrent_queue<__int64_t>), i);
             //queues[i]->Init(i);
-            queues[i] = new (addr) tbb::concurrent_queue<std::pair<int, int>>();
+            queues[i] = new (addr) tbb::concurrent_queue<__int64_t>();
         }
     }
 
@@ -258,9 +259,9 @@ public:
                 data[i][j].store(j);
             }
 
-            auto addr = (tbb::concurrent_queue<std::pair<int, int>>*) numa_alloc_onnode(sizeof(tbb::concurrent_queue<std::pair<int, int>>), i);
+            auto addr = (tbb::concurrent_queue<__int64_t>*) numa_alloc_onnode(sizeof(tbb::concurrent_queue<__int64_t>), i);
             //queues[i]->Init(i);
-            queues[i] = new (addr) tbb::concurrent_queue<std::pair<int, int>>();
+            queues[i] = new (addr) tbb::concurrent_queue<__int64_t>();
         }
     }
 
@@ -268,7 +269,8 @@ public:
         for (int i = 0; i < node_count; i++) {
             numa_free(data[i], sizeof(int) * size);
             //numa_free(queues[i], sizeof(FAAArrayQueue<std::pair<int, int>>));
-            numa_free(queues[i], sizeof(tbb::concurrent_queue<std::pair<int, int>>));
+            //numa_free(queues[i], sizeof(tbb::concurrent_queue<std::pair<int, int>>));
+            numa_free(queues[i], sizeof(tbb::concurrent_queue<__int64_t>));
         }
     }
 
@@ -282,9 +284,11 @@ public:
             if (i == node) {
                 continue;
             }
-            auto p = std::make_pair(u, v);
+            //auto p = std::make_pair(u, v);
             //queues[i]->enqueue(&p, get_tid());
-            queues[i]->push(p);
+            //queues[i]->push(std::make_pair(u, v));
+            __int64_t uv = (__int64_t(u) << 32) + v;
+            queues[i]->push(uv);
         }
 
         union_(u, v, node);
@@ -322,32 +326,36 @@ public:
             if (u_p == v_p) {
                 return true;
             }
-            if (data[node][u_p].load() == u_p) {
+            if (data[node][u_p].load(std::memory_order_acquire) == u_p) {
                 return false;
             }
         }
     }
 private:
     void old_unions(int node) {
+        //std::pair<int, int> p;
+        __int64_t uv;
         while (true) {
             //auto p = queues[node]->dequeue(get_tid());
 //            if (p == nullptr) {
 //                break;
 //            }
-            std::pair<int, int> p;
-            auto done = queues[node]->try_pop(p);
+            auto done = queues[node]->try_pop(uv);
             if (!done) {
                 break;
             }
-            union_(p.first, p.second, node);
+            __int64_t u = uv >> 32;
+            __int64_t v = uv - (u << 32);
+            //union_(p.first, p.second, node);
+            union_(u, v, node);
         }
     }
 
     int find(int u, int node) {
         auto cur = u;
         while (true) {
-            auto par = data[node][cur].load();
-            auto grand = data[node][par].load();
+            auto par = data[node][cur].load(std::memory_order_relaxed);
+            auto grand = data[node][par].load(std::memory_order_relaxed);
             if (par == grand) {
                 return par;
             } else {
@@ -367,7 +375,7 @@ private:
             if (u_p == v_p) {
                 return;
             }
-            if (rand() % 2) {
+            if (u_p < v_p) {
                 if (data[node][u_p].compare_exchange_weak(u_p, v_p)) {
                     return;
                 }
@@ -393,5 +401,5 @@ private:
     std::vector<std::atomic<int>*> data;
 
     //std::vector<FAAArrayQueue<std::pair<int, int>>*> queues;
-    std::vector<tbb::concurrent_queue<std::pair<int, int>>*> queues;
+    std::vector<tbb::concurrent_queue<__int64_t>*> queues;
 };
