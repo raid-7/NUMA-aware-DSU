@@ -189,7 +189,7 @@ void benchmark(const std::string& graph, const std::string& outfile) {
         std::ofstream out;
         out.open(outfile);
 
-        for (int i = 70; i <= 100; i += 2) {
+        for (int i = 50; i <= 100; i += 2) {
             RATIO = i;
             std::cerr << i << std::endl;
 
