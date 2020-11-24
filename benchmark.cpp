@@ -64,7 +64,7 @@ void run(ContextRatio* ctx) {
 
         cpu_set_t cpuset;
         CPU_ZERO(&cpuset);
-         CPU_SET(i / 2, &cpuset);
+        CPU_SET(i / 2, &cpuset);
         pthread_setaffinity_np(threads[i].native_handle(), sizeof(cpu_set_t), &cpuset);
     }
 
@@ -155,8 +155,8 @@ void benchmark(const std::string& graph, const std::string& outfile) {
         g = graphFromFile(graph);
     }
 
-    std::vector<std::vector<float>> resultsNUMA(RUNS);
-    std::vector<std::vector<float>> resultsUsual(RUNS);
+    std::vector<std::vector<float>> resultsNUMA;
+    std::vector<std::vector<float>> resultsUsual;
     for (int r = 0; r < RUNS; r++) {
         if (RUN_ALL_RATIOS) {
             std::ofstream out;
