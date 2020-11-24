@@ -89,8 +89,8 @@ float runWithTime(ContextRatio* ctx) {
 //    std::vector<float> results(RUNS);
 
 //    for (int i = 0; i < RUNS; i++) {
-        ctx->dsu->ReInit();
-        shuffle(ctx->edges);
+        //ctx->dsu->ReInit();
+        //shuffle(ctx->edges);
         preUnite(ctx->dsu, ctx->edges);
 
         auto start = std::chrono::high_resolution_clock::now();
@@ -161,6 +161,7 @@ void benchmark(const std::string& graph, const std::string& outfile) {
         if (RUN_ALL_RATIOS) {
             std::ofstream out;
             out.open(outfile + std::to_string(r));
+            shuffle(g);
 
             for (int i = FIRST_RATIO; i <= LAST_RATIO; i += RATIO_STEP) {
                 RATIO = i;
