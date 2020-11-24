@@ -8,7 +8,7 @@
 #include "DSU.h"
 
 const std::string RANDOM = "random";
-const int RUNS = 10;
+const int RUNS = 5;
 
 int N = 10000;
 int E = 100000;
@@ -42,7 +42,7 @@ void doSmth() {
 void thread_routine(ContextRatio* ctx, int v1, int v2) {
     for (int i = v1; i < v2; i++) {
         auto e = ctx->edges->at(i);
-        if (i % 100 < ctx->ratio) {
+        if (intRand(0, 100) < ctx->ratio) {
             ctx->dsu->SameSet(e.first, e.second);
         } else {
             ctx->dsu->Union(e.first, e.second);
@@ -84,7 +84,7 @@ void run(ContextRatio* ctx) {
 
         cpu_set_t cpuset;
         CPU_ZERO(&cpuset);
-        CPU_SET(i, &cpuset);
+         CPU_SET(i / 2, &cpuset);
         pthread_setaffinity_np(threads[i].native_handle(), sizeof(cpu_set_t), &cpuset);
     }
 
@@ -100,12 +100,12 @@ void preUnite(DSU* dsu, std::vector<std::pair<int, int>>* edges) {
 }
 
 float runWithTime(ContextRatio* ctx) {
-    std::vector<float> results(10);
+    std::vector<float> results(RUNS);
 
     for (int i = 0; i < RUNS; i++) {
-        std::random_device rd;
-        std::mt19937 q(rd());
-        std::shuffle(ctx->edges->begin(), ctx->edges->end(), q);
+//        std::random_device rd;
+//        std::mt19937 q(rd());
+//        std::shuffle(ctx->edges->begin(), ctx->edges->end(), q);
         ctx->dsu->ReInit();
         preUnite(ctx->dsu, ctx->edges);
 
@@ -116,7 +116,8 @@ float runWithTime(ContextRatio* ctx) {
         results[i] = duration.count();
     }
 
-    return (results[4] + results[5]) / 2;
+    std::sort(results.begin(), results.end());
+    return results[RUNS / 2];
 }
 
 void runSequential(DSU* dsu, std::vector<std::vector<int>> g) {
@@ -189,7 +190,7 @@ void benchmark(const std::string& graph, const std::string& outfile) {
         std::ofstream out;
         out.open(outfile);
 
-        for (int i = 50; i <= 100; i += 2) {
+        for (int i = 50; i <= 100; i += 5) {
             RATIO = i;
             std::cerr << i << std::endl;
 
@@ -216,7 +217,7 @@ void benchmark(const std::string& graph, const std::string& outfile) {
         auto ctxUsual = new ContextRatio(g, dsuUsual, RATIO);
         std::cout << "Usual " << runWithTime(ctxUsual) << "\n";
 
-        auto dsuNUMAMSQueue = new DSU_MSQ(N, node_count);
+        auto dsuNUMAMSQueue = new DSU_Queue(N, node_count);
         auto ctxNUMAMSQueue = new ContextRatio(g, dsuNUMAMSQueue, RATIO);
         std::cout << "NUMAMSQueue " << runWithTime(ctxNUMAMSQueue) << "\n";
     }

@@ -230,9 +230,9 @@ private:
     std::atomic<__int64_t> to_union;
 };
 
-class DSU_MSQ : public DSU {
+class DSU_Queue : public DSU {
 public:
-    DSU_MSQ(int size, int node_count) : size(size), node_count(node_count) {
+    DSU_Queue(int size, int node_count) : size(size), node_count(node_count) {
         data.resize(node_count);
         queues.resize(node_count);
         for (int i = 0; i < node_count; i++) {
@@ -265,7 +265,7 @@ public:
         }
     }
 
-    ~DSU_MSQ() {
+    ~DSU_Queue() {
         for (int i = 0; i < node_count; i++) {
             numa_free(data[i], sizeof(int) * size);
             //numa_free(queues[i], sizeof(FAAArrayQueue<std::pair<int, int>>));
