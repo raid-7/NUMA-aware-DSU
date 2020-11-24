@@ -46,7 +46,7 @@ void doSmth() {
 void thread_routine(ContextRatio* ctx, int v1, int v2) {
     for (int i = v1; i < v2; i++) {
         auto e = ctx->edges->at(i);
-        if (intRand(0, 100) < ctx->ratio) {
+        if (i % 100 < ctx->ratio) {
             ctx->dsu->SameSet(e.first, e.second);
         } else {
             ctx->dsu->Union(e.first, e.second);
