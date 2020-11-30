@@ -80,12 +80,6 @@ public:
 
     void ReInit() override {
         for (int i = 0; i < node_count; i++) {
-            numa_free(data[i], sizeof(int) * size);
-        }
-
-        data.resize(node_count);
-        for (int i = 0; i < node_count; i++) {
-            data[i] = (std::atomic<int> *) numa_alloc_onnode(sizeof(std::atomic<int>) * size, i);
             for (int j = 0; j < size; j++) {
                 data[i][j].store(j);
             }
@@ -264,12 +258,12 @@ public:
 
     void ReInit() {
         for (int i = 0; i < node_count; i++) {
-            numa_free(data[i], sizeof(int) * size);
+            //numa_free(data[i], sizeof(int) * size);
             //numa_free(queues[i], sizeof(FAAArrayQueue<std::pair<int, int>>));
             numa_free(queues[i], sizeof(tbb::concurrent_queue<std::pair<int, int>>));
         }
         for (int i = 0; i < node_count; i++) {
-            data[i] = (std::atomic<int> *) numa_alloc_onnode(sizeof(std::atomic<int>) * size, i);
+            //data[i] = (std::atomic<int> *) numa_alloc_onnode(sizeof(std::atomic<int>) * size, i);
             for (int j = 0; j < size; j++) {
                 data[i][j].store(j);
             }
@@ -417,4 +411,142 @@ private:
 
     //std::vector<FAAArrayQueue<std::pair<int, int>>*> queues;
     std::vector<tbb::concurrent_queue<__int64_t>*> queues;
+};
+
+
+class DSU_NO_SYNC : public DSU {
+public:
+    DSU_NO_SYNC(int size, int node_count) :size(size), node_count(node_count) {
+        data.resize(node_count);
+        for (int i = 0; i < node_count; i++) {
+            data[i] = (std::atomic<int> *) numa_alloc_onnode(sizeof(std::atomic<int>) * size, i);
+            for (int j = 0; j < size; j++) {
+                data[i][j].store(j);
+            }
+        }
+    }
+
+    void ReInit() override {
+        for (int i = 0; i < node_count; i++) {
+            for (int j = 0; j < size; j++) {
+                data[i][j].store(j);
+            }
+        }
+    }
+
+    ~DSU_NO_SYNC() {
+        for (int i = 0; i < node_count; i++) {
+            numa_free(data[i], sizeof(int) * size);
+        }
+    }
+
+    void Union(int u, int v) override {
+        auto node = numa_node_of_cpu(sched_getcpu());
+        if (node_count == 1) {
+            node = 0;
+        }
+
+        for (int i = 0; i < node_count; i++) {
+            union_(u, v, i, (i == node));
+        }
+    }
+
+    bool SameSet(int u, int v) override {
+        auto node = numa_node_of_cpu(sched_getcpu());
+        if (node_count == 1) {
+            node = 0;
+        }
+
+        return SameSetOnNode(u, v, node);
+    }
+
+    int Find(int u) override {
+        auto node = numa_node_of_cpu(sched_getcpu());
+        if (node_count == 1) {
+            node = 0;
+        }
+
+        return find(u, node, true);
+    }
+
+    bool SameSetOnNode(int u, int v, int node) {
+        auto u_p = u;
+        auto v_p = v;
+        while (true) {
+            u_p = find(u_p, node, true);
+            v_p = find(v_p, node, true);
+            if (u_p == v_p) {
+                return true;
+            }
+            if (data[node][u_p].load(std::memory_order_acquire) == u_p) {
+                return false;
+            }
+        }
+    }
+
+private:
+    int find(int u, int node, bool is_local) {
+        if (is_local) {
+            auto cur = u;
+            while (true) {
+                auto par = data[node][cur].load(std::memory_order_relaxed);
+                auto grand = data[node][par].load(std::memory_order_relaxed);
+                if (par == grand) {
+                    return par;
+                } else {
+                    data[node][cur].compare_exchange_weak(par, grand);
+                }
+                cur = par;
+            }
+        } else {
+            auto cur = u;
+            while (true) {
+                auto par = data[node][cur].load(std::memory_order_relaxed);
+                if (par == cur) {
+                    return par;
+                }
+                cur = par;
+            }
+        }
+    }
+
+    void union_(int u, int v, int node, bool is_local) {
+        int u_p = u;
+        int v_p = v;
+        if (!is_local) {
+            u_p = find(u_p, numa_node_of_cpu(sched_getcpu()), true);
+            v_p = find(v_p, numa_node_of_cpu(sched_getcpu()), true);
+            if (u_p < v_p) {
+                if (u_p < v_p) {
+                    if (data[node][u_p].compare_exchange_weak(u_p, v_p)) {
+                        return;
+                    }
+                } else {
+                    if (data[node][v_p].compare_exchange_weak(v_p, u_p)) {
+                        return;
+                    }
+                }
+            }
+        }
+        while (true) {
+            u_p = find(u_p, node, is_local);
+            v_p = find(v_p, node, is_local);
+            if (u_p == v_p) {
+                return;
+            }
+            if (u_p < v_p) {
+                if (data[node][u_p].compare_exchange_weak(u_p, v_p)) {
+                    return;
+                }
+            } else {
+                if (data[node][v_p].compare_exchange_weak(v_p, u_p)) {
+                    return;
+                }
+            }
+        }
+    }
+
+    int size;
+    int node_count;
+    std::vector<std::atomic<int>*> data;
 };
