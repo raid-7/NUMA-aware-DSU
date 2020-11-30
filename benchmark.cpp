@@ -64,7 +64,7 @@ void run(ContextRatio* ctx) {
 
         cpu_set_t cpuset;
         CPU_ZERO(&cpuset);
-        CPU_SET(i / 2, &cpuset);
+        CPU_SET(i, &cpuset);
         pthread_setaffinity_np(threads[i].native_handle(), sizeof(cpu_set_t), &cpuset);
     }
 
