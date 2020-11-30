@@ -13,7 +13,7 @@ const int RUNS = 5;
 int N = 10000;
 int E = 100000;
 int E2 = 50000;
-int THREADS = 192;
+int THREADS = 96;
 int node_count = numa_num_configured_nodes();
 
 int RATIO = 80;
