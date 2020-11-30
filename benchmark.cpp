@@ -161,7 +161,7 @@ void benchmark(const std::string& graph, const std::string& outfile) {
         if (RUN_ALL_RATIOS) {
             std::ofstream out;
             out.open(outfile + std::to_string(r));
-            shuffle(g);
+            //shuffle(g);
 
             for (int i = FIRST_RATIO; i <= LAST_RATIO; i += RATIO_STEP) {
                 RATIO = i;

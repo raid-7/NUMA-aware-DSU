@@ -206,6 +206,21 @@ private:
     void union_(int u, int v, int node, bool is_local) {
         int u_p = u;
         int v_p = v;
+        if (!is_local) {
+            u_p = find(u_p, numa_node_of_cpu(sched_getcpu()), true);
+            v_p = find(v_p, numa_node_of_cpu(sched_getcpu()), true);
+            if (u_p < v_p) {
+                if (u_p < v_p) {
+                    if (data[node][u_p].compare_exchange_weak(u_p, v_p)) {
+                        return;
+                    }
+                } else {
+                    if (data[node][v_p].compare_exchange_weak(v_p, u_p)) {
+                        return;
+                    }
+                }
+            }
+        }
         while (true) {
             u_p = find(u_p, node, is_local);
             v_p = find(v_p, node, is_local);
