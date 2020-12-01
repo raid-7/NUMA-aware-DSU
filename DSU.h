@@ -135,8 +135,16 @@ public:
     }
 
     bool SameSetOnNode(int u, int v, int node) {
+        if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
+            return true;
+        }
+
         if (node_count > 1) {
             old_unions(node);
+        }
+
+        if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
+            return true;
         }
 
         auto u_p = u;
@@ -198,6 +206,9 @@ private:
     }
 
     void union_(int u, int v, int node, bool is_local) {
+        if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
+            return;
+        }
         int u_p = u;
         int v_p = v;
         if (!is_local) {
@@ -442,9 +453,6 @@ public:
 
     void Union(int u, int v) override {
         auto node = numa_node_of_cpu(sched_getcpu());
-        if (node_count == 1) {
-            node = 0;
-        }
 
         for (int i = 0; i < node_count; i++) {
             union_(u, v, i, (i == node));
@@ -453,11 +461,21 @@ public:
 
     bool SameSet(int u, int v) override {
         auto node = numa_node_of_cpu(sched_getcpu());
-        if (node_count == 1) {
-            node = 0;
+        if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
+            return true;
         }
-
-        return SameSetOnNode(u, v, node);
+        auto u_p = u;
+        auto v_p = v;
+        while (true) {
+            u_p = find(u_p, node, true);
+            v_p = find(v_p, node, true);
+            if (u_p == v_p) {
+                return true;
+            }
+            if (data[node][u_p].load(std::memory_order_acquire) == u_p) {
+                return false;
+            }
+        }
     }
 
     int Find(int u) override {
@@ -511,11 +529,16 @@ private:
     }
 
     void union_(int u, int v, int node, bool is_local) {
+        if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
+            return;
+        }
+
         int u_p = u;
         int v_p = v;
         if (!is_local) {
-            u_p = find(u_p, numa_node_of_cpu(sched_getcpu()), true);
-            v_p = find(v_p, numa_node_of_cpu(sched_getcpu()), true);
+            auto cur_node = numa_node_of_cpu(sched_getcpu());
+            u_p = find(u_p, cur_node, true);
+            v_p = find(v_p, cur_node, true);
             if (u_p < v_p) {
                 if (u_p < v_p) {
                     if (data[node][u_p].compare_exchange_weak(u_p, v_p)) {
@@ -554,7 +577,7 @@ private:
 class DSU_USUAL : public DSU {
 public:
     DSU_USUAL(int size) :size(size) {
-        data = (std::atomic<int> *) numa_alloc_onnode(sizeof(std::atomic<int>) * size, 0);
+        data = (std::atomic<int> *) malloc(sizeof(std::atomic<int>) * size);
         for (int i = 0; i < size; i++) {
             data[i].store(i);
         }
@@ -567,7 +590,7 @@ public:
     }
 
     ~DSU_USUAL() {
-        numa_free(data, sizeof(int) * size);
+        free(data);
     }
 
     void Union(int u, int v) override {
