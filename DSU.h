@@ -463,6 +463,8 @@ public:
         auto node = numa_node_of_cpu(sched_getcpu());
         if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
             return true;
+        } else {
+            return false;
         }
         auto u_p = u;
         auto v_p = v;
@@ -617,6 +619,8 @@ public:
     bool SameSet(int u, int v) override {
         if (data[u].load(std::memory_order_relaxed) == data[v].load(std::memory_order_relaxed)) {
             return true;
+        } else {
+            return false;
         }
         auto u_p = u;
         auto v_p = v;
