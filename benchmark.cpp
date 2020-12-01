@@ -18,7 +18,7 @@ int node_count = numa_num_configured_nodes();
 
 int RATIO = 80;
 bool RUN_ALL_RATIOS = false;
-int FIRST_RATIO = 0;
+int FIRST_RATIO = 100;
 int LAST_RATIO = 100;
 int RATIO_STEP = 4;
 
@@ -46,11 +46,11 @@ void doSmth() {
 void thread_routine(ContextRatio* ctx, int v1, int v2) {
     for (int i = v1; i < v2; i++) {
         auto e = ctx->edges->at(i);
-        if (i % 100 < ctx->ratio) {
+        //if (i % 100 < ctx->ratio) {
             ctx->dsu->SameSet(e.first, e.second);
-        } else {
-            ctx->dsu->Union(e.first, e.second);
-        }
+        //} else {
+        //    ctx->dsu->Union(e.first, e.second);
+       // }
         doSmth();
     }
 }
