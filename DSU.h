@@ -615,6 +615,9 @@ public:
     }
 
     bool SameSet(int u, int v) override {
+        if (data[u].load(std::memory_order_relaxed) == data[v].load(std::memory_order_relaxed)) {
+            return true;
+        }
         auto u_p = u;
         auto v_p = v;
         while (true) {

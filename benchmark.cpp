@@ -8,7 +8,7 @@
 #include "DSU.h"
 
 const std::string RANDOM = "random";
-const int RUNS = 5;
+const int RUNS = 1;
 
 int N = 10000;
 int E = 100000;
@@ -18,9 +18,9 @@ int node_count = numa_num_configured_nodes();
 
 int RATIO = 80;
 bool RUN_ALL_RATIOS = false;
-int FIRST_RATIO = 50;
+int FIRST_RATIO = 0;
 int LAST_RATIO = 100;
-int RATIO_STEP = 2;
+int RATIO_STEP = 4;
 
 struct ContextRatio {
     std::vector<std::pair<int, int>>* edges;
@@ -91,7 +91,7 @@ float runWithTime(ContextRatio* ctx) {
 //    for (int i = 0; i < RUNS; i++) {
         //ctx->dsu->ReInit();
         //shuffle(ctx->edges);
-        preUnite(ctx->dsu, ctx->edges);
+        //preUnite(ctx->dsu, ctx->edges);
 
         auto start = std::chrono::high_resolution_clock::now();
         run(ctx);
@@ -207,54 +207,54 @@ void benchmark(const std::string& graph, const std::string& outfile) {
             std::cout << "NUMAMSQueue " << runWithTime(ctxNUMAMSQueue) << "\n";
         }
     }
-    std::ofstream out_avg;
-    out_avg.open(outfile + "_average");
-    std::ofstream out_min;
-    out_min.open(outfile + "_min");
-    std::ofstream out_max;
-    out_max.open(outfile + "_max");
-    int id = 0;
-    for (int i = FIRST_RATIO; i <= LAST_RATIO; i += RATIO_STEP) {
-        float avgNUMA = 0;
-        float avgUsual = 0;
-        float avgNoSync = 0;
-        float minNUMA = resultsNUMA[0][id];
-        float minUsual = resultsUsual[0][id];
-        float minNoSync = resultsNoSync[0][id];
-        float maxNUMA = 0;
-        float maxUsual = 0;
-        float maxNoSync = 0;
-        for (int r = 0; r < RUNS; r++) {
-            avgNUMA += resultsNUMA[r][id];
-            avgUsual += resultsUsual[r][id];
-            avgNoSync += resultsNoSync[r][id];
-            minNUMA = std::min(resultsNUMA[r][id], minNUMA);
-            minUsual = std::min(resultsUsual[r][id], minUsual);
-            minNoSync = std::min(resultsNoSync[r][id], minNoSync);
-            maxNUMA = std::max(resultsNUMA[r][id], maxNUMA);
-            maxUsual = std::max(resultsUsual[r][id], maxUsual);
-            maxNoSync = std::max(resultsNoSync[r][id], maxNoSync);
-        }
-        avgNUMA = avgNUMA / RUNS;
-        avgUsual = avgUsual / RUNS;
-        avgNoSync = avgNoSync / RUNS;
-        out_avg << "NUMAHelper " << i << " " << avgNUMA << "\n";
-        out_avg << "Usual " << i << " " << avgUsual << "\n";
-        out_avg << "NoSync " << i << " " << avgNoSync << "\n";
-
-        out_min << "NUMAHelper " << i << " " << minNUMA << "\n";
-        out_min << "Usual " << i << " " << minUsual << "\n";
-        out_min << "NoSync " << i << " " << minNoSync << "\n";
-
-        out_max << "NUMAHelper " << i << " " << maxNUMA << "\n";
-        out_max << "Usual " << i << " " << maxUsual << "\n";
-        out_max << "NoSync " << i << " " << maxNoSync << "\n";
-
-        id++;
-    }
-    out_avg.close();
-    out_min.close();
-    out_max.close();
+//    std::ofstream out_avg;
+//    out_avg.open(outfile + "_average");
+//    std::ofstream out_min;
+//    out_min.open(outfile + "_min");
+//    std::ofstream out_max;
+//    out_max.open(outfile + "_max");
+//    int id = 0;
+//    for (int i = FIRST_RATIO; i <= LAST_RATIO; i += RATIO_STEP) {
+//        float avgNUMA = 0;
+//        float avgUsual = 0;
+//        float avgNoSync = 0;
+//        float minNUMA = resultsNUMA[0][id];
+//        float minUsual = resultsUsual[0][id];
+//        float minNoSync = resultsNoSync[0][id];
+//        float maxNUMA = 0;
+//        float maxUsual = 0;
+//        float maxNoSync = 0;
+//        for (int r = 0; r < RUNS; r++) {
+//            avgNUMA += resultsNUMA[r][id];
+//            avgUsual += resultsUsual[r][id];
+//            avgNoSync += resultsNoSync[r][id];
+//            minNUMA = std::min(resultsNUMA[r][id], minNUMA);
+//            minUsual = std::min(resultsUsual[r][id], minUsual);
+//            minNoSync = std::min(resultsNoSync[r][id], minNoSync);
+//            maxNUMA = std::max(resultsNUMA[r][id], maxNUMA);
+//            maxUsual = std::max(resultsUsual[r][id], maxUsual);
+//            maxNoSync = std::max(resultsNoSync[r][id], maxNoSync);
+//        }
+//        avgNUMA = avgNUMA / RUNS;
+//        avgUsual = avgUsual / RUNS;
+//        avgNoSync = avgNoSync / RUNS;
+//        out_avg << "NUMAHelper " << i << " " << avgNUMA << "\n";
+//        out_avg << "Usual " << i << " " << avgUsual << "\n";
+//        out_avg << "NoSync " << i << " " << avgNoSync << "\n";
+//
+//        out_min << "NUMAHelper " << i << " " << minNUMA << "\n";
+//        out_min << "Usual " << i << " " << minUsual << "\n";
+//        out_min << "NoSync " << i << " " << minNoSync << "\n";
+//
+//        out_max << "NUMAHelper " << i << " " << maxNUMA << "\n";
+//        out_max << "Usual " << i << " " << maxUsual << "\n";
+//        out_max << "NoSync " << i << " " << maxNoSync << "\n";
+//
+//        id++;
+//    }
+//    out_avg.close();
+//    out_min.close();
+//    out_max.close();
 
     // auto dsuSeq = new DSU_Sequential(N);
     // runSequential(dsuSeq, g);
