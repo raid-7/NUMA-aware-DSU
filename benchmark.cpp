@@ -176,7 +176,7 @@ void benchmark(const std::string& graph, const std::string& outfile) {
                 //std::cerr << res << " ";
                 resultsNUMA[r].emplace_back(res);
 
-                auto dsuUsual = new DSU_Helper(N, 1);
+                auto dsuUsual = new DSU_USUAL(N);
                 ctx->dsu = dsuUsual;// = new ContextRatio(g, dsuUsual, RATIO);
                 res = runWithTime(ctx);
                 out << "Usual " << RATIO << " " << res << "\n";
@@ -216,9 +216,9 @@ void benchmark(const std::string& graph, const std::string& outfile) {
         float avgNUMA = 0;
         float avgUsual = 0;
         float avgNoSync = 0;
-        float minNUMA = 0;
-        float minUsual = 0;
-        float minNoSync = 0;
+        float minNUMA = resultsNUMA[0][id];
+        float minUsual = resultsUsual[0][id];
+        float minNoSync = resultsNoSync[0][id];
         float maxNUMA = 0;
         float maxUsual = 0;
         float maxNoSync = 0;
