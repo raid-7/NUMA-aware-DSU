@@ -176,7 +176,7 @@ void benchmark(const std::string& graph, const std::string& outfile) {
                 //std::cerr << res << " ";
                 resultsNUMA[r].emplace_back(res);
 
-                auto dsuUsual = new DSU_USUAL(N);
+                auto dsuUsual = new DSU_NO_SYNC(N, 1);
                 ctx->dsu = dsuUsual;// = new ContextRatio(g, dsuUsual, RATIO);
                 res = runWithTime(ctx);
                 out << "Usual " << RATIO << " " << res << "\n";
