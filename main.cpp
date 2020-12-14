@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cassert>
+#include <chrono>
 
 // найти больше функций или просто почитать можно тут: https://linux.die.net/man/3/numa
 #include <numa.h>
@@ -17,14 +18,58 @@ void membind_VS_mems_allowed() {
         std::cout << numa_bitmask_isbitset(mask2, i);
     }
     std::cout << std::endl << std::endl;
+
+    // насколько я понимаю, начальное состояние этих масок одинаковое
+    // membind-маску можно менять ручками через numa_set_membind()
+    // в доке можно почитать более развернутую вресию и без тени моей интерпретации
 }
 
-// Тест: выделим память на каждой ноде и проверим скорость доступа к локальной и не локальной памяти процессора
+// проверяем, что выполняемся на ноде с номером id
+void checkRunningNode(int id) {
+    auto m = numa_get_run_node_mask();
+    assert(numa_bitmask_isbitset(m, id));
+    for (int i = 1; i < int(m->size); i++) {
+        assert(!numa_bitmask_isbitset(m, i));
+    }
+}
+
+void fill(int N, int* data) {
+    for (int i = 0; i < N; i++) {
+        data[i] = std::rand() % 10;
+    }
+}
+
+int sum(int N, int* data) {
+    int sum = 0;
+    for (int i = 0; i < N; i++) {
+        sum += data[i];
+    }
+    return sum;
+}
+
+// Тест: выделим на каждой ноде большой массив и проверим скорость доступа к локальной и не локальной памяти процессора
 void test() {
+    const int N = 100000000;
+    // будем выполняться на первой ноде
+    numa_run_on_node(0);
+    checkRunningNode(0);
+
     // проверим, что мы можем аллоцировать память на нодах
     // numa_get_membind возвращает маску по нодам
-
-    //auto mask = numa_get_membind();
+    auto mask = numa_get_membind();
+    for (int i = 0; i < int(mask->size); i++) {
+        if (numa_bitmask_isbitset(mask, i)) {
+            auto data = (int*) numa_alloc_onnode(sizeof(int) * N, i);
+            auto start = std::chrono::high_resolution_clock::now();
+            {
+                fill(N, data);
+                sum(N, data);
+            }
+            auto stop = std::chrono::high_resolution_clock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+            std::cout << "Time for node " << i << ": " << duration.count() << std::endl;
+        }
+    }
 }
 
 
@@ -37,14 +82,14 @@ int main() {
         std::cout << "Number of nodes in the system: " << numa_num_possible_nodes() << std::endl;
         // вместо запроса числа нод можно спросить максимальный номер ядра
         // не знаю зачем это может быть нужно
-        assert(numa_num_possible_nodes() == numa_max_possible_node() - 1);
+        // +1, тк нумерация с нуля
+        assert(numa_num_possible_nodes() == numa_max_possible_node() + 1);
 
         // то, что обычно нужно
         std::cout << "Number of available nodes: " << numa_num_configured_nodes() << std::endl;
 
-        // сравним работу двух фоункций, проверяющих доступность памяти
-        membind_VS_mems_allowed();
-
+        // сравним работу двух фоункций, проверяющих доступность памяти для аллокации
+        // membind_VS_mems_allowed();
 
 
         test();
