@@ -39,17 +39,18 @@ void fill(int N, int* data) {
     }
 }
 
-int sum(int N, int* data) {
-    int sum = 0;
+int process(int N, int* data) {
+    int result = 0;
     for (int i = 0; i < N; i++) {
-        sum += data[i];
+        result += data[i];
+        result = result % data[i];
     }
-    return sum;
+    return result;
 }
 
 // Тест: выделим на каждой ноде большой массив и проверим скорость доступа к локальной и не локальной памяти процессора
 void test() {
-    const int N = 100000000;
+    const int N = 1e9;
     // будем выполняться на первой ноде
     numa_run_on_node(0);
     checkRunningNode(0);
@@ -63,7 +64,7 @@ void test() {
             auto start = std::chrono::high_resolution_clock::now();
             {
                 fill(N, data);
-                sum(N, data);
+                process(N, data);
             }
             auto stop = std::chrono::high_resolution_clock::now();
             auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
