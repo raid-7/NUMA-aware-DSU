@@ -28,8 +28,10 @@ void membind_VS_mems_allowed() {
 void checkRunningNode(int id) {
     auto m = numa_get_run_node_mask();
     assert(numa_bitmask_isbitset(m, id));
-    for (int i = 1; i < int(m->size); i++) {
-        assert(!numa_bitmask_isbitset(m, i));
+    for (int i = 0; i < int(m->size); i++) {
+        if (i != id) {
+            assert(!numa_bitmask_isbitset(m, i));
+        }
     }
 }
 
@@ -43,17 +45,17 @@ int process(int N, int* data) {
     int result = 0;
     for (int i = 0; i < N; i++) {
         result += data[i];
-        result = result % data[i];
     }
     return result;
 }
 
-// Тест: выделим на каждой ноде большой массив и проверим скорость доступа к локальной и не локальной памяти процессора
-void test() {
-    const int N = 1e9;
+// Тест: выделим на каждой ноде большой массив и проверим скорость доступа к локальной и не локальной памяти из ноды id
+void test(int id) {
+    std::cout << "Run test from node " << id << std::endl;
+    const int N = 1e8;
     // будем выполняться на первой ноде
-    numa_run_on_node(0);
-    checkRunningNode(0);
+    numa_run_on_node(id);
+    checkRunningNode(id);
 
     // проверим, что мы можем аллоцировать память на нодах
     // numa_get_membind возвращает маску по нодам
@@ -93,7 +95,9 @@ int main() {
         // membind_VS_mems_allowed();
 
 
-        test();
+        for (int i = 0; i < numa_num_configured_nodes(); i++) {
+            test(i);
+        }
     }
 
     return 0;
