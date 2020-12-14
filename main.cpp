@@ -79,6 +79,9 @@ void test(int id) {
             auto stop = std::chrono::high_resolution_clock::now();
             auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
             std::cout << "Time for node " << i << ": " << duration.count() << std::endl;
+
+            // и надо освободить память!
+            numa_free(data, sizeof(int) * N);
         }
     }
 }
