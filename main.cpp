@@ -39,12 +39,14 @@ void checkRunningNode(int id) {
     assert(numa_node_of_cpu(sched_getcpu()) == id);
 }
 
+// заполняем массив чем-нибудь
 void fill(int N, int* data) {
     for (int i = 0; i < N; i++) {
         data[i] = std::rand() % 10;
     }
 }
 
+// просто тыкаемся в каждую ячейку, не надо смотреть на result
 int process(int N, int* data) {
     int result = 0;
     for (int i = 0; i < N; i++) {
@@ -68,6 +70,7 @@ void test(int id) {
         if (numa_bitmask_isbitset(mask, i)) {
             // Главная функция для аллокации памяти на ноде. Аллоцирует сколько надо памяти на данной ноде
             auto data = (int*) numa_alloc_onnode(sizeof(int) * N, i);
+            // Замеряем время работы fill+process
             auto start = std::chrono::high_resolution_clock::now();
             {
                 fill(N, data);
