@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cassert>
 #include <chrono>
+#include "sched.h"
 
 // найти больше функций или просто почитать можно тут: https://linux.die.net/man/3/numa
 #include <numa.h>
@@ -33,6 +34,9 @@ void checkRunningNode(int id) {
             assert(!numa_bitmask_isbitset(m, i));
         }
     }
+
+    // проверим работоспособность определения ноды по cpu
+    assert(numa_node_of_cpu(sched_getcpu()) == id);
 }
 
 void fill(int N, int* data) {
@@ -62,6 +66,7 @@ void test(int id) {
     auto mask = numa_get_membind();
     for (int i = 0; i < int(mask->size); i++) {
         if (numa_bitmask_isbitset(mask, i)) {
+            // Главная функция для аллокации памяти на ноде. Аллоцирует сколько надо памяти на данной ноде
             auto data = (int*) numa_alloc_onnode(sizeof(int) * N, i);
             auto start = std::chrono::high_resolution_clock::now();
             {
