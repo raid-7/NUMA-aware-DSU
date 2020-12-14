@@ -177,13 +177,13 @@ void benchmark(const std::string& graph, const std::string& outfile) {
                 //std::cerr << res << "\n";
                 resultsUsual[r].emplace_back(res);
 
-                auto dsuNUMAHelper = new DSU_Helper(N, node_count);
-                //auto ctx = new ContextRatio(g, dsuNUMAHelper, RATIO);
-                ctx->dsu = dsuNUMAHelper;
-                res = runWithTime(ctx);
-                out << "NUMAHelper " << RATIO << " " << res << "\n";
-                std::cerr << res << " ";
-                resultsNUMA[r].emplace_back(res);
+//                auto dsuNUMAHelper = new DSU_Helper(N, node_count);
+//                //auto ctx = new ContextRatio(g, dsuNUMAHelper, RATIO);
+//                ctx->dsu = dsuNUMAHelper;
+//                res = runWithTime(ctx);
+//                out << "NUMAHelper " << RATIO << " " << res << "\n";
+//                std::cerr << res << " ";
+//                resultsNUMA[r].emplace_back(res);
 
                 auto dsuNoSync = new DSU_NO_SYNC(N, node_count);
                 ctx->dsu = dsuNoSync;
@@ -202,9 +202,9 @@ void benchmark(const std::string& graph, const std::string& outfile) {
             auto ctxUsual = new ContextRatio(g, dsuUsual, RATIO);
             std::cout << "Usual " << runWithTime(ctxUsual) << "\n";
 
-            auto dsuNUMAMSQueue = new DSU_Queue(N, node_count);
-            auto ctxNUMAMSQueue = new ContextRatio(g, dsuNUMAMSQueue, RATIO);
-            std::cout << "NUMAMSQueue " << runWithTime(ctxNUMAMSQueue) << "\n";
+//            auto dsuNUMAMSQueue = new DSU_Queue(N, node_count);
+//            auto ctxNUMAMSQueue = new ContextRatio(g, dsuNUMAMSQueue, RATIO);
+//            std::cout << "NUMAMSQueue " << runWithTime(ctxNUMAMSQueue) << "\n";
         }
     }
 //    std::ofstream out_avg;
