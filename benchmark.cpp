@@ -43,7 +43,8 @@ void doSmth() {
     }
 }
 
-void thread_routine(ContextRatio* ctx, int v1, int v2) {
+void thread_routine(ContextRatio* ctx, int v1, int v2, int node) {
+    numa_run_on_node(node);
     for (int i = v1; i < v2; i++) {
         auto e = ctx->edges->at(i);
         if (i % 100 < ctx->ratio) {
@@ -60,7 +61,7 @@ void run(ContextRatio* ctx) {
 
     int step = E2 / THREADS;
     for (int i = 0; i < THREADS; i++) {
-        threads.emplace_back(std::thread(thread_routine, ctx, i*step, std::min(i*step + step, E2)));
+        threads.emplace_back(std::thread(thread_routine, ctx, i*step, std::min(i*step + step, E2), numa_node_of_cpu(i)));
 
         cpu_set_t cpuset;
         CPU_ZERO(&cpuset);

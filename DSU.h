@@ -452,7 +452,7 @@ public:
     }
 
     void Union(int u, int v) override {
-        auto node = numa_node_of_cpu(sched_getcpu());
+        auto node = getNode();//numa_node_of_cpu(sched_getcpu());
 
         for (int i = 0; i < node_count; i++) {
             union_(u, v, i, (i == node), node);
@@ -460,10 +460,10 @@ public:
     }
 
     bool SameSet(int u, int v) override {
-        auto node = numa_node_of_cpu(sched_getcpu());
-        if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
+        if (data[0][u].load(std::memory_order_relaxed) == data[0][v].load(std::memory_order_relaxed)) {
             return true;
         }
+        auto node = getNode();//numa_node_of_cpu(sched_getcpu());
         auto u_p = u;
         auto v_p = v;
         while (true) {
@@ -479,7 +479,7 @@ public:
     }
 
     int Find(int u) override {
-        auto node = numa_node_of_cpu(sched_getcpu());
+        auto node = getNode();//numa_node_of_cpu(sched_getcpu());
         if (node_count == 1) {
             node = 0;
         }
@@ -566,6 +566,17 @@ private:
                 }
             }
         }
+    }
+
+    int getNode() {
+        auto node = 0;
+        auto msk = numa_get_run_node_mask();
+        for (int i = 1; i < node_count; i++) {
+            if (numa_bitmask_isbitset(msk, i)) {
+                node = i;
+            }
+        }
+        return node;
     }
 
     int size;
