@@ -460,10 +460,11 @@ public:
     }
 
     bool SameSet(int u, int v) override {
-        if (data[0][u].load(std::memory_order_relaxed) == data[0][v].load(std::memory_order_relaxed)) {
+        auto node = getNode();
+        if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
             return true;
         }
-        auto node = getNode();//numa_node_of_cpu(sched_getcpu());
+        //numa_node_of_cpu(sched_getcpu());
         auto u_p = u;
         auto v_p = v;
         while (true) {
