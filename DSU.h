@@ -535,21 +535,6 @@ private:
 
         int u_p = u;
         int v_p = v;
-        if (!is_local) {
-            u_p = find(u_p, cur_node, true);
-            v_p = find(v_p, cur_node, true);
-            if (u_p < v_p) {
-                if (u_p < v_p) {
-                    if (data[node][u_p].compare_exchange_weak(u_p, v_p)) {
-                        return;
-                    }
-                } else {
-                    if (data[node][v_p].compare_exchange_weak(v_p, u_p)) {
-                        return;
-                    }
-                }
-            }
-        }
         while (true) {
             u_p = find(u_p, node, is_local);
             v_p = find(v_p, node, is_local);
