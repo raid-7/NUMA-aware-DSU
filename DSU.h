@@ -94,7 +94,7 @@ public:
     }
 
     void Union(int u, int v) override {
-        auto node = numa_node_of_cpu(sched_getcpu());
+        auto node = getNode();
         if (node_count == 1) {
             node = 0;
         }
@@ -115,7 +115,7 @@ public:
     }
 
     bool SameSet(int u, int v) override {
-        auto node = numa_node_of_cpu(sched_getcpu());
+        auto node = getNode();
         if (node_count == 1) {
             node = 0;
         }
@@ -124,7 +124,7 @@ public:
     }
 
     int Find(int u) override {
-        auto node = numa_node_of_cpu(sched_getcpu());
+        auto node = getNode();
         if (node_count > 1) {
             old_unions(node);
         } else {
@@ -135,17 +135,17 @@ public:
     }
 
     bool SameSetOnNode(int u, int v, int node) {
-        if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
-            return true;
-        }
+//        if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
+//            return true;
+//        }
 
         if (node_count > 1) {
             old_unions(node);
         }
 
-        if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
-            return true;
-        }
+//        if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
+//            return true;
+//        }
 
         auto u_p = u;
         auto v_p = v;
@@ -173,7 +173,7 @@ private:
             __int64_t v = uv - (u << 32);
 
             for (int i = 0; i < node_count; i++) {
-                union_(u, v, i, (i == node));
+                union_(u, v, i, (i == node), node);
             }
 
             to_union.compare_exchange_strong(uv, 0);
@@ -205,15 +205,15 @@ private:
         }
     }
 
-    void union_(int u, int v, int node, bool is_local) {
+    void union_(int u, int v, int node, bool is_local, int cur_node) {
         if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
             return;
         }
         int u_p = u;
         int v_p = v;
         if (!is_local) {
-            u_p = find(u_p, numa_node_of_cpu(sched_getcpu()), true);
-            v_p = find(v_p, numa_node_of_cpu(sched_getcpu()), true);
+            u_p = find(u_p, cur_node, true);
+            v_p = find(v_p, cur_node, true);
             if (u_p < v_p) {
                 if (u_p < v_p) {
                     if (data[node][u_p].compare_exchange_weak(u_p, v_p)) {
@@ -242,6 +242,19 @@ private:
                 }
             }
         }
+    }
+
+    int getNode() {
+//        auto node = 0;
+//        auto msk = numa_get_run_node_mask();
+//        for (int i = 1; i < node_count; i++) {
+//            if (numa_bitmask_isbitset(msk, i)) {
+//                node = i;
+//            }
+//        }
+//        return node;
+        thread_local static int node = numa_node_of_cpu(sched_getcpu());
+        return node;
     }
 
     int size;
@@ -455,14 +468,14 @@ public:
         auto node = getNode();//numa_node_of_cpu(sched_getcpu());
 
         for (int i = 0; i < node_count; i++) {
-            union_(u, v, i, (i == node), node);
+            union_(u, v, i, (i == node));
         }
     }
 
     bool SameSet(int u, int v) override {
-        if (data[0][u].load(std::memory_order_relaxed) == data[0][v].load(std::memory_order_relaxed)) {
-            return true;
-        }
+//        if (data[0][u].load(std::memory_order_relaxed) == data[0][v].load(std::memory_order_relaxed)) {
+//            return true;
+//        }
         auto node = getNode();//numa_node_of_cpu(sched_getcpu());
         auto u_p = u;
         auto v_p = v;
@@ -528,7 +541,7 @@ private:
         }
     }
 
-    void union_(int u, int v, int node, bool is_local, int cur_node) {
+    void union_(int u, int v, int node, bool is_local) {
 //        if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
 //            return;
 //        }

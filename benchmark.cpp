@@ -8,7 +8,7 @@
 #include "DSU.h"
 
 const std::string RANDOM = "random";
-const int RUNS = 1;
+const int RUNS = 3;
 
 int N = 10000;
 int E = 100000;
@@ -178,13 +178,13 @@ void benchmark(const std::string& graph, const std::string& outfile) {
                 //std::cerr << res << "\n";
                 resultsUsual[r].emplace_back(res);
 
-//                auto dsuNUMAHelper = new DSU_Helper(N, node_count);
-//                //auto ctx = new ContextRatio(g, dsuNUMAHelper, RATIO);
-//                ctx->dsu = dsuNUMAHelper;
-//                res = runWithTime(ctx);
-//                out << "NUMAHelper " << RATIO << " " << res << "\n";
-//                std::cerr << res << " ";
-//                resultsNUMA[r].emplace_back(res);
+                auto dsuNUMAHelper = new DSU_Helper(N, node_count);
+                //auto ctx = new ContextRatio(g, dsuNUMAHelper, RATIO);
+                ctx->dsu = dsuNUMAHelper;
+                res = runWithTime(ctx);
+                out << "NUMAHelper " << RATIO << " " << res << "\n";
+                std::cerr << res << " ";
+                resultsNUMA[r].emplace_back(res);
 
                 auto dsuNoSync = new DSU_NO_SYNC(N, node_count);
                 ctx->dsu = dsuNoSync;
@@ -208,54 +208,28 @@ void benchmark(const std::string& graph, const std::string& outfile) {
 //            std::cout << "NUMAMSQueue " << runWithTime(ctxNUMAMSQueue) << "\n";
         }
     }
-//    std::ofstream out_avg;
-//    out_avg.open(outfile + "_average");
-//    std::ofstream out_min;
-//    out_min.open(outfile + "_min");
-//    std::ofstream out_max;
-//    out_max.open(outfile + "_max");
-//    int id = 0;
-//    for (int i = FIRST_RATIO; i <= LAST_RATIO; i += RATIO_STEP) {
-//        float avgNUMA = 0;
-//        float avgUsual = 0;
-//        float avgNoSync = 0;
-//        float minNUMA = resultsNUMA[0][id];
-//        float minUsual = resultsUsual[0][id];
-//        float minNoSync = resultsNoSync[0][id];
-//        float maxNUMA = 0;
-//        float maxUsual = 0;
-//        float maxNoSync = 0;
-//        for (int r = 0; r < RUNS; r++) {
-//            avgNUMA += resultsNUMA[r][id];
-//            avgUsual += resultsUsual[r][id];
-//            avgNoSync += resultsNoSync[r][id];
-//            minNUMA = std::min(resultsNUMA[r][id], minNUMA);
-//            minUsual = std::min(resultsUsual[r][id], minUsual);
-//            minNoSync = std::min(resultsNoSync[r][id], minNoSync);
-//            maxNUMA = std::max(resultsNUMA[r][id], maxNUMA);
-//            maxUsual = std::max(resultsUsual[r][id], maxUsual);
-//            maxNoSync = std::max(resultsNoSync[r][id], maxNoSync);
-//        }
-//        avgNUMA = avgNUMA / RUNS;
-//        avgUsual = avgUsual / RUNS;
-//        avgNoSync = avgNoSync / RUNS;
-//        out_avg << "NUMAHelper " << i << " " << avgNUMA << "\n";
-//        out_avg << "Usual " << i << " " << avgUsual << "\n";
-//        out_avg << "NoSync " << i << " " << avgNoSync << "\n";
-//
-//        out_min << "NUMAHelper " << i << " " << minNUMA << "\n";
-//        out_min << "Usual " << i << " " << minUsual << "\n";
-//        out_min << "NoSync " << i << " " << minNoSync << "\n";
-//
-//        out_max << "NUMAHelper " << i << " " << maxNUMA << "\n";
-//        out_max << "Usual " << i << " " << maxUsual << "\n";
-//        out_max << "NoSync " << i << " " << maxNoSync << "\n";
-//
-//        id++;
-//    }
-//    out_avg.close();
-//    out_min.close();
-//    out_max.close();
+    std::ofstream out_avg;
+    out_avg.open(outfile + "_average");
+    int id = 0;
+    for (int i = FIRST_RATIO; i <= LAST_RATIO; i += RATIO_STEP) {
+        float avgNUMA = 0;
+        float avgUsual = 0;
+        float avgNoSync = 0;
+        for (int r = 0; r < RUNS; r++) {
+            avgNUMA += resultsNUMA[r][id];
+            avgUsual += resultsUsual[r][id];
+            avgNoSync += resultsNoSync[r][id];
+        }
+        avgNUMA = avgNUMA / RUNS;
+        avgUsual = avgUsual / RUNS;
+        avgNoSync = avgNoSync / RUNS;
+        out_avg << "NUMAHelper " << i << " " << avgNUMA << "\n";
+        out_avg << "Usual " << i << " " << avgUsual << "\n";
+        out_avg << "NoSync " << i << " " << avgNoSync << "\n";
+
+        id++;
+    }
+    out_avg.close();
 
     // auto dsuSeq = new DSU_Sequential(N);
     // runSequential(dsuSeq, g);
