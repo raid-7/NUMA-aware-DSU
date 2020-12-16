@@ -554,13 +554,15 @@ private:
     }
 
     int getNode() {
-        auto node = 0;
-        auto msk = numa_get_run_node_mask();
-        for (int i = 1; i < node_count; i++) {
-            if (numa_bitmask_isbitset(msk, i)) {
-                node = i;
-            }
-        }
+//        auto node = 0;
+//        auto msk = numa_get_run_node_mask();
+//        for (int i = 1; i < node_count; i++) {
+//            if (numa_bitmask_isbitset(msk, i)) {
+//                node = i;
+//            }
+//        }
+//        return node;
+        thread_local static int node = numa_node_of_cpu(sched_getcpu());
         return node;
     }
 
