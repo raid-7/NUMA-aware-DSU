@@ -473,10 +473,10 @@ public:
     }
 
     bool SameSet(int u, int v) override {
-//        if (data[0][u].load(std::memory_order_relaxed) == data[0][v].load(std::memory_order_relaxed)) {
-//            return true;
-//        }
         auto node = getNode();
+        if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
+            return true;
+        }
         auto u_p = u;
         auto v_p = v;
         while (true) {
@@ -515,8 +515,8 @@ private:
         if (is_local) {
             auto cur = u;
             while (true) {
-                auto par = data[node][cur].load(std::memory_order_acquire);
-                auto grand = data[node][par].load(std::memory_order_acquire);
+                auto par = data[node][cur].load(std::memory_order_relaxed);
+                auto grand = data[node][par].load(std::memory_order_relaxed);
                 if (par == grand) {
                     return par;
                 } else {
