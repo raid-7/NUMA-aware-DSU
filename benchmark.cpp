@@ -201,13 +201,13 @@ void benchmark(const std::string& graph, const std::string& outfile) {
                 //std::cerr << res << "\n";
                 resultsUsual[r].emplace_back(res);
 
-                auto dsuNUMAHelper = new DSU_Helper(N, node_count);
-                //auto ctx = new ContextRatio(g, dsuNUMAHelper, RATIO);
-                ctx->dsu = dsuNUMAHelper;
-                res = runWithTime(ctx);
-                out << "NUMAHelper " << RATIO << " " << res << "\n";
-                std::cerr << res << " ";
-                resultsNUMA[r].emplace_back(res);
+//                auto dsuNUMAHelper = new DSU_Helper(N, node_count);
+//                //auto ctx = new ContextRatio(g, dsuNUMAHelper, RATIO);
+//                ctx->dsu = dsuNUMAHelper;
+//                res = runWithTime(ctx);
+//                out << "NUMAHelper " << RATIO << " " << res << "\n";
+//                std::cerr << res << " ";
+//                resultsNUMA[r].emplace_back(res);
 
                 auto dsuNoSync = new DSU_NO_SYNC(N, node_count);
                 ctx->dsu = dsuNoSync;
@@ -225,22 +225,22 @@ void benchmark(const std::string& graph, const std::string& outfile) {
     out_median.open(outfile + "_median");
     int id = 0;
     for (int i = FIRST_RATIO; i <= LAST_RATIO; i += RATIO_STEP) {
-        float avgNUMA = 0;
+        //float avgNUMA = 0;
         float avgUsual = 0;
         float avgNoSync = 0;
         for (int r = 0; r < RUNS; r++) {
-            avgNUMA += resultsNUMA[r][id];
+            //avgNUMA += resultsNUMA[r][id];
             avgUsual += resultsUsual[r][id];
             avgNoSync += resultsNoSync[r][id];
         }
-        avgNUMA = avgNUMA / RUNS;
+        //avgNUMA = avgNUMA / RUNS;
         avgUsual = avgUsual / RUNS;
         avgNoSync = avgNoSync / RUNS;
-        out_avg << "NUMAHelper " << i << " " << avgNUMA << "\n";
+        //out_avg << "NUMAHelper " << i << " " << avgNUMA << "\n";
         out_avg << "Usual " << i << " " << avgUsual << "\n";
         out_avg << "NoSync " << i << " " << avgNoSync << "\n";
 
-        out_median << "NUMAHelper " << i << median(id, &resultsNUMA) << "\n";
+        //out_median << "NUMAHelper " << i << median(id, &resultsNUMA) << "\n";
         out_median << "Usual " << i << median(id, &resultsUsual) << "\n";
         out_median << "NoSync " << i << median(id, &resultsNoSync) << "\n";
 
