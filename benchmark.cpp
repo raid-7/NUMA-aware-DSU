@@ -60,7 +60,7 @@ void run(ContextRatio* ctx) {
 
     int step = E2 / THREADS;
     for (int i = 0; i < THREADS; i++) {
-        threads.emplace_back(std::thread(thread_routine, ctx, i*step, std::min(i*step + step, E2), numa_node_of_cpu(i)));
+        threads.emplace_back(std::thread(thread_routine, ctx, i*step, std::min(i*step + step, E2)));
 
         cpu_set_t cpuset;
         CPU_ZERO(&cpuset);
@@ -81,7 +81,7 @@ void preUnite(ContextRatio* ctx) {
     std::vector<std::thread> threads;
     int step = (E - E2) / THREADS;
     for (int i = 0; i < THREADS; i++) {
-        threads.emplace_back(std::thread(thread_routine, ctx, i*step + E2, std::min(i*step + step + E2, E), numa_node_of_cpu(i)));
+        threads.emplace_back(std::thread(thread_routine, ctx, i*step + E2, std::min(i*step + step + E2, E)));
 
         cpu_set_t cpuset;
         CPU_ZERO(&cpuset);
