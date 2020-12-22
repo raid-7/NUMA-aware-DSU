@@ -101,22 +101,13 @@ void shuffle(std::vector<std::pair<int, int>>* edges) {
 }
 
 float runWithTime(ContextRatio* ctx) {
-//    std::vector<float> results(RUNS);
+//  preUnite(ctx);
 
-//    for (int i = 0; i < RUNS; i++) {
-        //ctx->dsu->ReInit();
-        //shuffle(ctx->edges);
-        preUnite(ctx);
+    auto start = std::chrono::high_resolution_clock::now();
+    run(ctx);
+    auto stop = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
 
-        auto start = std::chrono::high_resolution_clock::now();
-        run(ctx);
-        auto stop = std::chrono::high_resolution_clock::now();
-        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-//        results[i] = duration.count();
-//    }
-
-//    std::sort(results.begin(), results.end());
-//    return results[RUNS / 2];
     return duration.count();
 }
 
@@ -159,7 +150,7 @@ std::vector<std::pair<int, int>>* graphFromFile(std::string filename) {
         }
     }
 
-    //shuffle(g);
+    shuffle(g);
     return g;
 }
 
