@@ -241,8 +241,8 @@ void benchmark(const std::string& graph, const std::string& outfile) {
         out_avg << "NoSync " << i << " " << avgNoSync << "\n";
 
         //out_median << "NUMAHelper " << i << median(id, &resultsNUMA) << "\n";
-        out_median << "Usual " << i << median(id, &resultsUsual) << "\n";
-        out_median << "NoSync " << i << median(id, &resultsNoSync) << "\n";
+        out_median << "Usual " << i << " " << median(id, &resultsUsual) << "\n";
+        out_median << "NoSync " << i << " " << median(id, &resultsNoSync) << "\n";
 
         id++;
     }
