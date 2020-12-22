@@ -106,7 +106,7 @@ float runWithTime(ContextRatio* ctx) {
 //    for (int i = 0; i < RUNS; i++) {
         //ctx->dsu->ReInit();
         //shuffle(ctx->edges);
-        //preUnite(ctx->dsu, ctx->edges);
+        preUnite(ctx);
 
         auto start = std::chrono::high_resolution_clock::now();
         run(ctx);
