@@ -476,7 +476,7 @@ public:
 //        if (data[0][u].load(std::memory_order_relaxed) == data[0][v].load(std::memory_order_relaxed)) {
 //            return true;
 //        }
-        auto node = getNode();//numa_node_of_cpu(sched_getcpu());
+        auto node = getNode();
         auto u_p = u;
         auto v_p = v;
         while (true) {
@@ -492,12 +492,7 @@ public:
     }
 
     int Find(int u) override {
-        auto node = getNode();//numa_node_of_cpu(sched_getcpu());
-        if (node_count == 1) {
-            node = 0;
-        }
-
-        return find(u, node, true);
+        return find(u, getNode(), true);
     }
 
     bool SameSetOnNode(int u, int v, int node) {
@@ -520,8 +515,8 @@ private:
         if (is_local) {
             auto cur = u;
             while (true) {
-                auto par = data[node][cur].load(std::memory_order_relaxed);
-                auto grand = data[node][par].load(std::memory_order_relaxed);
+                auto par = data[node][cur].load(std::memory_order_acquire);
+                auto grand = data[node][par].load(std::memory_order_acquire);
                 if (par == grand) {
                     return par;
                 } else {
