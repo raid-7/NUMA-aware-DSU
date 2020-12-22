@@ -3,7 +3,6 @@
 #include <fstream>
 #include <random>
 #include <algorithm>
-#include "tbb/concurrent_priority_queue.h"
 
 #include "DSU.h"
 
@@ -43,8 +42,8 @@ void doSmth() {
     }
 }
 
-void thread_routine(ContextRatio* ctx, int v1, int v2, int node) {
-    numa_run_on_node(node);
+void thread_routine(ContextRatio* ctx, int v1, int v2) {
+    //numa_run_on_node(node);
     for (int i = v1; i < v2; i++) {
         auto e = ctx->edges->at(i);
         if (i % 100 < ctx->ratio) {
@@ -74,9 +73,24 @@ void run(ContextRatio* ctx) {
     }
 }
 
-void preUnite(DSU* dsu, std::vector<std::pair<int, int>>* edges) {
-    for (int i = E2; i < E; i++) {
-        dsu->Union(edges->at(i).first, edges->at(i).second);
+void preUnite(ContextRatio* ctx) {
+//    for (int i = E2; i < E; i++) {
+//        dsu->Union(edges->at(i).first, edges->at(i).second);
+//    }
+    ctx->ratio = 10;
+    std::vector<std::thread> threads;
+    int step = (E - E2) / THREADS;
+    for (int i = 0; i < THREADS; i++) {
+        threads.emplace_back(std::thread(thread_routine, ctx, i*step + E2, std::min(i*step + step + E2, E), numa_node_of_cpu(i)));
+
+        cpu_set_t cpuset;
+        CPU_ZERO(&cpuset);
+        CPU_SET(i, &cpuset);
+        pthread_setaffinity_np(threads[i].native_handle(), sizeof(cpu_set_t), &cpuset);
+    }
+
+    for (int i = 0; i < int(threads.size()); i++) {
+        threads[i].join();
     }
 }
 
@@ -149,6 +163,15 @@ std::vector<std::pair<int, int>>* graphFromFile(std::string filename) {
     return g;
 }
 
+float median(int ratio, std::vector<std::vector<float>>* v) {
+    std::vector<float> to_sort;
+    for (int i = 0; i < RUNS; i++) {
+        to_sort.emplace_back(v->at(i)[ratio]);
+    }
+    std::sort(to_sort.begin(), to_sort.end());
+    return to_sort[RUNS / 2];
+}
+
 void benchmark(const std::string& graph, const std::string& outfile) {
     std::vector<std::pair<int, int>>* g;
     if (graph == RANDOM) {
@@ -194,22 +217,12 @@ void benchmark(const std::string& graph, const std::string& outfile) {
             }
 
             out.close();
-        } else {
-            auto dsuNUMAHelper = new DSU_Helper(N, node_count);
-            auto ctxNUMAHelper = new ContextRatio(g, dsuNUMAHelper, RATIO);
-            std::cout << "NUMAHelper " << runWithTime(ctxNUMAHelper) << "\n";
-
-            auto dsuUsual = new DSU_Helper(N, 1);
-            auto ctxUsual = new ContextRatio(g, dsuUsual, RATIO);
-            std::cout << "Usual " << runWithTime(ctxUsual) << "\n";
-
-//            auto dsuNUMAMSQueue = new DSU_Queue(N, node_count);
-//            auto ctxNUMAMSQueue = new ContextRatio(g, dsuNUMAMSQueue, RATIO);
-//            std::cout << "NUMAMSQueue " << runWithTime(ctxNUMAMSQueue) << "\n";
         }
     }
     std::ofstream out_avg;
     out_avg.open(outfile + "_average");
+    std::ofstream out_median;
+    out_median.open(outfile + "_median");
     int id = 0;
     for (int i = FIRST_RATIO; i <= LAST_RATIO; i += RATIO_STEP) {
         float avgNUMA = 0;
@@ -227,12 +240,13 @@ void benchmark(const std::string& graph, const std::string& outfile) {
         out_avg << "Usual " << i << " " << avgUsual << "\n";
         out_avg << "NoSync " << i << " " << avgNoSync << "\n";
 
+        out_median << "NUMAHelper " << i << median(id, &resultsNUMA) << "\n";
+        out_median << "Usual " << i << median(id, &resultsUsual) << "\n";
+        out_median << "NoSync " << i << median(id, &resultsNoSync) << "\n";
+
         id++;
     }
     out_avg.close();
-
-    // auto dsuSeq = new DSU_Sequential(N);
-    // runSequential(dsuSeq, g);
 }
 
 int main(int argc, char* argv[]) {
