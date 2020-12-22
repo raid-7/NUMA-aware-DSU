@@ -159,7 +159,7 @@ std::vector<std::pair<int, int>>* graphFromFile(std::string filename) {
         }
     }
 
-    shuffle(g);
+    //shuffle(g);
     return g;
 }
 
