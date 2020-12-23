@@ -56,40 +56,57 @@ void process(int N, std::atomic_int* data, volatile int * result) {
 
 
 // Тест: выделим на каждой ноде большой массив и проверим время доступа к локальной и не локальной памяти из ноды id
-void test(int id) {
-    std::cout << "Run test from node " << id << std::endl;
+void test(int node) {
+    std::cout << "Run test from node " << node << std::endl;
     const int N = 1e8;
-    // будем выполняться на первой ноде
-    numa_run_on_node(id);
-    checkRunningNode(id);
-
-
+    // будем выполняться на ноде с номером node
+    numa_run_on_node(node);
+    checkRunningNode(node);
 
     // проверим, что мы можем аллоцировать память на нодах
     // numa_get_membind возвращает маску по нодам
-    auto mask = numa_get_membind();
-    for (int i = 0; i < int(mask->size); i++) {
-        if (numa_bitmask_isbitset(mask, i)) {
+    auto getMemBindMask = numa_get_membind();
+    for (int i = 0; i < int(getMemBindMask->size); i++) {
+        if (numa_bitmask_isbitset(getMemBindMask, i)) {
+            bitmask* bindMaskToAllocate = numa_bitmask_alloc(getMemBindMask->size);
+            numa_bitmask_setbit(bindMaskToAllocate, i);
+            numa_bind(bindMaskToAllocate);
+
+            long freep;
+            numa_node_size(i, &freep);
+            std::cout << "Free mem on node " << i << " " << freep << " ";
             // Главная функция для аллокации памяти на ноде. Аллоцирует сколько надо памяти на данной ноде
-            auto data = (std::atomic_int*) numa_alloc_onnode(sizeof(std::atomic_int) * N, id);
+            auto data = (std::atomic_int*) numa_alloc_onnode(sizeof(std::atomic_int) * N, i);
+            numa_node_size(i, &freep);
+            std::cout << "then after allocation " << i << " " << freep << " ";
 
             // Замеряем время работы fill+process
             // Несколько (runs) раз и берем среднее
             int runs = 5;
             float resultTimeSum = 0;
             //
-            volatile int * processResult = (volatile int*) numa_alloc_onnode(sizeof(volatile int), id);
+            volatile int * processResult = (volatile int*) numa_alloc_onnode(sizeof(volatile int), i);
             *processResult = 0;
+
+            bitmask* bindMaskToRun = numa_bitmask_alloc(getMemBindMask->size);
+            numa_bitmask_setbit(bindMaskToRun, node);
+            numa_bind(bindMaskToRun);
             for (int j = 0; j < runs; j++) {
+                auto data_ = data;
+                auto N_ = N;
+                auto processResult_ = processResult;
                 auto start = std::chrono::high_resolution_clock::now();
                 {
-                    fill(N, data);
-                    process(N, data, processResult);
+                    fill(N_, data_);
+                    process(N_, data_, processResult_);
                 }
                 auto stop = std::chrono::high_resolution_clock::now();
                 auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
                 resultTimeSum += duration.count();
             }
+            numa_node_size(i, &freep);
+            std::cout << "and after fill " << i << " " << freep << std::endl;
+
             std::cout << "Time for node " << i << ": " << resultTimeSum / runs << std::endl;
 
             // и надо освободить память!
