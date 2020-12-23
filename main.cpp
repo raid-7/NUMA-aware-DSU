@@ -48,11 +48,12 @@ void fill(int N, std::atomic_int* data) {
 }
 
 // просто тыкаемся в каждую ячейку, не надо смотреть на result
-int process(int N, std::atomic_int* data, volatile int * result) {
+void process(int N, std::atomic_int* data, volatile int * result) {
     for (int i = 0; i < N; i++) {
-        result += data[i].load();
+        *result += data[i].load();
     }
 }
+
 
 // Тест: выделим на каждой ноде большой массив и проверим время доступа к локальной и не локальной памяти из ноды id
 void test(int id) {
@@ -62,21 +63,24 @@ void test(int id) {
     numa_run_on_node(id);
     checkRunningNode(id);
 
+
+
     // проверим, что мы можем аллоцировать память на нодах
     // numa_get_membind возвращает маску по нодам
     auto mask = numa_get_membind();
     for (int i = 0; i < int(mask->size); i++) {
         if (numa_bitmask_isbitset(mask, i)) {
             // Главная функция для аллокации памяти на ноде. Аллоцирует сколько надо памяти на данной ноде
-            auto data = (std::atomic_int*) numa_alloc_onnode(sizeof(std::atomic_int) * N, i);
+            auto data = (std::atomic_int*) numa_alloc_onnode(sizeof(std::atomic_int) * N, id);
 
             // Замеряем время работы fill+process
             // Несколько (runs) раз и берем среднее
             int runs = 5;
             float resultTimeSum = 0;
             //
-            auto processResult = (volatile int *) numa_alloc_onnode(sizeof(volatile int), i);
-            for(int i = 0; i < runs; i++) {
+            volatile int * processResult = (volatile int*) numa_alloc_onnode(sizeof(volatile int), id);
+            *processResult = 0;
+            for (int j = 0; j < runs; j++) {
                 auto start = std::chrono::high_resolution_clock::now();
                 {
                     fill(N, data);
@@ -89,7 +93,8 @@ void test(int id) {
             std::cout << "Time for node " << i << ": " << resultTimeSum / runs << std::endl;
 
             // и надо освободить память!
-            numa_free(data, sizeof(int) * N);
+            numa_free(data, sizeof(std::atomic_int) * N);
+            numa_free((void*)processResult, sizeof(volatile int));
         }
     }
 }
