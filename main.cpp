@@ -5,6 +5,7 @@
 
 // найти больше функций или просто почитать можно тут: https://linux.die.net/man/3/numa
 #include <numa.h>
+#include <atomic>
 
 void membind_VS_mems_allowed() {
     std::cout << "membind_VS_mems_allowed" << std::endl;
@@ -40,19 +41,17 @@ void checkRunningNode(int id) {
 }
 
 // заполняем массив чем-нибудь
-void fill(int N, int* data) {
+void fill(int N, std::atomic_int* data) {
     for (int i = 0; i < N; i++) {
-        data[i] = std::rand() % 10;
+        data[i].store(1);
     }
 }
 
 // просто тыкаемся в каждую ячейку, не надо смотреть на result
-int process(int N, int* data) {
-    int result = 0;
+int process(int N, std::atomic_int* data, volatile int * result) {
     for (int i = 0; i < N; i++) {
-        result += data[i];
+        result += data[i].load();
     }
-    return result;
 }
 
 // Тест: выделим на каждой ноде большой массив и проверим время доступа к локальной и не локальной памяти из ноды id
@@ -69,16 +68,25 @@ void test(int id) {
     for (int i = 0; i < int(mask->size); i++) {
         if (numa_bitmask_isbitset(mask, i)) {
             // Главная функция для аллокации памяти на ноде. Аллоцирует сколько надо памяти на данной ноде
-            auto data = (int*) numa_alloc_onnode(sizeof(int) * N, i);
+            auto data = (std::atomic_int*) numa_alloc_onnode(sizeof(std::atomic_int) * N, i);
+
             // Замеряем время работы fill+process
-            auto start = std::chrono::high_resolution_clock::now();
-            {
-                fill(N, data);
-                process(N, data);
+            // Несколько (runs) раз и берем среднее
+            int runs = 5;
+            float resultTimeSum = 0;
+            //
+            auto processResult = (volatile int *) numa_alloc_onnode(sizeof(volatile int), i);
+            for(int i = 0; i < runs; i++) {
+                auto start = std::chrono::high_resolution_clock::now();
+                {
+                    fill(N, data);
+                    process(N, data, processResult);
+                }
+                auto stop = std::chrono::high_resolution_clock::now();
+                auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+                resultTimeSum += duration.count();
             }
-            auto stop = std::chrono::high_resolution_clock::now();
-            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-            std::cout << "Time for node " << i << ": " << duration.count() << std::endl;
+            std::cout << "Time for node " << i << ": " << resultTimeSum / runs << std::endl;
 
             // и надо освободить память!
             numa_free(data, sizeof(int) * N);
