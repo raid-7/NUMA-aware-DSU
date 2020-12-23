@@ -55,10 +55,11 @@ void process(int N, std::atomic_int* data, volatile int * result) {
 }
 
 
-// Тест: выделим на каждой ноде большой массив и проверим время доступа к локальной и не локальной памяти из ноды id
+// Тест: выделим на каждой ноде большой массив и проверим время доступа к локальной и не локальной памяти из ноды node
 void test(int node) {
     std::cout << "Run test from node " << node << std::endl;
     const int N = 1e8;
+
     // будем выполняться на ноде с номером node
     numa_run_on_node(node);
     checkRunningNode(node);
@@ -80,21 +81,21 @@ void test(int node) {
             // Несколько (runs) раз и берем среднее
             int runs = 5;
             float resultTimeSum = 0;
-            //
+
+            // process считает сумму на массиве, в processresult будет записываться ответ
             volatile int * processResult = (volatile int*) numa_alloc_onnode(sizeof(volatile int), i);
             *processResult = 0;
 
+            // bind привязывает поток к ноде
+            // выполнение и аллокации теперь будут происходить на ноде node
             bitmask* bindMaskToRun = numa_bitmask_alloc(getMemBindMask->size);
             numa_bitmask_setbit(bindMaskToRun, node);
             numa_bind(bindMaskToRun);
             for (int j = 0; j < runs; j++) {
-                auto data_ = data;
-                auto N_ = N;
-                auto processResult_ = processResult;
                 auto start = std::chrono::high_resolution_clock::now();
                 {
-                    fill(N_, data_);
-                    process(N_, data_, processResult_);
+                    fill(N, data);
+                    process(N, data, processResult);
                 }
                 auto stop = std::chrono::high_resolution_clock::now();
                 auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
@@ -109,6 +110,7 @@ void test(int node) {
             numa_free(data, sizeof(std::atomic_int) * N);
             numa_free((void*)processResult, sizeof(volatile int));
 
+            //откатываемся к начальному состоянию
             numa_bind(getMemBindMask);
         }
     }
