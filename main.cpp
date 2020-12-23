@@ -68,10 +68,6 @@ void test(int node) {
     auto getMemBindMask = numa_get_membind();
     for (int i = 0; i < int(getMemBindMask->size); i++) {
         if (numa_bitmask_isbitset(getMemBindMask, i)) {
-            bitmask* bindMaskToAllocate = numa_bitmask_alloc(getMemBindMask->size);
-            numa_bitmask_setbit(bindMaskToAllocate, i);
-            numa_bind(bindMaskToAllocate);
-
             long freep;
             numa_node_size(i, &freep);
             std::cout << "Free mem on node " << i << " " << freep << " ";
@@ -112,6 +108,8 @@ void test(int node) {
             // и надо освободить память!
             numa_free(data, sizeof(std::atomic_int) * N);
             numa_free((void*)processResult, sizeof(volatile int));
+
+            numa_bind(getMemBindMask);
         }
     }
 }
