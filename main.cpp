@@ -48,10 +48,11 @@ void fill(int N, std::atomic_int* data) {
 }
 
 // просто тыкаемся в каждую ячейку, не надо смотреть на result
-void process(int N, std::atomic_int* data, volatile int * result) {
+void process(int N, std::atomic_int* data, std::atomic_int* result) {
     for (int i = 0; i < N; i++) {
-        *result += data[i].load();
+        result->store(result->load() + data[i].load());
     }
+    std::cout << "Sum: " << result->load() << std::endl;
 }
 
 
@@ -83,8 +84,7 @@ void test(int node) {
             float resultTimeSum = 0;
 
             // process считает сумму на массиве, в processresult будет записываться ответ
-            volatile int * processResult = (volatile int*) numa_alloc_onnode(sizeof(volatile int), i);
-            *processResult = 0;
+            std::atomic_int* processResult = (std::atomic_int*) numa_alloc_onnode(sizeof(std::atomic_int), i);
 
             // bind привязывает поток к ноде
             // выполнение и аллокации теперь будут происходить на ноде node
@@ -92,6 +92,7 @@ void test(int node) {
             numa_bitmask_setbit(bindMaskToRun, node);
             numa_bind(bindMaskToRun);
             for (int j = 0; j < runs; j++) {
+                processResult->store(0);
                 auto start = std::chrono::high_resolution_clock::now();
                 {
                     fill(N, data);
