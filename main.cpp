@@ -39,7 +39,10 @@ void test(int node_count) {
             std::vector<std::thread> threads;
             auto start = std::chrono::high_resolution_clock::now();
             for (int i = 0; i < THREADS; i++) {
-                threads.emplace_back(std::thread(thread_routine, counter, times[i]));
+                threads.emplace_back(std::thread(thread_routine, counter, &times[i]));
+            }
+            for (int i = 0; i < THREADS; i++) {
+                threads[i].join();
             }
             auto stop = std::chrono::high_resolution_clock::now();
             auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
