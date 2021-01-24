@@ -10,13 +10,13 @@ const int N = 1e9;
 const int THREADS = 10;
 
 void thread_routine(std::atomic_int* counter, int* time) {
-    auto start = std::chrono::high_resolution_clock::now();
+//    auto start = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < N / THREADS; i++) {
         counter->fetch_add(1);
     }
-    auto stop = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-    *time = duration.count();
+//    auto stop = std::chrono::high_resolution_clock::now();
+//    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+//    *time = duration.count();
 }
 
 //here we believe that configured nodes numbered with 0 to n (number of them)
