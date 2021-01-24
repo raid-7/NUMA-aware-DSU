@@ -47,7 +47,7 @@ void test(int node_count) {
             auto stop = std::chrono::high_resolution_clock::now();
             auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
 
-            std::cout << "Time for run on node " << run_node << ": " << duration.count() << "milliseconds" << std::endl;
+            std::cout << "Time for run on node " << run_node << ": " << duration.count() << " milliseconds" << std::endl;
 
             numa_free(counter, sizeof(std::atomic_int));
             numa_free(times, sizeof(int) * THREADS);
