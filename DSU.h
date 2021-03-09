@@ -1,3 +1,6 @@
+#ifndef TRY_DSU_H
+#define TRY_DSU_H
+
 #include <sched.h>
 #include <thread>
 #include <numa.h>
@@ -11,3 +14,5 @@ public:
     virtual int Find(int u) = 0;
     virtual bool SameSet(int u, int v) = 0;
 };
+
+#endif //TRY_DSU_H
