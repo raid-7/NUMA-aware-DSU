@@ -2,7 +2,7 @@
 #include <algorithm>
 
 #include "DSU.h"
-#include "Queue.h"
+#include "implementations/DSU_Queue.h"
 
 const int N = 1000;
 const int THREADS = 100;
@@ -58,75 +58,8 @@ void testDSU() {
     std::cout << "DSU OK\n";
 }
 
-void push(MSQueue* q, int t) {
-    for (int i = 0; i < 5; i++) {
-        q->Push(std::make_pair(t, t));
-    }
-}
-void pop(MSQueue* q, int t, std::vector<int>* result) {
-    for (int i = 0; i < 5; i++) {
-        q->Push(std::make_pair(t, t));
-    }
-
-    while(true) {
-        auto p = q->Pop();
-        if (p == nullptr) {
-            break;
-        }
-        result->emplace_back(p->first);
-    }
-}
-
-bool testQueue() {
-    auto q = new MSQueue();
-    q->Init(0);
-    std::vector<std::thread> threads(THREADS);
-    std::vector<int> results[THREADS / 5];
-
-    for (int i = 0; i < THREADS; i++) {
-        if (i % 5 == 0) {
-            threads[i] = std::thread(pop, q, i, &results[i / 5]);
-        } else {
-            threads[i] = std::thread(push, q, i);
-        }
-    }
-
-    for (int i = 0; i < THREADS; i++) {
-        threads[i].join();
-    }
-
-    std::vector<int> result;
-    while (true) {
-        auto p = q->Pop();
-        if (p == nullptr) {
-            break;
-        }
-        result.emplace_back(p->first);
-    }
-
-    for (int i = 0; i < THREADS / 5; i++) {
-        for (int & j : results[i]) {
-            result.emplace_back(j);
-        }
-    }
-
-    std::sort(result.begin(), result.end());
-
-    for (int i = 0; i < THREADS; i++) {
-        for (int j = 0; j < 5; j++) {
-            if (result[i * 5 + j] != i) {
-                std::cout << "Queue :(\n";
-                return false;
-            }
-        }
-    }
-
-    std::cout << "Queue OK\n";
-    return true;
-}
 
 int main() {
-    testQueue();
     testDSU();
 
     return 0;

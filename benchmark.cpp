@@ -5,6 +5,8 @@
 #include <algorithm>
 
 #include "DSU.h"
+#include "implementations/DSU_No_Sync.h"
+#include "implementations/DSU_Usual.h"
 
 const std::string RANDOM = "random";
 const int RUNS = 3;
@@ -265,44 +267,3 @@ int main(int argc, char* argv[]) {
     benchmark(graph, outfile);
     return 0;
 }
-
-
-//struct ContextMST {
-//    DSU* dsu;
-//    tbb::concurrent_priority_queue<std::tuple<int, int, int>>* pq;
-//
-//    ContextMST(DSU* dsu, tbb::concurrent_priority_queue<std::tuple<int, int, int>>* pq) : dsu(dsu), pq(pq) {};
-//};
-//
-//void mst(ContextMST* ctx) {
-//    int result = 0;
-//    while (!ctx->pq->empty()) {
-//        std::tuple<int, int, int> e;
-//        auto done = ctx->pq->try_pop(e);
-//        if (!done) {
-//            break;
-//        }
-//        int u = std::get<1>(e);
-//        int v = std::get<2>(e);
-//        if (!ctx->dsu->SameSet(u, v)) {
-//            result = std::get<0>(e) + result;
-//            ctx->dsu->Union(u, v);
-//        }
-//    }
-//}
-//
-//void runSequential(DSU* dsu, std::vector<std::vector<int>> g) {
-//    auto start = std::chrono::high_resolution_clock::now();
-//    for (int i = 0; i < int(g.size()); i++) {
-//        for (int j = 0; j < int(g[i].size()); j++) {
-//            if (i % 100 < RATIO) {
-//                dsu->SameSet(i, g[i][j]);
-//            } else {
-//                dsu->Union(i, g[i][j]);
-//            }
-//        }
-//    }
-//    auto stop = std::chrono::high_resolution_clock::now();
-//    auto durationNUMA = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-//    std::cout << "Sequential " << float(durationNUMA.count()) << std::endl;
-//}
