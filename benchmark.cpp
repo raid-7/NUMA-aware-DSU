@@ -17,7 +17,7 @@ int E2 = 50000;
 int THREADS = 96;
 int node_count = numa_num_configured_nodes();
 
-int RATIO = 80;
+int RATIO = 90;
 bool RUN_ALL_RATIOS = false;
 int FIRST_RATIO = 0;
 int LAST_RATIO = 100;
@@ -45,9 +45,22 @@ void doSmth() {
 }
 
 void thread_routine(ContextRatio* ctx, int v1, int v2) {
+    int node = numa_node_of_cpu(sched_getcpu());
     //numa_run_on_node(node);
     for (int i = v1; i < v2; i++) {
         auto e = ctx->edges->at(i);
+        if ((e.first >= N/2 && e.second <= N/2) || (e.first <= N/2 && e.second >= N/2)) {
+            continue;
+        }
+        if (e.first <= N/2) {
+            if (node == 1) {
+                continue;
+            }
+        } else {
+            if (node == 0) {
+                continue;
+            }
+        }
         if (i % 100 < ctx->ratio) {
             ctx->dsu->SameSet(e.first, e.second);
         } else {
@@ -244,7 +257,7 @@ void benchmark(const std::string& graph, const std::string& outfile) {
 
 int main(int argc, char* argv[]) {
     std::string graph = RANDOM;
-    std::string outfile;
+    std::string outfile = "default";
     if (argc > 1) {
         graph = argv[1];
         if (graph == RANDOM) {
