@@ -193,8 +193,8 @@ void benchmark(const std::string& graph, const std::string& outfile) {
 }
 
 void benchmarkSplittedGraph() {
-    N = 1000000;
-    E = 800000;
+    N = 50000000;
+    E = 50000000;
 
     auto g1 = graphRandom(N, E);
     auto g2 = graphRandom(N, E);
@@ -211,12 +211,12 @@ void benchmarkSplittedGraph() {
         auto dsuUsual = new DSU_USUAL(N);
         auto ctx = new ContextRatio(&G, dsuUsual, RATIO);
         auto res = runWithTime(ctx);
-        std::cout << "Usual " << RATIO << " " << res << "\n";
+        std::cout << "Usual " << i << " " << res << "\n";
 
         auto dsuNoSync = new DSU_NO_SYNC(N, node_count);
         ctx->dsu = dsuNoSync;
         res = runWithTime(ctx);
-        std::cout << "NoSync " << RATIO << " " << res << "\n";
+        std::cout << "NoSync " << i << " " << res << "\n";
     }
 }
 
