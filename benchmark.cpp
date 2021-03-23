@@ -207,15 +207,17 @@ void benchmarkSplittedGraph() {
     std::copy(g2->begin(), g2->end(), std::back_inserter(G));
 
 
-    auto dsuUsual = new DSU_USUAL(N);
-    auto ctx = new ContextRatio(&G, dsuUsual, RATIO);
-    auto res = runWithTime(ctx);
-    std::cout << "Usual " << RATIO << " " << res << "\n";
+    for (int i = 40; i <= 100; i += 2) {
+        auto dsuUsual = new DSU_USUAL(N);
+        auto ctx = new ContextRatio(&G, dsuUsual, RATIO);
+        auto res = runWithTime(ctx);
+        std::cout << "Usual " << RATIO << " " << res << "\n";
 
-    auto dsuNoSync = new DSU_NO_SYNC(N, node_count);
-    ctx->dsu = dsuNoSync;
-    res = runWithTime(ctx);
-    std::cout << "NoSync " << RATIO << " " << res << "\n";
+        auto dsuNoSync = new DSU_NO_SYNC(N, node_count);
+        ctx->dsu = dsuNoSync;
+        res = runWithTime(ctx);
+        std::cout << "NoSync " << RATIO << " " << res << "\n";
+    }
 }
 
 int main(int argc, char* argv[]) {
