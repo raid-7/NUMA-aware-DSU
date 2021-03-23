@@ -49,18 +49,6 @@ void thread_routine(ContextRatio* ctx, int v1, int v2) {
     //numa_run_on_node(node);
     for (int i = v1; i < v2; i++) {
         auto e = ctx->edges->at(i);
-        if ((e.first >= N/2 && e.second <= N/2) || (e.first <= N/2 && e.second >= N/2)) {
-            continue;
-        }
-        if (e.first <= N/2) {
-            if (node == 1) {
-                continue;
-            }
-        } else {
-            if (node == 0) {
-                continue;
-            }
-        }
         if (i % 100 < ctx->ratio) {
             ctx->dsu->SameSet(e.first, e.second);
         } else {
