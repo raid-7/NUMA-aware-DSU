@@ -7,13 +7,13 @@
 #include "DSU.h"
 #include "implementations/DSU_No_Sync.h"
 #include "implementations/DSU_Usual.h"
+#include "graphs.h"
 
 const std::string RANDOM = "random";
 const int RUNS = 3;
 
 int N = 10000;
 int E = 100000;
-int E2 = 50000;
 int THREADS = 96;
 int node_count = numa_num_configured_nodes();
 
@@ -73,9 +73,9 @@ void thread_routine(ContextRatio* ctx, int v1, int v2) {
 void run(ContextRatio* ctx) {
     std::vector<std::thread> threads;
 
-    int step = E2 / THREADS;
+    int step = (E / 2) / THREADS;
     for (int i = 0; i < THREADS; i++) {
-        threads.emplace_back(std::thread(thread_routine, ctx, i*step, std::min(i*step + step, E2)));
+        threads.emplace_back(std::thread(thread_routine, ctx, i*step, std::min(i*step + step, E / 2)));
 
         cpu_set_t cpuset;
         CPU_ZERO(&cpuset);
@@ -94,9 +94,9 @@ void preUnite(ContextRatio* ctx) {
 //    }
     ctx->ratio = 10;
     std::vector<std::thread> threads;
-    int step = (E - E2) / THREADS;
+    int step = (E - E / 2) / THREADS;
     for (int i = 0; i < THREADS; i++) {
-        threads.emplace_back(std::thread(thread_routine, ctx, i*step + E2, std::min(i*step + step + E2, E)));
+        threads.emplace_back(std::thread(thread_routine, ctx, i*step + E / 2, std::min(i*step + step + E / 2, E)));
 
         cpu_set_t cpuset;
         CPU_ZERO(&cpuset);
@@ -109,65 +109,14 @@ void preUnite(ContextRatio* ctx) {
     }
 }
 
-void shuffle(std::vector<std::pair<int, int>>* edges) {
-    std::random_device rd;
-    std::mt19937 q(rd());
-    std::shuffle(edges->begin(), edges->end(), q);
-}
-
 float runWithTime(ContextRatio* ctx) {
-//  preUnite(ctx);
-
     auto start = std::chrono::high_resolution_clock::now();
     run(ctx);
     auto stop = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-
     return duration.count();
 }
 
-std::vector<std::pair<int, int>>* graphRandom() {
-    auto g = new std::vector<std::pair<int, int>>();
-
-    for (int i = 0; i < E ; i++) {
-        int x = rand() % N;
-        int y = rand() % N;
-        g->emplace_back(std::make_pair(x, y));
-    }
-
-    return g;
-}
-
-std::vector<std::pair<int, int>>* graphFromFile(std::string filename) {
-    std::ifstream file;
-    file.open(filename);
-
-    file >> N >> E;
-    E2 = E / 2;
-    auto g = new std::vector<std::pair<int, int>>();
-
-    int a, b;
-    char c;
-
-    if (filename[0] == 'W') {
-        for (int i = 0; i < E; i++) {
-            file >> c;
-            file >> a >> b;
-            N = std::max(N, std::max(a, b));
-            g->emplace_back(std::make_pair(a, b));
-            file >> a;
-        }
-    } else {
-        for (int i = 0; i < E; i++) {
-            file >> a >> b;
-            N = std::max(N, std::max(a, b));
-            g->emplace_back(std::make_pair(a, b));
-        }
-    }
-
-    shuffle(g);
-    return g;
-}
 
 float median(int ratio, std::vector<std::vector<float>>* v) {
     std::vector<float> to_sort;
@@ -181,7 +130,7 @@ float median(int ratio, std::vector<std::vector<float>>* v) {
 void benchmark(const std::string& graph, const std::string& outfile) {
     std::vector<std::pair<int, int>>* g;
     if (graph == RANDOM) {
-        g = graphRandom();
+        g = graphRandom(N, E);
     } else {
         g = graphFromFile(graph);
     }
@@ -255,28 +204,54 @@ void benchmark(const std::string& graph, const std::string& outfile) {
     out_avg.close();
 }
 
-int main(int argc, char* argv[]) {
-    std::string graph = RANDOM;
-    std::string outfile = "default";
-    if (argc > 1) {
-        graph = argv[1];
-        if (graph == RANDOM) {
-            auto nStr = argv[2];
-            auto eStr = argv[3];
-            N = std::stoi(nStr);
-            E = std::stoi(eStr);
-            E2 = E / 2;
-            if (argc > 4) {
-                outfile = argv[4];
-            }
-        } else {
-            if (argc > 2) {
-                RUN_ALL_RATIOS = (strcmp(argv[2], "all") == 0);
-                outfile = argv[3];
-            }
-        }
-    }
+void benchmarkSplittedGraph() {
+    N = 1000000;
+    E = 800000;
 
-    benchmark(graph, outfile);
+    auto g1 = graphRandom(N, E);
+    auto g2 = graphRandom(N, E);
+    for (auto e : *g2) {
+        e.first += N;
+        e.second += N;
+    }
+    std::vector<std::pair<int, int>> G;
+    std::copy(g1->begin(), g1->end(), std::back_inserter(G));
+    std::copy(g2->begin(), g2->end(), std::back_inserter(G));
+
+
+    auto dsuUsual = new DSU_USUAL(N);
+    auto ctx = new ContextRatio(&G, dsuUsual, RATIO);
+    auto res = runWithTime(ctx);
+    std::cout << "Usual " << RATIO << " " << res << "\n";
+
+    auto dsuNoSync = new DSU_NO_SYNC(N, node_count);
+    ctx->dsu = dsuNoSync;
+    res = runWithTime(ctx);
+    std::cout << "NoSync " << RATIO << " " << res << "\n";
+}
+
+int main(int argc, char* argv[]) {
+    benchmarkSplittedGraph();
+//    std::string graph = RANDOM;
+//    std::string outfile = "default";
+//    if (argc > 1) {
+//        graph = argv[1];
+//        if (graph == RANDOM) {
+//            auto nStr = argv[2];
+//            auto eStr = argv[3];
+//            N = std::stoi(nStr);
+//            E = std::stoi(eStr);
+//            if (argc > 4) {
+//                outfile = argv[4];
+//            }
+//        } else {
+//            if (argc > 2) {
+//                RUN_ALL_RATIOS = (strcmp(argv[2], "all") == 0);
+//                outfile = argv[3];
+//            }
+//        }
+//    }
+
+//    benchmark(graph, outfile);
     return 0;
 }
