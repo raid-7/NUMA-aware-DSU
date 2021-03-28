@@ -90,13 +90,15 @@ void benchmarkSplittedGraph() {
 
     auto g1 = graphRandom(N, E);
     auto g2 = graphRandom(N, E);
-    for (auto e : *g1) {
-        e.first = e.first * 2;
-        e.second = e.second * 2;
+    for (int i = 0; i < E; i++) {
+        g1->at(i).first *= 2;
+        g1->at(i).second *= 2;
     }
-    for (auto e : *g2) {
-        e.first = e.first * 2 + 1;
-        e.second = e.second * 2 + 1;
+    for (int i = 0; i < E; i++) {
+        g2->at(i).first *= 2;
+        g2->at(i).second *= 2;
+        g2->at(i).first += 1;
+        g2->at(i).second += 1;
     }
     std::vector<std::pair<int, int>> G;
     std::copy(g1->begin(), g1->end(), std::back_inserter(G));
