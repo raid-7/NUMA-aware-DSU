@@ -61,9 +61,9 @@ void thread_routine(ContextRatio* ctx, int v1, int v2) {
 void run(ContextRatio* ctx) {
     std::vector<std::thread> threads;
 
-    int step = (E / 2) / THREADS;
+    int step = (E) / THREADS;
     for (int i = 0; i < THREADS; i++) {
-        threads.emplace_back(std::thread(thread_routine, ctx, i*step, std::min(i*step + step, E / 2)));
+        threads.emplace_back(std::thread(thread_routine, ctx, i*step, std::min(i*step + step, E)));
 
         cpu_set_t cpuset;
         CPU_ZERO(&cpuset);
