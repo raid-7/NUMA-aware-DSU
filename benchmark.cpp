@@ -76,6 +76,48 @@ void run(ContextRatio* ctx) {
     }
 }
 
+float runWithTime(ContextRatio* ctx) {
+    auto start = std::chrono::high_resolution_clock::now();
+    run(ctx);
+    auto stop = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+    return duration.count();
+}
+
+void benchmarkSplittedGraph() {
+    N = 100000000;
+    E = 100000000;
+
+    auto g1 = graphRandom(N, E);
+    auto g2 = graphRandom(N, E);
+    for (auto e : *g1) {
+        e.first = e.first * 2;
+        e.second = e.second * 2;
+    }
+    for (auto e : *g2) {
+        e.first = e.first * 2 + 1;
+        e.second = e.second * 2 + 1;
+    }
+    std::vector<std::pair<int, int>> G;
+    std::copy(g1->begin(), g1->end(), std::back_inserter(G));
+    std::copy(g2->begin(), g2->end(), std::back_inserter(G));
+
+    N = N * 2;
+    E = E * 2;
+
+    for (int i = FIRST_RATIO; i <= LAST_RATIO; i += RATIO_STEP) {
+        auto dsuUsual = new DSU_USUAL(N);
+        auto ctx = new ContextRatio(&G, dsuUsual, RATIO);
+        auto res = runWithTime(ctx);
+        std::cout << "Usual " << i << " " << res << "\n";
+
+        auto dsuNoSync = new DSU_NO_SYNC(N, node_count);
+        ctx->dsu = dsuNoSync;
+        res = runWithTime(ctx);
+        std::cout << "NoSync " << i << " " << res << "\n";
+    }
+}
+
 void preUnite(ContextRatio* ctx) {
 //    for (int i = E2; i < E; i++) {
 //        dsu->Union(edges->at(i).first, edges->at(i).second);
@@ -96,15 +138,6 @@ void preUnite(ContextRatio* ctx) {
         threads[i].join();
     }
 }
-
-float runWithTime(ContextRatio* ctx) {
-    auto start = std::chrono::high_resolution_clock::now();
-    run(ctx);
-    auto stop = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-    return duration.count();
-}
-
 
 float median(int ratio, std::vector<std::vector<float>>* v) {
     std::vector<float> to_sort;
@@ -192,35 +225,10 @@ void benchmark(const std::string& graph, const std::string& outfile) {
     out_avg.close();
 }
 
-void benchmarkSplittedGraph() {
-    N = 50000000;
-    E = 50000000;
-
-    auto g1 = graphRandom(N, E);
-    auto g2 = graphRandom(N, E);
-    for (auto e : *g2) {
-        e.first += N;
-        e.second += N;
-    }
-    std::vector<std::pair<int, int>> G;
-    std::copy(g1->begin(), g1->end(), std::back_inserter(G));
-    std::copy(g2->begin(), g2->end(), std::back_inserter(G));
-
-
-    for (int i = 40; i <= 100; i += 2) {
-        auto dsuUsual = new DSU_USUAL(N);
-        auto ctx = new ContextRatio(&G, dsuUsual, RATIO);
-        auto res = runWithTime(ctx);
-        std::cout << "Usual " << i << " " << res << "\n";
-
-        auto dsuNoSync = new DSU_NO_SYNC(N, node_count);
-        ctx->dsu = dsuNoSync;
-        res = runWithTime(ctx);
-        std::cout << "NoSync " << i << " " << res << "\n";
-    }
-}
-
 int main(int argc, char* argv[]) {
+    if (argc > 1) {
+        THREADS = std::stoi(argv[1]);
+    }
     benchmarkSplittedGraph();
 //    std::string graph = RANDOM;
 //    std::string outfile = "default";
