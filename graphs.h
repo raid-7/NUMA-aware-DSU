@@ -7,7 +7,17 @@ void shuffle(std::vector<std::pair<int, int>>* edges) {
     std::shuffle(edges->begin(), edges->end(), q);
 }
 
-std::vector<std::pair<int, int>>* graphRandom(int N, int E) {
+class Graph {
+public:
+    int N, E;
+    std::vector<std::pair<int, int>>* edges;
+
+    Graph(int N, int E, std::vector<std::pair<int, int>>* edges) : N(N), E(E) {
+        this->edges = edges;
+    }
+};
+
+Graph graphRandom(int N, int E) {
     auto g = new std::vector<std::pair<int, int>>();
 
     for (int i = 0; i < E ; i++) {
@@ -16,10 +26,10 @@ std::vector<std::pair<int, int>>* graphRandom(int N, int E) {
         g->emplace_back(std::make_pair(x, y));
     }
 
-    return g;
+    return Graph(N, E, g);
 }
 
-std::vector<std::pair<int, int>>* graphFromFile(std::string filename) {
+Graph graphFromFile(std::string filename) {
     std::ifstream file;
     file.open(filename);
 
@@ -47,7 +57,7 @@ std::vector<std::pair<int, int>>* graphFromFile(std::string filename) {
     }
 
     shuffle(g);
-    return g;
+    return Graph(N, E, g);
 }
 
 #endif //TRY_GRAPHS_H

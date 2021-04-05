@@ -161,12 +161,16 @@ float median(int ratio, std::vector<std::vector<float>>* v) {
     return to_sort[RUNS / 2];
 }
 
-void benchmark(const std::string& graph, const std::string& outfile) {
+void benchmark(const std::string& graph_filename, const std::string& outfile) {
     std::vector<std::pair<int, int>>* g;
-    if (graph == RANDOM) {
-        g = graphRandom(N, E);
+    if (graph_filename == RANDOM) {
+        auto graph = graphRandom(N, E);
+        g = graph.edges;
     } else {
-        g = graphFromFile(graph);
+        auto graph = graphFromFile(graph_filename);
+        N = graph.N;
+        E = graph.E;
+        g = graph.edges;
     }
 
     std::ofstream out;
