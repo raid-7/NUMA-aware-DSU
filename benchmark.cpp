@@ -84,9 +84,18 @@ float runWithTime(ContextRatio* ctx) {
     return duration.count();
 }
 
+float getAverageTime(ContextRatio* ctx) {
+    auto result = 0;
+    for (int i = 0; i < RUNS; i++) {
+        result += runWithTime(ctx);
+        ctx->dsu->ReInit();
+    }
+    return result / RUNS;
+}
+
 void benchmarkSplittedGraph() {
-    N = 100000000;
-    E = 360000000;
+    N = 10000000;
+    E = 36000000;
 
     auto g1 = graphRandom(N, E);
     auto g2 = graphRandom(N, E);
@@ -110,12 +119,12 @@ void benchmarkSplittedGraph() {
     for (int i = FIRST_RATIO; i <= LAST_RATIO; i += RATIO_STEP) {
         auto dsuUsual = new DSU_USUAL(N);
         auto ctx = new ContextRatio(&G, dsuUsual, RATIO);
-        auto res = runWithTime(ctx);
+        auto res = getAverageTime(ctx);
         std::cout << "Usual " << i << " " << res << "\n";
 
         auto dsuNoSync = new DSU_NO_SYNC(N, node_count);
         ctx->dsu = dsuNoSync;
-        res = runWithTime(ctx);
+        res = getAverageTime(ctx);
         std::cout << "NoSync " << i << " " << res << "\n";
     }
 }
