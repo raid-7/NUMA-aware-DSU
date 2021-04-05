@@ -27,12 +27,12 @@ public:
     }
 
     void Union(int u, int v) override {
-        auto node = getNode();//numa_node_of_cpu(sched_getcpu());
+        auto node = getNode();
 
-        union_(u, v, node, true);
-//        for (int i = 0; i < node_count; i++) {
-//            union_(u, v, i, (i == node));
-//        }
+        //union_(u, v, node, true);
+        for (int i = 0; i < node_count; i++) {
+            union_(u, v, i, (i == node));
+        }
     }
 
     bool SameSet(int u, int v) override {
