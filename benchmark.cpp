@@ -96,8 +96,8 @@ float getAverageTime(ContextRatio* ctx) {
 }
 
 void benchmarkSplittedGraph() {
-    N = 10000000;
-    E = 36000000;
+    N = 40000000;
+    E = 144000000;
 
     auto g1 = graphRandom(N, E);
     auto g2 = graphRandom(N, E);
