@@ -1,6 +1,10 @@
 #ifndef TRY_GRAPHS_H
 #define TRY_GRAPHS_H
 
+#include <vector>
+#include <random>
+#include <fstream>
+
 void shuffle(std::vector<std::pair<int, int>>* edges) {
     std::random_device rd;
     std::mt19937 q(rd());
