@@ -54,7 +54,7 @@ void thread_routine(ContextRatio* ctx, int v1, int v2) {
         } else {
             ctx->dsu->Union(e.first, e.second);
         }
-        doSmth();
+        // doSmth();
     }
 }
 
@@ -86,7 +86,7 @@ float runWithTime(ContextRatio* ctx) {
 
 void benchmarkSplittedGraph() {
     N = 100000000;
-    E = 100000000;
+    E = 360000000;
 
     auto g1 = graphRandom(N, E);
     auto g2 = graphRandom(N, E);
