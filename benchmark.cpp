@@ -99,8 +99,8 @@ void benchmarkSplittedGraph() {
     N = 40000000;
     E = 144000000;
 
-    auto g1 = graphRandom(N, E);
-    auto g2 = graphRandom(N, E);
+    auto g1 = graphRandom(N, E).edges;
+    auto g2 = graphRandom(N, E).edges;
     for (int i = 0; i < E; i++) {
         g1->at(i).first *= 2;
         g1->at(i).second *= 2;
