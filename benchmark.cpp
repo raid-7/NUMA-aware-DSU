@@ -20,7 +20,6 @@ int THREADS = std::thread::hardware_concurrency();
 int node_count = numa_num_configured_nodes();
 
 int RATIO = 90;
-bool RUN_ALL_RATIOS = false;
 int FIRST_RATIO = 0;
 int LAST_RATIO = 100;
 int RATIO_STEP = 4;
@@ -223,6 +222,7 @@ int main(int argc, char* argv[]) {
             E = std::stoi(argv[3]);
         }
         benchmark(graph, outfile);
+        return 0;
     }
 
     if (argc > 2) {
