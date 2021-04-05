@@ -218,8 +218,10 @@ int main(int argc, char* argv[]) {
 
     std::string outfile = "default";
     if (graph == RANDOM) {
-        std::cout << "check readme.md" << std::endl;
-        return 0;
+        if (argc > 2) {
+            N = std::stoi(argv[2]);
+            E = std::stoi(argv[3]);
+        }
         benchmark(graph, outfile);
     }
 
