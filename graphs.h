@@ -44,7 +44,8 @@ Graph graphFromFile(std::string filename) {
     int a, b;
     char c;
 
-    if (filename[0] == 'W') {
+    // TODO: fix the check
+    if (filename[filename.size() - 1] == 'r') {
         for (int i = 0; i < E; i++) {
             file >> c;
             file >> a >> b;
