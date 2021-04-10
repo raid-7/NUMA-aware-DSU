@@ -22,7 +22,7 @@ public:
 
     ~DSU_NO_SYNC() {
         for (int i = 0; i < node_count; i++) {
-            numa_free(data[i], sizeof(int) * size);
+            numa_free(data[i], sizeof(std::atomic<int>) * size);
         }
     }
 
@@ -90,7 +90,7 @@ private:
         } else {
             auto cur = u;
             while (true) {
-                auto par = data[node][cur].load(std::memory_order_relaxed);
+                auto par = data[node][cur].load(std::memory_order_acquire);
                 if (par == cur) {
                     return par;
                 }
