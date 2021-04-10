@@ -8,6 +8,7 @@
 #include "implementations/DSU_No_Sync.h"
 #include "implementations/DSU_Usual.h"
 #include "graphs.h"
+#include "implementations/DSU_Helper.h"
 
 const std::string RANDOM = "random";
 const std::string SPLIT = "split";
@@ -59,12 +60,12 @@ void thread_routine(ContextRatio* ctx, int v1, int v2) {
     }
 }
 
-void run(ContextRatio* ctx) {
+void run(ContextRatio* ctx, int e) {
     std::vector<std::thread> threads;
 
-    int step = (E) / THREADS;
+    int step = e / THREADS;
     for (int i = 0; i < THREADS; i++) {
-        threads.emplace_back(std::thread(thread_routine, ctx, i*step, std::min(i*step + step, E)));
+        threads.emplace_back(std::thread(thread_routine, ctx, i*step, std::min(i*step + step, e)));
 
         cpu_set_t cpuset;
         CPU_ZERO(&cpuset);
@@ -77,18 +78,18 @@ void run(ContextRatio* ctx) {
     }
 }
 
-float runWithTime(ContextRatio* ctx) {
+float runWithTime(ContextRatio* ctx, int e) {
     auto start = std::chrono::high_resolution_clock::now();
-    run(ctx);
+    run(ctx, e);
     auto stop = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
     return duration.count();
 }
 
-float getAverageTime(ContextRatio* ctx) {
+float getAverageTime(ContextRatio* ctx, int e) {
     auto result = 0;
     for (int i = 0; i < RUNS; i++) {
-        result += runWithTime(ctx);
+        result += runWithTime(ctx, e);
         ctx->dsu->ReInit();
     }
     return result / RUNS;
@@ -120,25 +121,24 @@ void benchmarkSplittedGraph() {
     for (int i = FIRST_RATIO; i <= LAST_RATIO; i += RATIO_STEP) {
         auto dsuUsual = new DSU_USUAL(N);
         auto ctx = new ContextRatio(&G, dsuUsual, RATIO);
-        auto res = getAverageTime(ctx);
+        auto res = getAverageTime(ctx, E);
         std::cout << "Usual " << i << " " << res << "\n";
 
         auto dsuNoSync = new DSU_NO_SYNC(N, node_count);
         ctx->dsu = dsuNoSync;
-        res = getAverageTime(ctx);
+        res = getAverageTime(ctx, E);
         std::cout << "NoSync " << i << " " << res << "\n";
     }
 }
 
-void preUnite(ContextRatio* ctx) {
-//    for (int i = E2; i < E; i++) {
-//        dsu->Union(edges->at(i).first, edges->at(i).second);
-//    }
+void preUnite(ContextRatio* ctx, int e) {
+    int start = E - e;
+    int ratio = ctx->ratio;
     ctx->ratio = 10;
     std::vector<std::thread> threads;
-    int step = (E - E / 2) / THREADS;
+    int step = e / THREADS;
     for (int i = 0; i < THREADS; i++) {
-        threads.emplace_back(std::thread(thread_routine, ctx, i*step + E / 2, std::min(i*step + step + E / 2, E)));
+        threads.emplace_back(std::thread(thread_routine, ctx, i*step + start, std::min(i*step + step + start, E)));
 
         cpu_set_t cpuset;
         CPU_ZERO(&cpuset);
@@ -149,6 +149,7 @@ void preUnite(ContextRatio* ctx) {
     for (int i = 0; i < int(threads.size()); i++) {
         threads[i].join();
     }
+    ctx->ratio = ratio;
 }
 
 float median(int ratio, std::vector<std::vector<float>>* v) {
@@ -175,26 +176,28 @@ void benchmark(const std::string& graph_filename, const std::string& outfile) {
     std::ofstream out;
     out.open(outfile);
 
+    int edges_to_pre_unite = E / 2;
+    int edges_to_test = E - edges_to_pre_unite;
     for (int i = FIRST_RATIO; i <= LAST_RATIO; i += RATIO_STEP) {
         RATIO = i;
         std::cerr << i << std::endl;
 
         auto dsuUsual = new DSU_USUAL(N);
         auto ctx = new ContextRatio(g, dsuUsual, RATIO);
-        auto res = getAverageTime(ctx);
+        preUnite(ctx, edges_to_pre_unite);
+        auto res = getAverageTime(ctx, edges_to_test);
         out << "Usual " << RATIO << " " << res << "\n";
 
-//                auto dsuNUMAHelper = new DSU_Helper(N, node_count);
-//                //auto ctx = new ContextRatio(g, dsuNUMAHelper, RATIO);
-//                ctx->dsu = dsuNUMAHelper;
-//                res = runWithTime(ctx);
-//                out << "NUMAHelper " << RATIO << " " << res << "\n";
-//                std::cerr << res << " ";
-//                resultsNUMA[r].emplace_back(res);
+        auto dsuNUMAHelper = new DSU_Helper(N, node_count);
+        ctx->dsu = dsuNUMAHelper;
+        preUnite(ctx, edges_to_pre_unite);
+        res = getAverageTime(ctx, edges_to_test);
+        out << "NUMAHelper " << RATIO << " " << res << "\n";
 
         auto dsuNoSync = new DSU_NO_SYNC(N, node_count);
         ctx->dsu = dsuNoSync;
-        res = getAverageTime(ctx);
+        preUnite(ctx, edges_to_pre_unite);
+        res = getAverageTime(ctx, edges_to_test);
         out << "NoSync " << RATIO << " " << res << "\n";
     }
 
