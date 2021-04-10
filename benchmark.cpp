@@ -176,7 +176,7 @@ void benchmark(const std::string& graph_filename, const std::string& outfile) {
     std::ofstream out;
     out.open(outfile);
 
-    int edges_to_pre_unite = E / 2;
+    int edges_to_pre_unite = E / 4;
     int edges_to_test = E - edges_to_pre_unite;
     for (int i = FIRST_RATIO; i <= LAST_RATIO; i += RATIO_STEP) {
         RATIO = i;
