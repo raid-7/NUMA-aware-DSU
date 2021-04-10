@@ -65,4 +65,18 @@ Graph graphFromFile(std::string filename) {
     return Graph(N, E, g);
 }
 
+Graph generateComponents(int n, int N, int E) {
+    auto g = new std::vector<std::pair<int, int>>();
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < E; j++) {
+            int x = rand() % N;
+            int y = rand() % N;
+            x = x * n + i; // чтобы вершинки перемешались
+            y = y * n + i;
+            g->emplace_back(std::make_pair(x, y));
+        }
+    }
+    return Graph(N * n, E * e, g);
+}
+
 #endif //TRY_GRAPHS_H
