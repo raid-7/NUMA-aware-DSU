@@ -9,6 +9,7 @@
 #include "implementations/DSU_Usual.h"
 #include "graphs.h"
 #include "implementations/DSU_Helper.h"
+#include "implementations/DSU_CircularBuffer.h"
 
 const std::string RANDOM = "random";
 const std::string SPLIT = "split";
@@ -176,7 +177,7 @@ void benchmark(const std::string& graph_filename, const std::string& outfile) {
     std::ofstream out;
     out.open(outfile);
 
-    int edges_to_pre_unite = E / 4;
+    int edges_to_pre_unite = 0;//E / 4;
     int edges_to_test = E - edges_to_pre_unite;
     for (int i = FIRST_RATIO; i <= LAST_RATIO; i += RATIO_STEP) {
         RATIO = i;
@@ -184,21 +185,27 @@ void benchmark(const std::string& graph_filename, const std::string& outfile) {
 
         auto dsuUsual = new DSU_USUAL(N);
         auto ctx = new ContextRatio(g, dsuUsual, RATIO);
-        preUnite(ctx, edges_to_pre_unite);
+        //preUnite(ctx, edges_to_pre_unite);
         auto res = getAverageTime(ctx, edges_to_test);
         out << "Usual " << RATIO << " " << res << "\n";
 
-        auto dsuNUMAHelper = new DSU_Helper(N, node_count);
-        ctx->dsu = dsuNUMAHelper;
-        preUnite(ctx, edges_to_pre_unite);
+        auto dsuCircular = new DSU_CircularBuffer(N, node_count);
+        ctx->dsu = dsuCircular;
+        //preUnite(ctx, edges_to_pre_unite);
         res = getAverageTime(ctx, edges_to_test);
-        out << "NUMAHelper " << RATIO << " " << res << "\n";
+        out << "CircularBuffer " << RATIO << " " << res << "\n";
 
-        auto dsuNoSync = new DSU_NO_SYNC(N, node_count);
-        ctx->dsu = dsuNoSync;
-        preUnite(ctx, edges_to_pre_unite);
-        res = getAverageTime(ctx, edges_to_test);
-        out << "NoSync " << RATIO << " " << res << "\n";
+//        auto dsuNUMAHelper = new DSU_Helper(N, node_count);
+//        ctx->dsu = dsuNUMAHelper;
+//        preUnite(ctx, edges_to_pre_unite);
+//        res = getAverageTime(ctx, edges_to_test);
+//        out << "NUMAHelper " << RATIO << " " << res << "\n";
+//
+//        auto dsuNoSync = new DSU_NO_SYNC(N, node_count);
+//        ctx->dsu = dsuNoSync;
+//        preUnite(ctx, edges_to_pre_unite);
+//        res = getAverageTime(ctx, edges_to_test);
+//        out << "NoSync " << RATIO << " " << res << "\n";
     }
 
     out.close();
