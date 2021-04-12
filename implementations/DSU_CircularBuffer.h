@@ -53,8 +53,8 @@ public:
         while (true) {
             int tail = log_tail.load(std::memory_order_acquire);
             int new_tail = tail + 1;
-            if (new_tail == LOG_SIZE) {
-                new_tail = 0;
+            if (new_tail >= LOG_SIZE) {
+                new_tail -= LOG_SIZE;
             }
             while (true) {
                 bool ok = true;
@@ -68,7 +68,7 @@ public:
                     break;
                 }
             }
-            if (log_tail.compare_exchange_weak(tail, tail + 1)) {
+            if (log_tail.compare_exchange_weak(tail, new_tail)) {
                 log[tail].store(uv);
                 readLogW(tail);
                 break;
@@ -103,7 +103,7 @@ private:
         auto node = getNode();
         while (true) {
             int local = local_tail[node]->load();
-            if (local == (log_tail.load() + 1) % LOG_SIZE) {
+            if (local == log_tail.load()) {
                 break;
             }
 
@@ -115,7 +115,11 @@ private:
             __int64_t v = uv - (u << 32);
             _union(u, v, node);
 
-            local_tail[node]->compare_exchange_weak(local, (local + 1) % LOG_SIZE);
+            int new_local = local + 1;
+            if (new_local >= LOG_SIZE) {
+                new_local -= LOG_SIZE;
+            }
+            local_tail[node]->compare_exchange_weak(local, new_local);
         }
     }
 
@@ -127,7 +131,7 @@ private:
             if (local > last) {
                 break;
             }
-            if (local == (log_tail.load() + 1) % LOG_SIZE) {
+            if (local == log_tail.load()) {
                 break;
             }
 
@@ -139,7 +143,11 @@ private:
             __int64_t v = uv - (u << 32);
             _union(u, v, node);
 
-            local_tail[node]->compare_exchange_weak(local, (local + 1) % LOG_SIZE);
+            int new_local = local + 1;
+            if (new_local >= LOG_SIZE) {
+                new_local -= LOG_SIZE;
+            }
+            local_tail[node]->compare_exchange_weak(local, new_local);
         }
     }
 
