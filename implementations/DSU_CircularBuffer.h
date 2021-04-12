@@ -16,7 +16,7 @@ public:
                 data[i][j].store(j);
             }
             local_tail[i] = (std::atomic<int> *) numa_alloc_onnode(sizeof(std::atomic<int>), i);
-            local_tail[i].store(0);
+            local_tail[i]->store(0);
         }
         log_tail.store(0);
         min_tail.store(0);
@@ -31,7 +31,7 @@ public:
             for (int j = 0; j < size; j++) {
                 data[i][j].store(j);
             }
-            local_tail[i].store(0);
+            local_tail[i]->store(0);
         }
         log_tail.store(0);
         min_tail.store(0);
@@ -43,9 +43,9 @@ public:
     ~DSU_CircularBuffer() {
         for (int i = 0; i < node_count; i++) {
             numa_free(data[i], sizeof(std::atomic<int>) * size);
-            numa_free(local_tail[i], sizeof(std::atomic<__int64_t>) * LOG_SIZE);
+            numa_free(local_tail[i], sizeof(std::atomic<int>));
         }
-        numa_free(log, sizeof())
+        numa_free(log, sizeof(std::atomic<__int64_t>) * LOG_SIZE);
     }
 
     void Union(int u, int v) override {
@@ -59,7 +59,7 @@ public:
             while (true) {
                 bool ok = true;
                 for (int i = 0; i < node_count; i++) {
-                    if (local_tail[i].load() == new_tail) {
+                    if (local_tail[i]->load() == new_tail) {
                         ok = false;
                         continue;
                     }
@@ -102,12 +102,12 @@ private:
     void readLogR() {
         auto node = getNode();
         while (true) {
-            int local = local_tail[node].load();
+            int local = local_tail[node]->load();
             if (local == (log_tail.load() + 1) % LOG_SIZE) {
                 break;
             }
 
-            __int64_t uv = 0;
+            __int64_t uv = log[local].load();
             if (uv == 0) {
                 break;
             }
@@ -115,7 +115,7 @@ private:
             __int64_t v = uv - (u << 32);
             _union(u, v, node);
 
-            local_tail[node].compare_exchange_weak(local, (local + 1) % LOG_SIZE);
+            local_tail[node]->compare_exchange_weak(local, (local + 1) % LOG_SIZE);
         }
     }
 
@@ -123,7 +123,7 @@ private:
     void readLogW(int last) {
         auto node = getNode();
         while (true) {
-            int local = local_tail[node].load();
+            int local = local_tail[node]->load();
             if (local > last) {
                 break;
             }
@@ -139,7 +139,7 @@ private:
             __int64_t v = uv - (u << 32);
             _union(u, v, node);
 
-            local_tail[node].compare_exchange_weak(local, (local + 1) % LOG_SIZE);
+            local_tail[node]->compare_exchange_weak(local, (local + 1) % LOG_SIZE);
         }
     }
 
