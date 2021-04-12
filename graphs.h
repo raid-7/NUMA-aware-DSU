@@ -76,7 +76,7 @@ Graph generateComponents(int n, int N, int E) {
             g->emplace_back(std::make_pair(x, y));
         }
     }
-    return Graph(N * n, E * e, g);
+    return Graph(N * n, E * n, g);
 }
 
 #endif //TRY_GRAPHS_H

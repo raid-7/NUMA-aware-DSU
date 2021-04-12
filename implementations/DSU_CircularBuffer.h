@@ -20,7 +20,7 @@ public:
         }
         log_tail.store(0);
         min_tail.store(0);
-        log = (std::atomic<__int64_t> *) numa_alloc_onnode(sizeof(std::atomic<__int64_t>) * LOG_SIZE, i);
+        log = (std::atomic<__int64_t> *) numa_alloc_onnode(sizeof(std::atomic<__int64_t>) * LOG_SIZE, 0);
         for (int i = 0; i < LOG_SIZE; i++) {
             log[i].store(0);
         }
@@ -94,7 +94,7 @@ public:
 
     int Find(int u) override {
         readLogR();
-        return find(u, getNode());
+        return _find(u, getNode());
     }
 
 private:
