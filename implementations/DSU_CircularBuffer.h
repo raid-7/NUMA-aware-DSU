@@ -7,7 +7,7 @@
 
 class DSU_CircularBuffer : public DSU {
 public:
-    DSU_CircularBuffer(int size) :size(size) {
+    DSU_CircularBuffer(int size, int node_count) :size(size), node_count(node_count) {
         data.resize(node_count);
         local_tail.resize(node_count);
         for (int i = 0; i < node_count; i++) {
@@ -20,7 +20,7 @@ public:
         }
         log_tail.store(0);
         min_tail.store(0);
-        log = (std::atomic<int> *) numa_alloc_onnode(sizeof(std::atomic<__int64_t>) * LOG_SIZE, i);
+        log = (std::atomic<__int64_t> *) numa_alloc_onnode(sizeof(std::atomic<__int64_t>) * LOG_SIZE, i);
         for (int i = 0; i < LOG_SIZE; i++) {
             log[i].store(0);
         }
