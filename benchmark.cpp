@@ -10,6 +10,8 @@
 #include "graphs.h"
 #include "implementations/DSU_Helper.h"
 #include "implementations/DSU_CircularBuffer.h"
+#include "implementations/DSU_SyncOnNode.h"
+#include "implementations/DSU_ParallelUnions.h"
 
 const std::string RANDOM = "random";
 const std::string SPLIT = "split";
@@ -22,9 +24,9 @@ int THREADS = std::thread::hardware_concurrency();
 int node_count = numa_num_configured_nodes();
 
 int RATIO = 90;
-int FIRST_RATIO = 0;
-int LAST_RATIO = 100;
-int RATIO_STEP = 4;
+int FIRST_RATIO = 5000;
+int LAST_RATIO = 10000;
+int RATIO_STEP = 100;
 
 struct ContextRatio {
     std::vector<std::pair<int, int>>* edges;
@@ -52,7 +54,7 @@ void thread_routine(ContextRatio* ctx, int v1, int v2) {
     //numa_run_on_node(node);
     for (int i = v1; i < v2; i++) {
         auto e = ctx->edges->at(i);
-        if (i % 100 < ctx->ratio) {
+        if (i % 10000 < ctx->ratio) {
             ctx->dsu->SameSet(e.first, e.second);
         } else {
             ctx->dsu->Union(e.first, e.second);
@@ -194,6 +196,18 @@ void benchmark(const std::string& graph_filename, const std::string& outfile) {
         //preUnite(ctx, edges_to_pre_unite);
         res = getAverageTime(ctx, edges_to_test);
         out << "CircularBuffer " << RATIO << " " << res << "\n";
+
+        auto dsuParallelUnions = new DSU_ParallelUnions(N, node_count);
+        ctx->dsu = dsuParallelUnions;
+        //preUnite(ctx, edges_to_pre_unite);
+        res = getAverageTime(ctx, edges_to_test);
+        out << "ParallelUnions " << RATIO << " " << res << "\n";
+
+//        auto dsuCircular = new DSU_CircularBuffer(N, node_count);
+//        ctx->dsu = dsuCircular;
+//        //preUnite(ctx, edges_to_pre_unite);
+//        res = getAverageTime(ctx, edges_to_test);
+//        out << "CircularBuffer " << RATIO << " " << res << "\n";
 
 //        auto dsuNUMAHelper = new DSU_Helper(N, node_count);
 //        ctx->dsu = dsuNUMAHelper;
