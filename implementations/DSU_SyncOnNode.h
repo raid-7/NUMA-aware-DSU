@@ -32,7 +32,7 @@ public:
     ~DSU_SyncOnNode() {
         for (int i = 0; i < node_count; i++) {
             numa_free(data[i], sizeof(std::atomic<int>) * size);
-            numa_free(to_union[i], std::atomic<__int64_t>);
+            numa_free(to_union[i], sizeof(std::atomic<__int64_t>));
         }
     }
 
@@ -108,7 +108,7 @@ private:
             __int64_t v = uv - (u << 32);
 
             for (int i = 0; i < node_count; i++) {
-                union_(u, v, i, node, (i == node));
+                union_(u, v, i, (i == node));
             }
 
             to_union[node]->compare_exchange_strong(uv, 0);
