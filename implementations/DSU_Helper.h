@@ -5,9 +5,9 @@ public:
     DSU_Helper(int size, int node_count) :size(size), node_count(node_count) {
         data.resize(node_count);
         for (int i = 0; i < node_count; i++) {
-            data[i] = (std::atomic<int> *) numa_alloc_onnode(sizeof(std::atomic<int>) * size, i);
+            data[i] = (std::atomic<__int64_t> *) numa_alloc_onnode(sizeof(std::atomic<__int64_t>) * size, i);
             for (int j = 0; j < size; j++) {
-                data[i][j].store(j);
+                data[i][j].store(j * 2 + 1);
             }
         }
         to_union.store(0);
@@ -16,7 +16,7 @@ public:
     void ReInit() override {
         for (int i = 0; i < node_count; i++) {
             for (int j = 0; j < size; j++) {
-                data[i][j].store(j);
+                data[i][j].store(j * 2 + 1);
             }
         }
         to_union.store(0);
@@ -34,12 +34,15 @@ public:
             node = 0;
         }
 
-        __int64_t uv = (__int64_t(u) << 32) + v;
-        __int64_t zero = 0;
+        __int128_t uv = makeToUnion(u, v);//(__int64_t(u) << 32) + v;
 
         while (true) {
-            if (to_union.compare_exchange_weak(zero, uv)) {
-                break;
+            auto was = to_union.load(std::memory_order_acquire);
+            if (was % 2 == 1) {
+                if (to_union.compare_exchange_weak(was, uv)) {
+                    break;
+                }
+                old_unions(node);
             } else {
                 old_unions(node);
             }
@@ -50,38 +53,14 @@ public:
     }
 
     bool SameSet(int u, int v) override {
-        auto node = getNode();
-        if (node_count == 1) {
-            node = 0;
-        }
-
-        return SameSetOnNode(u, v, node);
+        return SameSetOnNode(u, v, getNode());
     }
 
     int Find(int u) override {
-        auto node = getNode();
-        if (node_count > 1) {
-            old_unions(node);
-        } else {
-            node = 0;
-        }
-
-        return find(u, node, true);
+        return find(u, getNode(), true);
     }
 
     bool SameSetOnNode(int u, int v, int node) {
-//        if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
-//            return true;
-//        }
-
-        if (node_count > 1) {
-            old_unions(node);
-        }
-
-//        if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
-//            return true;
-//        }
-
         auto u_p = u;
         auto v_p = v;
         while (true) {
@@ -90,7 +69,7 @@ public:
             if (u_p == v_p) {
                 return true;
             }
-            if (data[node][u_p].load(std::memory_order_acquire) == u_p) {
+            if (getParent(node, u_p) == u_p) {
                 return false;
             }
         }
@@ -98,29 +77,36 @@ public:
 
 private:
     void old_unions(int node) {
-        __int64_t uv;
+        __int128_t uv;
+        int from, to, status;
         while (true) {
             uv = to_union.load(std::memory_order_acquire);
-            if (uv == 0) {
+            std::tie(from, to, status) = getToUnion(uv);
+            if (status == 1) {
                 break;
             }
-            __int64_t u = uv >> 32;
-            __int64_t v = uv - (u << 32);
 
             for (int i = 0; i < node_count; i++) {
-                union_(u, v, i, (i == node), node);
+                union_(from, to, i, (i == node), node);
             }
 
-            to_union.compare_exchange_strong(uv, 0);
+            to_union.compare_exchange_strong(uv, uv + 1);
+
+            for (int i = 0; i < node_count; i++) {
+                __int64_t par = data[i][from].load(std::memory_order_acquire);
+                if (par % 2 == 0) {
+                    data[i][from].compare_exchange_strong(par, par + 1);
+                }
+            }
         }
     }
 
-    int find(int u, int node, bool is_local) {
+    __int64_t find(int u, int node, bool is_local) {
         if (is_local) {
             auto cur = u;
             while (true) {
-                auto par = data[node][cur].load(std::memory_order_relaxed);
-                auto grand = data[node][par].load(std::memory_order_relaxed);
+                auto par = getParent(node, cur);
+                auto grand = getParent(node, par);
                 if (par == grand) {
                     return par;
                 } else {
@@ -131,7 +117,7 @@ private:
         } else {
             auto cur = u;
             while (true) {
-                auto par = data[node][cur].load(std::memory_order_relaxed);
+                auto par = getParent(node, cur);
                 if (par == cur) {
                     return par;
                 }
@@ -141,11 +127,8 @@ private:
     }
 
     void union_(int u, int v, int node, bool is_local, int cur_node) {
-        if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
-            return;
-        }
-        int u_p = u;
-        int v_p = v;
+        __int64_t u_p = u;
+        __int64_t v_p = v;
         if (!is_local) {
             u_p = find(u_p, cur_node, true);
             v_p = find(v_p, cur_node, true);
@@ -180,20 +163,53 @@ private:
     }
 
     int getNode() {
-//        auto node = 0;
-//        auto msk = numa_get_run_node_mask();
-//        for (int i = 1; i < node_count; i++) {
-//            if (numa_bitmask_isbitset(msk, i)) {
-//                node = i;
-//            }
-//        }
-//        return node;
         thread_local static int node = numa_node_of_cpu(sched_getcpu());
         return node;
     }
 
+    __int64_t getParent(int node, int u) {
+        auto par = data[node][u].load(std::memory_order_acquire);
+        auto added = par % 2;
+        par = par / 2;
+
+        if (added == 1) {
+            return par;
+        } else {
+            int from, to, status;
+            std::tie(from, to, status) = loadToUnion();
+            if (u == from && par == to) {
+                if (status == 1) {
+                    return par;
+                } else {
+                    return u;
+                }
+            } else {
+                return par;
+            }
+        }
+    }
+
+    std::tuple<int, int, int> loadToUnion() {
+        auto uv = to_union.load(std::memory_order_acquire);
+        return getToUnion(uv);
+    }
+
+    std::tuple<int, int, int> getToUnion(__int128_t uv) {
+        int status = uv % 2;
+        uv = uv / 2;
+        __int64_t u = uv >> 32;
+        __int64_t v = uv - (u << 32);
+        return std::make_tuple(u, v, status);
+    }
+
+    __int128_t makeToUnion(int u, int v) {
+        __int128_t uv = (__int64_t(u) << 32) + v;
+        uv = uv * 2;
+        return uv;
+    }
+
     int size;
     int node_count;
-    std::vector<std::atomic<int>*> data;
-    std::atomic<__int64_t> to_union;
+    std::vector<std::atomic<__int64_t>*> data;
+    std::atomic<__int128_t> to_union;
 };
