@@ -10,7 +10,7 @@ public:
                 data[i][j].store(j * 2 + 1);
             }
         }
-        to_union.store(0);
+        to_union.store(1);
     }
 
     void ReInit() override {
@@ -19,7 +19,7 @@ public:
                 data[i][j].store(j * 2 + 1);
             }
         }
-        to_union.store(0);
+        to_union.store(1);
     }
 
     ~DSU_Helper() {
@@ -30,11 +30,11 @@ public:
 
     void Union(int u, int v) override {
         auto node = getNode();
-        if (node_count == 1) {
-            node = 0;
-        }
 
-        __int128_t uv = makeToUnion(u, v);//(__int64_t(u) << 32) + v;
+        __int64_t u_p = find(u, node, true);
+        __int64_t v_p = find(v, node, true);
+
+        __int128_t uv = makeToUnion(u_p, v_p);//(__int64_t(u) << 32) + v;
 
         while (true) {
             auto was = to_union.load(std::memory_order_acquire);
@@ -49,7 +49,6 @@ public:
         }
 
         old_unions(node);
-        //union_(u, v, node);
     }
 
     bool SameSet(int u, int v) override {
@@ -90,12 +89,12 @@ private:
                 union_(from, to, i, (i == node), node);
             }
 
-            to_union.compare_exchange_strong(uv, uv + 1);
-
-            for (int i = 0; i < node_count; i++) {
-                __int64_t par = data[i][from].load(std::memory_order_acquire);
-                if (par % 2 == 0) {
-                    data[i][from].compare_exchange_strong(par, par + 1);
+            if (to_union.compare_exchange_strong(uv, uv + 1)) {
+                for (int i = 0; i < node_count; i++) {
+                    __int64_t par = data[i][from].load(std::memory_order_acquire);
+                    if (par % 2 == 0) {
+                        data[i][from].compare_exchange_strong(par, par + 1);
+                    }
                 }
             }
         }
@@ -110,7 +109,8 @@ private:
                 if (par == grand) {
                     return par;
                 } else {
-                    data[node][cur].compare_exchange_weak(par, grand);
+                    auto par_data = par * 2 + 1;
+                    data[node][cur].compare_exchange_weak(par_data, grand * 2 + 1);
                 }
                 cur = par;
             }
@@ -129,35 +129,23 @@ private:
     void union_(int u, int v, int node, bool is_local, int cur_node) {
         __int64_t u_p = u;
         __int64_t v_p = v;
-        if (!is_local) {
-            u_p = find(u_p, cur_node, true);
-            v_p = find(v_p, cur_node, true);
-            if (u_p < v_p) {
-                if (u_p < v_p) {
-                    if (data[node][u_p].compare_exchange_weak(u_p, v_p)) {
-                        return;
-                    }
-                } else {
-                    if (data[node][v_p].compare_exchange_weak(v_p, u_p)) {
-                        return;
-                    }
-                }
-            }
-        }
+//        if (!is_local) {
+//            u_p = find(u_p, cur_node, true);
+//            v_p = find(v_p, cur_node, true);
+//            if (data[node][u_p].compare_exchange_weak(u_p, v_p)) {
+//                return;
+//            }
+//        }
         while (true) {
             u_p = find(u_p, node, is_local);
             v_p = find(v_p, node, is_local);
             if (u_p == v_p) {
                 return;
             }
-            if (u_p < v_p) {
-                if (data[node][u_p].compare_exchange_weak(u_p, v_p)) {
-                    return;
-                }
-            } else {
-                if (data[node][v_p].compare_exchange_weak(v_p, u_p)) {
-                    return;
-                }
+
+            auto u_p_data = u_p*2 + 1;
+            if (data[node][u_p].compare_exchange_weak(u_p_data, v_p * 2)) {
+                return;
             }
         }
     }
