@@ -4,13 +4,18 @@ class DSU_Helper : public DSU {
 public:
     DSU_Helper(int size, int node_count) :size(size), node_count(node_count) {
         data.resize(node_count);
+        to_union.resize(size);
         for (int i = 0; i < node_count; i++) {
             data[i] = (std::atomic<__int64_t> *) numa_alloc_onnode(sizeof(std::atomic<__int64_t>) * size, i);
             for (int j = 0; j < size; j++) {
                 data[i][j].store(j * 2 + 1);
             }
         }
-        to_union.store(1);
+        for (int i = 0; i < size; i++) {
+            to_union[i] = (std::atomic<__int64_t> *) malloc(sizeof(std::atomic<__int64_t>));
+            to_union[i]->store(1);
+        }
+        //to_union.store(1);
     }
 
     void ReInit() override {
@@ -19,7 +24,10 @@ public:
                 data[i][j].store(j * 2 + 1);
             }
         }
-        to_union.store(1);
+        for (int i = 0; i < size; i++) {
+            to_union[i]->store(1);
+        }
+        //to_union.store(1);
     }
 
     ~DSU_Helper() {
@@ -31,24 +39,33 @@ public:
     void Union(int u, int v) override {
         auto node = getNode();
 
-        __int64_t u_p = find(u, node, true);
-        __int64_t v_p = find(v, node, true);
-
-        __int128_t uv = makeToUnion(u_p, v_p);//(__int64_t(u) << 32) + v;
-
         while (true) {
-            auto was = to_union.load(std::memory_order_acquire);
-            if (was % 2 == 1) {
-                if (to_union.compare_exchange_weak(was, uv)) {
+            __int64_t u_p = find(u, node, true);
+            __int64_t v_p = find(v, node, true);
+            if (u_p < v_p) {
+                std::swap(u_p, v_p);
+            }
+            auto u_data = to_union[u_p]->load(std::memory_order_relaxed);
+            if (u_data % 2 == 0) {
+                continue;
+            } else {
+                if (to_union[u_p]->compare_exchange_strong(u_data, v_p * 2)) {
+                    for (int i = 0; i < node_count; i++) {
+                        union_(u_p, v_p, i, (node == i));
+                    }
+                    u_data = v_p * 2;
+                    if (to_union[u_p]->compare_exchange_strong(u_data, v_p * 2 + 1)) {
+                        for (int i = 0; i < node_count; i++) {
+                            auto par = data[i][u_p].load(std::memory_order_acquire);
+                            if (par % 2 == 0) {
+                                data[i][u_p].compare_exchange_strong(par, par + 1);
+                            }
+                        }
+                    }
                     break;
                 }
-                old_unions(node);
-            } else {
-                old_unions(node);
             }
         }
-
-        old_unions(node);
     }
 
     bool SameSet(int u, int v) override {
@@ -75,30 +92,6 @@ public:
     }
 
 private:
-    void old_unions(int node) {
-        __int128_t uv;
-        int from, to, status;
-        while (true) {
-            uv = to_union.load(std::memory_order_acquire);
-            std::tie(from, to, status) = getToUnion(uv);
-            if (status == 1) {
-                break;
-            }
-
-            for (int i = 0; i < node_count; i++) {
-                union_(from, to, i, (i == node), node);
-            }
-
-            if (to_union.compare_exchange_strong(uv, uv + 1)) {
-                for (int i = 0; i < node_count; i++) {
-                    __int64_t par = data[i][from].load(std::memory_order_acquire);
-                    if (par % 2 == 0) {
-                        data[i][from].compare_exchange_strong(par, par + 1);
-                    }
-                }
-            }
-        }
-    }
 
     __int64_t find(int u, int node, bool is_local) {
         if (is_local) {
@@ -163,9 +156,9 @@ private:
         if (added == 1) {
             return par;
         } else {
-            int from, to, status;
-            std::tie(from, to, status) = loadToUnion();
-            if (u == from && par == to) {
+            int status;
+            auto data = to_union[u]->load(std::memory_order_acquire);
+            if (par == data / 2) {
                 if (status == 1) {
                     return par;
                 } else {
@@ -177,27 +170,8 @@ private:
         }
     }
 
-    std::tuple<int, int, int> loadToUnion() {
-        auto uv = to_union.load(std::memory_order_acquire);
-        return getToUnion(uv);
-    }
-
-    std::tuple<int, int, int> getToUnion(__int128_t uv) {
-        int status = uv % 2;
-        uv = uv / 2;
-        __int64_t u = uv >> 32;
-        __int64_t v = uv - (u << 32);
-        return std::make_tuple(u, v, status);
-    }
-
-    __int128_t makeToUnion(int u, int v) {
-        __int128_t uv = (__int64_t(u) << 32) + v;
-        uv = uv * 2;
-        return uv;
-    }
-
     int size;
     int node_count;
     std::vector<std::atomic<__int64_t>*> data;
-    std::atomic<__int128_t> to_union;
+    std::vector<std::atomic<__int64_t>*> to_union;
 };
