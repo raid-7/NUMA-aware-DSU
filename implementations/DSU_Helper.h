@@ -15,7 +15,6 @@ public:
             to_union[i] = (std::atomic<__int64_t> *) malloc(sizeof(std::atomic<__int64_t>));
             to_union[i]->store(1);
         }
-        //to_union.store(1);
     }
 
     void ReInit() override {
@@ -27,7 +26,6 @@ public:
         for (int i = 0; i < size; i++) {
             to_union[i]->store(1);
         }
-        //to_union.store(1);
     }
 
     ~DSU_Helper() {
@@ -47,6 +45,7 @@ public:
             }
             auto u_data = to_union[u_p]->load(std::memory_order_relaxed);
             if (u_data % 2 == 0) {
+                //union_(u_p, v_p, node, true);
                 continue;
             } else {
                 if (to_union[u_p]->compare_exchange_strong(u_data, v_p * 2)) {
@@ -119,24 +118,18 @@ private:
         }
     }
 
-    void union_(int u, int v, int node, bool is_local, int cur_node) {
+    void union_(int u, int v, int node, bool is_local) {
         __int64_t u_p = u;
         __int64_t v_p = v;
-//        if (!is_local) {
-//            u_p = find(u_p, cur_node, true);
-//            v_p = find(v_p, cur_node, true);
-//            if (data[node][u_p].compare_exchange_weak(u_p, v_p)) {
-//                return;
-//            }
-//        }
+        auto u_p_data = u_p * 2 + 1;
         while (true) {
-            u_p = find(u_p, node, is_local);
+            //u_p = find(u_p, node, is_local);
             v_p = find(v_p, node, is_local);
             if (u_p == v_p) {
                 return;
             }
 
-            auto u_p_data = u_p*2 + 1;
+            //auto u_p_data = u_p*2 + 1;
             if (data[node][u_p].compare_exchange_weak(u_p_data, v_p * 2)) {
                 return;
             }
@@ -150,16 +143,14 @@ private:
 
     __int64_t getParent(int node, int u) {
         auto par = data[node][u].load(std::memory_order_acquire);
-        auto added = par % 2;
-        par = par / 2;
+        par = par >> 1;
 
-        if (added == 1) {
+        if ((par & 1) == 1) {
             return par;
         } else {
-            int status;
             auto data = to_union[u]->load(std::memory_order_acquire);
-            if (par == data / 2) {
-                if (status == 1) {
+            if (par == (data >> 1)) {
+                if ((data & 1) == 1) {
                     return par;
                 } else {
                     return u;

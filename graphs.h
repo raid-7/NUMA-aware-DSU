@@ -49,14 +49,14 @@ Graph graphFromFile(std::string filename) {
         for (int i = 0; i < E; i++) {
             file >> c;
             file >> a >> b;
-            N = std::max(N, std::max(a, b));
+            N = std::max(N, std::max(a, b) + 1);
             g->emplace_back(std::make_pair(a, b));
             file >> a;
         }
     } else {
         for (int i = 0; i < E; i++) {
             file >> a >> b;
-            N = std::max(N, std::max(a, b));
+            N = std::max(N, std::max(a, b) + 1);
             g->emplace_back(std::make_pair(a, b));
         }
     }
@@ -76,6 +76,9 @@ Graph generateComponents(int n, int N, int E) {
             g->emplace_back(std::make_pair(x, y));
         }
     }
+//    std::random_device rd;
+//    std::mt19937 q(rd());
+//    std::shuffle(g->begin(), g->end(), q);
     return Graph(N * n, E * n, g);
 }
 
