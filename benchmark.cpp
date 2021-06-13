@@ -11,7 +11,6 @@
 #include "implementations/DSU_Helper.h"
 #include "implementations/DSU_CircularBuffer.h"
 #include "implementations/DSU_SyncOnNode.h"
-#include "implementations/DSU_ParallelUnions.h"
 
 const std::string RANDOM = "random";
 const std::string SPLIT = "split";
@@ -234,7 +233,8 @@ int main(int argc, char* argv[]) {
         if (argc > 2) {
             THREADS = std::stoi(argv[2]);
         }
-        benchmarkSplittedGraph();
+        //benchmarkSplittedGraph();
+        return 0;
     }
 
     std::string outfile = "default";
