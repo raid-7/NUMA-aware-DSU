@@ -4,13 +4,13 @@
 #include <random>
 #include <algorithm>
 
-#include "DSU.h"
-#include "implementations/DSU_No_Sync.h"
-#include "implementations/DSU_Usual.h"
 #include "graphs.h"
-#include "implementations/DSU_Helper.h"
+#include "DSU.h"
 #include "implementations/DSU_CircularBuffer.h"
-#include "implementations/DSU_SyncOnNode.h"
+#include "implementations/DSU_Helper.h"
+#include "implementations/DSU_No_Sync.h"
+#include "implementations/DSU_ParallelUnions.h"
+#include "implementations/DSU_Usual.h"
 
 const std::string RANDOM = "random";
 const std::string SPLIT = "split";
@@ -186,10 +186,11 @@ void benchmark(const std::string& graph_filename, const std::string& outfile) {
     for (int i = FIRST_RATIO; i <= LAST_RATIO; i += RATIO_STEP) {
         RATIO = i;
         std::cerr << i << std::endl;
+        auto edges_to_pre_unite_on_step = edges_to_pre_unite / 100 * RATIO;
 
         auto dsuUsual = new DSU_USUAL(N);
         auto ctx = new ContextRatio(g, dsuUsual, RATIO);
-        auto res = getAverageTime(ctx, edges_to_test, edges_to_pre_unite / 100 * RATIO);
+        auto res = getAverageTime(ctx, edges_to_test, edges_to_pre_unite_on_step);
         out << "Usual " << RATIO << " " << res << "\n";
 
 //        auto dsuCircular = new DSU_CircularBuffer(N, node_count);
@@ -197,20 +198,20 @@ void benchmark(const std::string& graph_filename, const std::string& outfile) {
 //        res = getAverageTime(ctx, edges_to_test);
 //        out << "CircularBuffer " << RATIO << " " << res << "\n";
 
-//        auto dsuParallelUnions = new DSU_ParallelUnions(N, node_count);
-//        ctx->dsu = dsuParallelUnions;
-//        res = getAverageTime(ctx, edges_to_test);
-//        out << "ParallelUnions " << RATIO << " " << res << "\n";
+        auto dsuParallelUnions = new DSU_ParallelUnions(N, node_count);
+        ctx->dsu = dsuParallelUnions;
+        res = getAverageTime(ctx, edges_to_test, edges_to_pre_unite_on_step);
+        out << "ParallelUnions " << RATIO << " " << res << "\n";
 
 //        auto dsuCircular = new DSU_CircularBuffer(N, node_count);
 //        ctx->dsu = dsuCircular;
 //        res = getAverageTime(ctx, edges_to_test);
 //        out << "CircularBuffer " << RATIO << " " << res << "\n";
 
-        auto dsuNUMAHelper = new DSU_Helper(N, node_count);
-        ctx->dsu = dsuNUMAHelper;
-        res = getAverageTime(ctx, edges_to_test, edges_to_pre_unite / 100 * RATIO);
-        out << "NUMAHelper " << RATIO << " " << res << "\n";
+//        auto dsuNUMAHelper = new DSU_Helper(N, node_count);
+//        ctx->dsu = dsuNUMAHelper;
+//        res = getAverageTime(ctx, edges_to_test, edges_to_pre_unite_on_step);
+//        out << "NUMAHelper " << RATIO << " " << res << "\n";
 //
 //        auto dsuNoSync = new DSU_NO_SYNC(N, node_count);
 //        ctx->dsu = dsuNoSync;
