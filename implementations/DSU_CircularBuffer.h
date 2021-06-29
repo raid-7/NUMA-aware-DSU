@@ -7,6 +7,10 @@
 
 class DSU_CircularBuffer : public DSU {
 public:
+    std::string ClassName() {
+        return "CircularBuffer";
+    };
+
     DSU_CircularBuffer(int size, int node_count) :size(size), node_count(node_count) {
         data.resize(node_count);
         local_tail.resize(node_count);

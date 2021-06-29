@@ -5,6 +5,10 @@
 
 class DSU_Parts : public DSU {
 public:
+    std::string ClassName() {
+        return "Parts";
+    };
+
     DSU_Parts(int size, int node_count) :size(size), node_count(node_count) {
         data.resize(node_count);
         to_union.resize(size);

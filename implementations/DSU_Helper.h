@@ -2,6 +2,10 @@
 
 class DSU_Helper : public DSU {
 public:
+    std::string ClassName() {
+        return "Helper";
+    };
+
     DSU_Helper(int size, int node_count) :size(size), node_count(node_count) {
         data.resize(node_count);
         for (int i = 0; i < node_count; i++) {

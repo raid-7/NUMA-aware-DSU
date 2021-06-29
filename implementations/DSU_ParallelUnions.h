@@ -6,6 +6,10 @@
 
 class DSU_ParallelUnions : public DSU {
 public:
+    std::string ClassName() {
+        return "ParallelUnions";
+    };
+
     DSU_ParallelUnions(int size, int node_count) :size(size), node_count(node_count) {
         data.resize(node_count);
         to_union.resize(size);

@@ -192,7 +192,7 @@ void benchmark(const std::string& graph_filename) {
     std::vector<DSU*> dsus;
     dsus.push_back(new DSU_USUAL(N));
     dsus.push_back(new DSU_ParallelUnions(N, node_count));
-    dsus.push_back(new DSU_Helper(N, node_count));
+    // dsus.push_back(new DSU_Helper(N, node_count));
     dsus.push_back(new DSU_NO_SYNC(N, node_count));
 
     int edges_to_pre_unite = E / 2;
@@ -207,7 +207,7 @@ void benchmark(const std::string& graph_filename) {
         for (int j = 0; j < dsus.size(); j++) {
             ctx->dsu = dsus[j];
             auto res = getAverageTime(ctx, edges_to_test, edges_to_pre_unite_on_step);
-            out << typeid(dsus[j]).name() << " " << RATIO << " " << res << "\n";
+            out << dsus[j]->ClassName() << " " << RATIO << " " << res << "\n";
         }
 
 

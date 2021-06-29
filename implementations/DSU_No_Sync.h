@@ -2,6 +2,10 @@
 
 class DSU_NO_SYNC : public DSU {
 public:
+    std::string ClassName() {
+        return "NoSync";
+    };
+
     DSU_NO_SYNC(int size, int node_count) :size(size), node_count(node_count) {
         data.resize(node_count);
         for (int i = 0; i < node_count; i++) {

@@ -2,6 +2,10 @@
 
 class DSU_USUAL : public DSU {
 public:
+    std::string ClassName() {
+        return "Usual";
+    };
+
     DSU_USUAL(int size) :size(size) {
         data = (std::atomic<int> *) malloc(sizeof(std::atomic<int>) * size);
         for (int i = 0; i < size; i++) {
