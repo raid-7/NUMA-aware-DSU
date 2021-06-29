@@ -164,6 +164,30 @@ private:
         }
     }
 
+    // returns (v, status, mask)
+    std::tuple<int, int, int> loadToUnion() {
+        auto data = to_union.load(std::memory_order_acquire);
+        return getToUnion(data);
+    }
+
+    std::tuple<int, int, int> getToUnion(__int64_t data) {
+        int status = uv % 2;
+        uv = uv / 2;
+        __int64_t u = uv >> 32;
+        __int64_t v = uv - (u << 32);
+        return std::make_tuple(u, v, status);
+    }
+
+    __int64_t makeToUnionWithStatusInProgress(__int64_t u, __int64_t v, __int64_t mask) {
+        __int64_t data = (__int64_t(v) << 2) + v;
+        uv = uv * 2;
+        return uv;
+    }
+
+    void setUnionStatusToDone(int u, __int64_t was) {
+        to_union[u]->compare_exchange_strong(was, was + (1 << node_count))
+    }
+
     int size;
     int node_count;
     std::vector<std::atomic<__int64_t>*> data;
