@@ -209,31 +209,31 @@ void benchmark(const std::string& graph_filename) {
             auto res = getAverageTime(ctx, edges_to_test, edges_to_pre_unite_on_step);
             out << dsus[j]->ClassName() << " " << RATIO << " " << res << "\n";
         }
-
-
-//        auto dsuParallelUnions = new DSU_ParallelUnions(N, node_count);
-//        ctx->dsu = dsuParallelUnions;
-//        res = getAverageTime(ctx, edges_to_test, edges_to_pre_unite_on_step);
-//        out << "ParallelUnions " << RATIO << " " << res << "\n";
-//
-//        auto dsuCircular = new DSU_CircularBuffer(N, node_count);
-//        ctx->dsu = dsuCircular;
-//        res = getAverageTime(ctx, edges_to_test);
-//        out << "CircularBuffer " << RATIO << " " << res << "\n";
-//
-//        auto dsuNUMAHelper = new DSU_Helper(N, node_count);
-//        ctx->dsu = dsuNUMAHelper;
-//        res = getAverageTime(ctx, edges_to_test, edges_to_pre_unite_on_step);
-//        out << "NUMAHelper " << RATIO << " " << res << "\n";
-//
-//        auto dsuNoSync = new DSU_NO_SYNC(N, node_count);
-//        ctx->dsu = dsuNoSync;
-//        preUnite(ctx, edges_to_pre_unite);
-//        res = getAverageTime(ctx, edges_to_test);
-//        out << "NoSync " << RATIO << " " << res << "\n";
     }
 
     out.close();
+
+/////////////////////////////////////////////////
+
+    for (int pu = 0; i < 100; i += 20) {
+        std::string new_outfile = outfile + "_" + std::to_string(pu);
+        out.open(new_outfile);
+
+        for (int i = FIRST_RATIO; i <= LAST_RATIO; i += RATIO_STEP) {
+            RATIO = i;
+            std::cerr << i << std::endl;
+
+            auto ctx = new ContextRatio(g, dsus[0], RATIO);
+
+            for (int j = 0; j < dsus.size(); j++) {
+                ctx->dsu = dsus[j];
+                auto res = getAverageTime(ctx, edges_to_test, 0);
+                out << dsus[j]->ClassName() << " " << RATIO << " " << res << "\n";
+            }
+        }
+        out.close();
+    }
+
 }
 
 int main(int argc, char* argv[]) {
