@@ -160,7 +160,7 @@ float getAverageTime(ContextRatio* ctx, int e, int to_pre_unite) {
 
 
 
-std::string getLastPartOfFilename(std::String filename) {
+std::string getLastPartOfFilename(std::string filename) {
     std::String result = "";
     for (int i = filename.size() - 1; i--; i >= 0) {
         if (filename[i] == "/") {
@@ -272,9 +272,6 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
-    if (argc > 2) {
-        outfile = argv[3];
-    }
     benchmark(graph);
 
     return 0;
