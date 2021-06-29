@@ -3,6 +3,7 @@
 #include <fstream>
 #include <random>
 #include <algorithm>
+#include <typeinfo>
 
 #include "graphs.h"
 #include "DSU.h"
@@ -55,7 +56,7 @@ void thread_routine(ContextRatio* ctx, int v1, int v2) {
     //numa_run_on_node(node);
     for (int i = v1; i < v2; i++) {
         auto e = ctx->edges->at(i);
-        if (i % 100 < ctx->ratio) {
+        if (intRand(0, 100) < ctx->ratio) {
             ctx->dsu->SameSet(e.first, e.second);
         } else {
             ctx->dsu->Union(e.first, e.second);
@@ -157,22 +158,28 @@ float getAverageTime(ContextRatio* ctx, int e, int to_pre_unite) {
 //    }
 //}
 
-float median(int ratio, std::vector<std::vector<float>>* v) {
-    std::vector<float> to_sort;
-    for (int i = 0; i < RUNS; i++) {
-        to_sort.emplace_back(v->at(i)[ratio]);
+
+
+std::string getLastPartOfFilename(std::String filename) {
+    std::String result = "";
+    for (int i = filename.size() - 1; i--; i >= 0) {
+        if (filename[i] == "/") {
+            break;
+        }
+        result = filename[i] + result;
     }
-    std::sort(to_sort.begin(), to_sort.end());
-    return to_sort[RUNS / 2];
+    return result;
 }
 
-void benchmark(const std::string& graph_filename, const std::string& outfile) {
+void benchmark(const std::string& graph_filename) {
+    std::string outfile = "usual_" + getLastPartOfFilename(graph_filename);
     std::vector<std::pair<int, int>>* g;
     if (graph_filename == RANDOM) {
         auto graph = graphRandom(N, E);
         g = graph.edges;
+        outfile = outfile + "_" + std::to_string(N) + "_" + std::to_string(E);
     } else {
-        auto graph = (graph_filename == COMPONENTS)? generateComponents(n, N, E) : graphFromFile(graph_filename);
+        auto graph = (graph_filename == COMPONENTS)? generateComponentsShuffled(n, N, E) : graphFromFile(graph_filename);
         N = graph.N;
         E = graph.E;
         g = graph.edges;
@@ -181,6 +188,13 @@ void benchmark(const std::string& graph_filename, const std::string& outfile) {
     std::ofstream out;
     out.open(outfile);
 
+
+    std::vector<DSU*> dsus;
+    dsus.push_back(new DSU_USUAL(N));
+    dsus.push_back(new DSU_ParallelUnions(N, node_count));
+    dsus.push_back(new DSU_Helper(N, node_count));
+    dsus.push_back(new DSU_NO_SYNC(N, node_count));
+
     int edges_to_pre_unite = E / 2;
     int edges_to_test = E - edges_to_pre_unite;
     for (int i = FIRST_RATIO; i <= LAST_RATIO; i += RATIO_STEP) {
@@ -188,26 +202,25 @@ void benchmark(const std::string& graph_filename, const std::string& outfile) {
         std::cerr << i << std::endl;
         auto edges_to_pre_unite_on_step = edges_to_pre_unite / 100 * RATIO;
 
-        auto dsuUsual = new DSU_USUAL(N);
-        auto ctx = new ContextRatio(g, dsuUsual, RATIO);
-        auto res = getAverageTime(ctx, edges_to_test, edges_to_pre_unite_on_step);
-        out << "Usual " << RATIO << " " << res << "\n";
+        auto ctx = new ContextRatio(g, dsus[0], RATIO);
 
+        for (int j = 0; j < dsus.size(); j++) {
+            ctx->dsu = dsus[j];
+            auto res = getAverageTime(ctx, edges_to_test, edges_to_pre_unite_on_step);
+            out << typeid(dsus[j]).name() << " " << RATIO << " " << res << "\n";
+        }
+
+
+//        auto dsuParallelUnions = new DSU_ParallelUnions(N, node_count);
+//        ctx->dsu = dsuParallelUnions;
+//        res = getAverageTime(ctx, edges_to_test, edges_to_pre_unite_on_step);
+//        out << "ParallelUnions " << RATIO << " " << res << "\n";
+//
 //        auto dsuCircular = new DSU_CircularBuffer(N, node_count);
 //        ctx->dsu = dsuCircular;
 //        res = getAverageTime(ctx, edges_to_test);
 //        out << "CircularBuffer " << RATIO << " " << res << "\n";
-
-        auto dsuParallelUnions = new DSU_ParallelUnions(N, node_count);
-        ctx->dsu = dsuParallelUnions;
-        res = getAverageTime(ctx, edges_to_test, edges_to_pre_unite_on_step);
-        out << "ParallelUnions " << RATIO << " " << res << "\n";
-
-//        auto dsuCircular = new DSU_CircularBuffer(N, node_count);
-//        ctx->dsu = dsuCircular;
-//        res = getAverageTime(ctx, edges_to_test);
-//        out << "CircularBuffer " << RATIO << " " << res << "\n";
-
+//
 //        auto dsuNUMAHelper = new DSU_Helper(N, node_count);
 //        ctx->dsu = dsuNUMAHelper;
 //        res = getAverageTime(ctx, edges_to_test, edges_to_pre_unite_on_step);
@@ -238,13 +251,12 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
-    std::string outfile = "default";
     if (graph == RANDOM) {
         if (argc > 2) {
             N = std::stoi(argv[2]);
             E = std::stoi(argv[3]);
         }
-        benchmark(graph, outfile);
+        benchmark(graph);
         return 0;
     }
 
@@ -256,14 +268,14 @@ int main(int argc, char* argv[]) {
                 E = std::stoi(argv[4]);
             }
         }
-        benchmark(graph, outfile);
+        benchmark(graph);
         return 0;
     }
 
     if (argc > 2) {
         outfile = argv[3];
     }
-    benchmark(graph, outfile);
+    benchmark(graph);
 
     return 0;
 }
