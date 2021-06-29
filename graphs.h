@@ -65,21 +65,49 @@ Graph graphFromFile(std::string filename) {
     return Graph(N, E, g);
 }
 
-Graph generateComponents(int n, int N, int E) {
+int getIndex(int x, int componentId, int componentsNumber, int componentSize, bool shuffle) {
+    if (shuffle) {
+        return x * componentsNumber + componentId;
+    } else {
+        return x + componentId * componentSize;
+    }
+}
+
+Graph generateComponents(int n, int N, int E, bool shuffle) {
+    std::vector<int> perm(N);
+    for (int i = 0; i < N; i++) {
+        perm[i] = i;
+    }
+    std::random_device rd;
+    std::mt19937 q(rd());
+
     auto g = new std::vector<std::pair<int, int>>();
     for (int i = 0; i < n; i++) {
-        for (int j = 0; j < E; j++) {
+        // get permutation
+        std::shuffle(perm.begin(), perm.end(), q);
+        for (int j = 0 ; j < N - 1; i++) {
+            g->emplace_back(std::make_pair(
+                    getIndex(perm[j], i, n, N, shuffle),getIndex(perm[j + 1], i, n, N, shuffle)
+            ));
+        }
+        for (int j = N - 1; j < E; j++) {
             int x = rand() % N;
             int y = rand() % N;
-            x = x * n + i; // чтобы вершинки перемешались
-            y = y * n + i;
+            x = getIndex(x, i, n, N, shuffle);
+            y = getIndex(y, i, n, N, shuffle);
             g->emplace_back(std::make_pair(x, y));
         }
     }
-//    std::random_device rd;
-//    std::mt19937 q(rd());
-//    std::shuffle(g->begin(), g->end(), q);
+
     return Graph(N * n, E * n, g);
+}
+
+Graph generateComponentsSequentially(int n, int N, int E) {
+    return generateComponents(n, N, E, false);
+}
+
+Graph generateComponentsShuffled(int n, int N, int E) {
+    return generateComponents(n, N, E, true);
 }
 
 #endif //TRY_GRAPHS_H
