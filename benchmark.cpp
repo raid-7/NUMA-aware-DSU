@@ -163,7 +163,7 @@ float getAverageTime(ContextRatio* ctx, int e, int to_pre_unite) {
 std::string getLastPartOfFilename(std::string filename) {
     std::string result = "";
     for (int i = filename.size() - 1; i--; i >= 0) {
-        if (filename[i] == "/") {
+        if (filename[i] == '/') {
             break;
         }
         result = filename[i] + result;
