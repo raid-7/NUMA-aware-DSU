@@ -215,7 +215,7 @@ void benchmark(const std::string& graph_filename) {
 
 /////////////////////////////////////////////////
 
-    for (int pu = 0; i < 100; i += 20) {
+    for (int pu = 0; pu < 100; pu += 20) {
         std::string new_outfile = outfile + "_" + std::to_string(pu);
         out.open(new_outfile);
 
@@ -227,7 +227,7 @@ void benchmark(const std::string& graph_filename) {
 
             for (int j = 0; j < dsus.size(); j++) {
                 ctx->dsu = dsus[j];
-                auto res = getAverageTime(ctx, edges_to_test, 0);
+                auto res = getAverageTime(ctx, edges_to_test, edges_to_pre_unite / 100 * pu);
                 out << dsus[j]->ClassName() << " " << RATIO << " " << res << "\n";
             }
         }
