@@ -236,6 +236,68 @@ void benchmark(const std::string& graph_filename) {
 
 }
 
+void benchmark_components(const std::string& graph_filename) {
+    std::string outfile = "components_" + std::to_string(N) + "_" + std::to_string(E);
+
+    n = 1;
+    for (int i = 0; i < 6; i++) {
+        auto graph = generateComponentsShuffled(n, N / n, E / n);
+        N = graph.N;
+        E = graph.E;
+        g = graph.edges;
+
+        std::ofstream out;
+        out.open(outfile + "_" + std::to_string(n));
+
+        std::vector<DSU*> dsus;
+        dsus.push_back(new DSU_USUAL(N));
+        dsus.push_back(new DSU_ParallelUnions(N, node_count));
+        dsus.push_back(new DSU_NO_SYNC(N, node_count));
+
+        int edges_to_pre_unite = E / 2;
+        int edges_to_test = E - edges_to_pre_unite;
+        for (int i = FIRST_RATIO; i <= LAST_RATIO; i += RATIO_STEP) {
+            RATIO = i;
+            std::cerr << i << std::endl;
+            auto edges_to_pre_unite_on_step = edges_to_pre_unite / 100 * RATIO;
+
+            auto ctx = new ContextRatio(g, dsus[0], RATIO);
+
+            for (int j = 0; j < dsus.size(); j++) {
+                ctx->dsu = dsus[j];
+                auto res = getAverageTime(ctx, edges_to_test, edges_to_pre_unite_on_step);
+                out << dsus[j]->ClassName() << " " << RATIO << " " << res << "\n";
+            }
+        }
+
+        out.close();
+
+/////////////////////////////////////////////////
+
+        for (int pu = 0; pu < 100; pu += 20) {
+            std::string new_outfile = outfile + "_" + std::to_string(n) + "_" + std::to_string(pu);
+            out.open(new_outfile);
+
+            for (int i = FIRST_RATIO; i <= LAST_RATIO; i += RATIO_STEP) {
+                RATIO = i;
+                std::cerr << i << std::endl;
+
+                auto ctx = new ContextRatio(g, dsus[0], RATIO);
+
+                for (int j = 0; j < dsus.size(); j++) {
+                    ctx->dsu = dsus[j];
+                    auto res = getAverageTime(ctx, edges_to_test, edges_to_pre_unite / 100 * pu);
+                    out << dsus[j]->ClassName() << " " << RATIO << " " << res << "\n";
+                }
+            }
+            out.close();
+        }
+
+        out.close();
+        n = n * 4;
+    }
+}
+
 int main(int argc, char* argv[]) {
     if (argc < 2) {
         std::cout << "check readme.md" << std::endl;
@@ -262,13 +324,10 @@ int main(int argc, char* argv[]) {
 
     if (graph == COMPONENTS) {
         if (argc > 2) {
-            n = std::stoi(argv[2]);
-            if (argc > 3) {
-                N = std::stoi(argv[3]);
-                E = std::stoi(argv[4]);
-            }
+            N = std::stoi(argv[2]);
+            E = std::stoi(argv[3]);
         }
-        benchmark(graph);
+        benchmark_components(graph);
         return 0;
     }
 
