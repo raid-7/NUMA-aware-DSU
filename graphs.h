@@ -85,7 +85,7 @@ Graph generateComponents(int n, int N, int E, bool shuffle) {
     for (int i = 0; i < n; i++) {
         // get permutation
         std::shuffle(perm.begin(), perm.end(), q);
-        for (int j = 0 ; j < N - 1; i++) {
+        for (int j = 0 ; j < N - 1; j++) {
             g->emplace_back(std::make_pair(
                     getIndex(perm[j], i, n, N, shuffle),getIndex(perm[j + 1], i, n, N, shuffle)
             ));
