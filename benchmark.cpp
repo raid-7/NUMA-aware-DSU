@@ -244,7 +244,7 @@ void benchmark_components(const std::string& graph_filename) {
         auto graph = generateComponentsShuffled(n, N / n, E / n);
         N = graph.N;
         E = graph.E;
-        g = graph.edges;
+        std::vector<std::pair<int, int>>* g = graph.edges;
 
         std::ofstream out;
         out.open(outfile + "_" + std::to_string(n));
