@@ -48,12 +48,16 @@ public:
         while (true) {
             __int64_t u_p = find(u, node, true);
             __int64_t v_p = find(v, node, true);
+            if (u_p == v_p) {
+                return;
+            }
             if (u_p < v_p) {
                 std::swap(u_p, v_p);
             }
             auto u_data = to_union[u_p]->load(std::memory_order_relaxed);
             if (u_data % 2 == 0) {
-                //union_(u_p, v_p, node, true);
+                // union_(u_p, v_p, node, true);
+                // __builtin_ia32_pause()
                 continue;
             } else {
                 if (to_union[u_p]->compare_exchange_strong(u_data, v_p * 2)) {
@@ -151,12 +155,11 @@ private:
 
     __int64_t getParent(int node, int u) {
         auto par = data[node][u].load(std::memory_order_acquire);
-        par = par >> 1;
 
         if ((par & 1) == 1) {
-            return par;
+            return (par >> 2);
         } else {
-            return u;
+            par = par >> 2;
             auto data = to_union[u]->load(std::memory_order_acquire);
             if (par == (data >> 1)) {
                 if ((data & 1) == 1) {

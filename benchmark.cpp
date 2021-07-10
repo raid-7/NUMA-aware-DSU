@@ -162,7 +162,7 @@ float getAverageTime(ContextRatio* ctx, int e, int to_pre_unite) {
 
 std::string getLastPartOfFilename(std::string filename) {
     std::string result = "";
-    for (int i = filename.size() - 1; i--; i >= 0) {
+    for (int i = filename.size(); i--; i >= 0) {
         if (filename[i] == '/') {
             break;
         }
@@ -190,7 +190,7 @@ void benchmark(const std::string& graph_filename) {
 
 
     std::vector<DSU*> dsus;
-    dsus.push_back(new DSU_USUAL(N));
+    dsus.push_back(new DSU_Usual(N));
     dsus.push_back(new DSU_ParallelUnions(N, node_count));
     // dsus.push_back(new DSU_Helper(N, node_count));
     dsus.push_back(new DSU_NO_SYNC(N, node_count));
@@ -250,7 +250,7 @@ void benchmark_components(const std::string& graph_filename) {
         out.open(outfile + "_" + std::to_string(n));
 
         std::vector<DSU*> dsus;
-        dsus.push_back(new DSU_USUAL(N));
+        dsus.push_back(new DSU_Usual(N));
         dsus.push_back(new DSU_ParallelUnions(N, node_count));
         dsus.push_back(new DSU_NO_SYNC(N, node_count));
 

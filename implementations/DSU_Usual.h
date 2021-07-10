@@ -1,26 +1,34 @@
 #include "../DSU.h"
 
-class DSU_USUAL : public DSU {
+class DSU_Usual : public DSU {
 public:
     std::string ClassName() {
         return "Usual";
     };
 
-    DSU_USUAL(int size) :size(size) {
-        data = (std::atomic<int> *) malloc(sizeof(std::atomic<int>) * size);
-        for (int i = 0; i < size; i++) {
-            data[i].store(i);
+    DSU_Usual(int size) :size(size) {
+        data1 = (std::atomic<int> *) numa_alloc_onnode(sizeof(std::atomic<int>) * (size / 2), 0);
+        data2 = (std::atomic<int>*) numa_alloc_onnode(sizeof(std::atomic<int>) * (size - (size / 2)), 1);
+        for (int i = 0; i < size / 2; i++) {
+            data1[i].store(i);
+        }
+        for (int i = size / 2; i < size; i++) {
+            data2[i - (szie / 2)] = i;
         }
     }
 
     void ReInit() override {
-        for (int i = 0; i < size; i++) {
-            data[i].store(i);
+        for (int i = 0; i < size / 2; i++) {
+            data1[i].store(i);
+        }
+        for (int i = size / 2; i < size; i++) {
+            data2[i - (szie / 2)] = i;
         }
     }
 
-    ~DSU_USUAL() {
-        free(data);
+    ~DSU_Usual() {
+        numa_free(data1, sizeof(std::atomic<int>) * (size / 2));
+        numa_free(data2, sizeof(std::atomic<int>) * (size - (size / 2)));
     }
 
     void Union(int u, int v) override {
@@ -33,11 +41,11 @@ public:
                 return;
             }
             if (u_p < v_p) {
-                if (data[u_p].compare_exchange_weak(u_p, v_p)) {
+                if (get(u_p)->compare_exchange_weak(u_p, v_p)) {
                     return;
                 }
             } else {
-                if (data[v_p].compare_exchange_weak(v_p, u_p)) {
+                if (get(v_p)->compare_exchange_weak(v_p, u_p)) {
                     return;
                 }
             }
@@ -45,7 +53,7 @@ public:
     }
 
     bool SameSet(int u, int v) override {
-        if (data[u].load(std::memory_order_relaxed) == data[v].load(std::memory_order_relaxed)) {
+        if (get(u)->load(std::memory_order_relaxed) == get(v)->load(std::memory_order_relaxed)) {
             return true;
         }
 
@@ -57,7 +65,7 @@ public:
             if (u_p == v_p) {
                 return true;
             }
-            if (data[u_p].load(std::memory_order_acquire) == u_p) {
+            if (get(u_p)->load(std::memory_order_acquire) == u_p) {
                 return false;
             }
         }
@@ -66,18 +74,27 @@ public:
     int Find(int u) override {
         auto cur = u;
         while (true) {
-            auto par = data[cur].load(std::memory_order_relaxed);
-            auto grand = data[par].load(std::memory_order_relaxed);
+            auto par = get(cur)->load(std::memory_order_relaxed);
+            auto grand = get(par)->load(std::memory_order_relaxed);
             if (par == grand) {
                 return par;
             } else {
-                data[cur].compare_exchange_weak(par, grand);
+                get(cur)->compare_exchange_weak(par, grand);
             }
             cur = par;
         }
     }
 
 private:
+    std::atomic<int>* get(int i) {
+        if (i <= (size / 2)) {
+            return &(data1[i]);
+        } else {
+            return &(data2[i - (size / 2)]);
+        }
+    }
+
     int size;
-    std::atomic<int>* data;
+    std::atomic<int>* data1;
+    std::atomic<int>* data2;
 };
