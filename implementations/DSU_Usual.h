@@ -13,7 +13,7 @@ public:
             data1[i].store(i);
         }
         for (int i = size / 2; i < size; i++) {
-            data2[i - (szie / 2)] = i;
+            data2[i - (size / 2)] = i;
         }
     }
 
@@ -22,7 +22,7 @@ public:
             data1[i].store(i);
         }
         for (int i = size / 2; i < size; i++) {
-            data2[i - (szie / 2)] = i;
+            data2[i - (size / 2)] = i;
         }
     }
 
