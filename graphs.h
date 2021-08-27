@@ -82,11 +82,12 @@ Graph generateComponents(int n, int N, int E, bool shuffle) {
     std::mt19937 q(rd());
 
     auto g = new std::vector<std::pair<int, int>>();
+    g->resize(n * E);
     for (int i = 0; i < n; i++) {
         // get permutation
         std::shuffle(perm.begin(), perm.end(), q);
         for (int j = 0 ; j < N - 1; j++) {
-            g->emplace_back(std::make_pair(
+            g->at(j*n + i) = (std::make_pair(
                     getIndex(perm[j], i, n, N, shuffle),getIndex(perm[j + 1], i, n, N, shuffle)
             ));
         }
@@ -95,7 +96,7 @@ Graph generateComponents(int n, int N, int E, bool shuffle) {
             int y = rand() % N;
             x = getIndex(x, i, n, N, shuffle);
             y = getIndex(y, i, n, N, shuffle);
-            g->emplace_back(std::make_pair(x, y));
+            g->at(j*n + i) = (std::make_pair(x, y));
         }
     }
 

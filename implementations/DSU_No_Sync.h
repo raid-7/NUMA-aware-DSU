@@ -6,6 +6,14 @@ public:
         return "NoSync";
     };
 
+    long long getStepsCount() {
+        return steps_count.load();
+    }
+
+    void setStepsCount(int x) {
+        steps_count.store(x);
+    }
+
     DSU_NO_SYNC(int size, int node_count) :size(size), node_count(node_count) {
         data.resize(node_count);
         for (int i = 0; i < node_count; i++) {
@@ -14,6 +22,7 @@ public:
                 data[i][j].store(j);
             }
         }
+        steps_count.store(0);
     }
 
     void ReInit() override {
@@ -22,6 +31,7 @@ public:
                 data[i][j].store(j);
             }
         }
+        steps_count.store(0);
     }
 
     ~DSU_NO_SYNC() {
@@ -32,18 +42,25 @@ public:
 
     void Union(int u, int v) override {
         auto node = getNode();
-
+        if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
+            return true;
+        }
+        auto u_p = find(u, node, true);
+        auto v_p = find(v, node, true);
+        if (u_p == v_p) {
+            return;
+        }
         //union_(u, v, node, true);
         for (int i = 0; i < node_count; i++) {
-            union_(u, v, i, (i == node));
+            union_(u_p, v_p, i, (i == node));
         }
     }
 
     bool SameSet(int u, int v) override {
         auto node = getNode();
-//        if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
-//            return true;
-//        }
+        if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
+            return true;
+        }
         auto u_p = u;
         auto v_p = v;
         while (true) {
@@ -77,7 +94,6 @@ public:
         }
     }
 
-private:
     int find(int u, int node, bool is_local) {
         if (is_local) {
             auto cur = u;
@@ -136,4 +152,5 @@ private:
     int size;
     int node_count;
     std::vector<std::atomic<int>*> data;
+    std::atomic<long long> steps_count;
 };

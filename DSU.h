@@ -14,6 +14,9 @@ public:
     virtual void Union(int u, int v) = 0;
     virtual int Find(int u) = 0;
     virtual bool SameSet(int u, int v) = 0;
+
+    virtual long long getStepsCount() = 0;
+    virtual void setStepsCount(int x) = 0;
 };
 
 #endif //TRY_DSU_H
