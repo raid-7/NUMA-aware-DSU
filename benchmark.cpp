@@ -1,15 +1,11 @@
 #include <iostream>
 #include <thread>
 #include <pthread.h>
-#include <fstream>
 #include <random>
-#include <stdint.h>
 #include <algorithm>
-#include <typeinfo>
 
 #include "graphs.h"
 #include "DSU.h"
-#include "implementations/DSU_CircularBuffer.h"
 #include "implementations/DSU_Helper.h"
 #include "implementations/DSU_No_Sync.h"
 #include "implementations/DSU_ParallelUnions.h"
@@ -24,7 +20,7 @@ const std::string COMPONENTS = "components";
 
 const int RUNS = 3;
 
-int n = 100;
+int components_number = 100;
 int N = 100000;
 int E = 100000;
 int THREADS = std::thread::hardware_concurrency();
@@ -36,12 +32,12 @@ int LAST_RATIO = 100;
 int RATIO_STEP = 10;
 
 struct ContextRatio {
-    std::vector<std::pair<int, int>>* edges;
+    std::vector<Edge>* edges;
     DSU* dsu;
     pthread_barrier_t* barrier;
     int ratio; // процент SameSet среди всех запросов
 
-    ContextRatio(std::vector<std::pair<int, int>>* edges, DSU* dsu, int ratio) : edges(edges), dsu(dsu), ratio(ratio) {};
+    ContextRatio(std::vector<Edge>* edges, DSU* dsu, int ratio) : edges(edges), dsu(dsu), ratio(ratio) {};
 };
 
 int intRand(const int & min, const int & max) {
@@ -58,30 +54,22 @@ void doSmth(int x) {
 }
 
 void thread_routine(ContextRatio* ctx, int v1, int v2) {
-//return;
-//for (int i = v1; i < v2; i++) {
-//doSmth(75);
-//}
-//doSmth(5);
-    pthread_barrier_wait(ctx->barrier);//->wait();
+    pthread_barrier_wait(ctx->barrier);
     int node = numa_node_of_cpu(sched_getcpu());
-    //numa_run_on_node(node);
-//for (int q = 0; q < 10; q++) {
+
     for (int i = v1; i < v2; i++) {
         if ((i % 2) == node) {
             continue;
         }
         auto e = ctx->edges->at(i);
 //std::cerr << "union " + std::to_string(e.first) + " and " + std::to_string(e.second) + " on node " + std::to_string(node) + "\n";
-        if ((e.first % 2 == node) || (e.second % 2 == node)) {
+        if ((e.u % 2 == node) || (e.v % 2 == node)) {
             std::cerr << "mredor\n";
         }
         if (intRand(1, 100) <= ctx->ratio) {
-            ctx->dsu->SameSet(e.first, e.second);
-//ctx->dsu->getPar(e.first);
-//ctx->dsu->getPar(e.second);
+            ctx->dsu->SameSet(e.u, e.v);
         } else {
-            ctx->dsu->Union(e.first, e.second);
+            ctx->dsu->Union(e.u, e.v);
         }
         doSmth(20);
     }
@@ -254,13 +242,13 @@ std::string getLastPartOfFilename(std::string filename) {
 
 void benchmark(const std::string& graph_filename) {
     std::string outfile = "not_usual_" + getLastPartOfFilename(graph_filename);
-    std::vector<std::pair<int, int>>* g;
+    std::vector<Edge>* g;
     if (graph_filename == RANDOM) {
         auto graph = graphRandom(N, E);
         g = graph.edges;
         outfile = outfile + "_" + std::to_string(N) + "_" + std::to_string(E);
     } else {
-        auto graph = (graph_filename == COMPONENTS)? generateComponentsShuffled(n, N, E) : graphFromFile(graph_filename);
+        auto graph = (graph_filename == COMPONENTS) ? generateComponentsShuffled(components_number, N, E) : graphFromFile(graph_filename);
         N = graph.N;
         E = graph.E;
         g = graph.edges;
@@ -319,16 +307,16 @@ void benchmark(const std::string& graph_filename) {
 void benchmark_components(const std::string& graph_filename) {
     std::string outfile = "test_components_with_status_updates" + std::to_string(N) + "_" + std::to_string(E);
 
-    n = 2;
+    components_number = 2;
     for (int i = 0; i < 1; i++) {
-        auto graph = generateComponentsShuffled(n, N / n, E / n);
+        auto graph = generateComponentsShuffled(components_number, N / components_number, E / components_number);
         N = graph.N;
         E = graph.E;
         std::cerr << "E:: " << E << "\n";
-        std::vector<std::pair<int, int>>* g = graph.edges;
+        std::vector<Edge>* g = graph.edges;
 
         std::ofstream out;
-        out.open(outfile + "_" + std::to_string(n));
+        out.open(outfile + "_" + std::to_string(components_number));
 
         std::vector<DSU*> dsus;
         dsus.push_back(new DSU_Usual(N));
@@ -380,7 +368,7 @@ std::cerr << "preunion: " + std::to_string(pu) << std::endl;
         }
 */
         out.close();
-        n = n * 4;
+        components_number = components_number * 4;
     }
 }
 

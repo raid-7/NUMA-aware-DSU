@@ -37,9 +37,52 @@ public:
             to_union[i]->store((i*2 + 1) << node_count);
             if (i % 2 == 0) {
                 to_union[i]->store(((i*2 + 1) << node_count) | (2));
+                owners_on_start[i] = 2;
             } else {
                 to_union[i]->store(((i*2 + 1) << node_count) | (1));
+                owners_on_start[i] = 1;
             }
+        }
+        steps_count.store(0);
+    }
+
+    int soleOwner(int mask) {
+        int result = -1;
+        bool has_owner = false;
+        for (int i = 0; i < node_count; i++) {
+            if (mask & (1 << i)) {
+                if (has_owner) {
+                    return -1;
+                } else {
+                    result = i;
+                    has_owner = true;
+                }
+            }
+        }
+        return result;
+    }
+
+    DSU_Parts(int size, int node_count, std::vector<int> owners)
+            :size(size), node_count(node_count), owners_on_start(owners) {
+        data.resize(node_count);
+        to_union.resize(size);
+        node_full_mask = 0;
+        status_bit = 1 << node_count;
+        for (int i = 0; i < node_count; i++) {
+            for (int j = 0; j < size; j++) {
+                if (soleOwner(owners[j]) == i) {
+                    data[i][j].store(((j * 2 + 1) << 2) + 3);
+                } else {
+                    if (owners[j] & (1 << i)) {
+                        data[i][j].store(((j * 2 + 1) << 2) + 2);
+                    } else {
+                        data[i][j].store((j * 2 + 1) << 2);
+                    }
+                }
+            }
+        }
+        for (int i = 0; i < size; i++) {
+            to_union[i]->store(((i*2 + 1) << node_count) | owners[i]);
         }
         steps_count.store(0);
     }
@@ -47,19 +90,19 @@ public:
     void ReInit() override {
         for (int i = 0; i < node_count; i++) {
             for (int j = 0; j < size; j++) {
-                data[i][j].store((j * 2 + 1) << 2);
-                if (j%2 != i) {
+                if (soleOwner(owners_on_start[j]) == i) {
                     data[i][j].store(((j * 2 + 1) << 2) + 3);
+                } else {
+                    if (owners_on_start[j] & (1 << i)) {
+                        data[i][j].store(((j * 2 + 1) << 2) + 2);
+                    } else {
+                        data[i][j].store((j * 2 + 1) << 2);
+                    }
                 }
             }
         }
         for (int i = 0; i < size; i++) {
-            to_union[i]->store((i*2 + 1) << node_count);
-            if (i % 2 == 0) {
-                to_union[i]->store(((i*2 + 1) << node_count) | (2));
-            } else {
-                to_union[i]->store(((i*2 + 1) << node_count) | (1));
-            }
+            to_union[i]->store(((i*2 + 1) << node_count) | owners_on_start[i]);
         }
         steps_count.store(0);
     }
@@ -70,24 +113,13 @@ public:
         }
     }
 
-    void Union(int u, int v) override {
-//std::cerr << "in union";
-        auto node = getNode();
-//        if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {return;}
-//if ((u%2 == node) || (v%2 ==node)) {
-//std::cerr << "union " + std::to_string(u) + " and " + std::to_string(v) + " on node " + std::to_string(node) + "\n";
-//}
-        UnionOnNode(u, v, node);
-    }
-
     bool SameSet(int u, int v) override {
-//std::cerr << "in sameset";
         int node = getNode();
         if ((data[node][u].load(std::memory_order_relaxed) >> 3) == (data[node][v].load(std::memory_order_relaxed) >> 3)) {return true;}
-        // return SameSetOnNode(u, v, node);
+
         auto u_p = u;
         auto v_p = v;
-        int res;// std::pair<int, bool> res;
+        int res;
         while (true) {
             res = find(u_p, node, true);
             u_p = (res >> 1);
@@ -108,7 +140,6 @@ public:
             if (getParent(node, u_p) == u_p) {
                 return false;
             }
-//steps_count.fetch_add(1);
         }
     }
 
@@ -124,47 +155,41 @@ public:
         }
     }
 
-    void UnionOnNode(int u, int v, int node) {
-//std::cerr << "in uniononnode";
+    void Union(int u, int v) {
+        int node = getNode();
         if ((data[node][u].load(std::memory_order_relaxed) >> 3) == (data[node][v].load(std::memory_order_relaxed) >> 3)) {return;}
+
         auto u_p = u;
         auto v_p = v;
         int res;
         while (true) {
             res = find(u_p, node, true);
             u_p = (res >> 1);
-//std::cerr << "*"+std::to_string(u_p)+"*";
-            /*           if (!(res & 1)) {
-           //                load_new_v(u_p, node);
-           //std::cerr << "1: " + std::to_string(u_p) +  " in union " + std::to_string(u) + " and " + std::to_string(v) + " on node " + std::to_string(node) + "\n";//"*first " +std::to_string(u_p)+"*";
-           u_p = load_new_v(u_p, node);
-           steps_count.fetch_add(1);
-                           continue;
-                       }*/
+            if (!(res & 1)) {
+                u_p = load_new_v(u_p, node);
+                //steps_count.fetch_add(1);
+                continue;
+            }
             res = find(v_p, node, true);
             v_p = (res >> 1);
-//std::cerr << "*"+std::to_string(v_p)+"*";
-            /*if (!(res & 1)) {
-                //load_new_v(v_p, node);
-//std::cerr << "2: " + std::to_string(data[node][v_p].load()) + "\n";//"*second " +std::to_string(v_p)+"*";
-//std::cerr << "2: " + std::to_string(v_p) +  " in union " + std::to_string(u) + " and " + std::to_string(v)+ " on node " + std::to_string(node) + "\n";
-v_p = load_new_v(v_p, node);
-steps_count.fetch_add(1);
+            if (!(res & 1)) {
+                v_p = load_new_v(v_p, node);
+                //steps_count.fetch_add(1);
                 continue;
-            }*/
-//          if (u_p < v_p) {
-//                std::swap(u_p, v_p);
-//            }
+            }
             if (u_p == v_p) { return; }
-//if (data[node][u_p].load(std::memory_order_acquire) & 1) {
-            union_(u_p, v_p, node, true);
-//steps_count.fetch_add(1);
-            return;
-//}
-            steps_count.fetch_add(1);
-            //if (u_p < v_p) {
-            //    std::swap(u_p, v_p);
-            //}
+
+            //steps_count.fetch_add(1);
+            if (u_p < v_p) {
+                std::swap(u_p, v_p);
+            }
+
+            if (data[node][u_p].load(std::memory_order_acquire) & 1) {
+                union_(u_p, v_p, node, true);
+                //steps_count.fetch_add(1);
+                return;
+            }
+
             auto u_data = to_union[u_p]->load(std::memory_order_relaxed);
             if (!(u_data & status_bit)) {
                 // union_(u_p, v_p, node, true);
@@ -195,12 +220,9 @@ steps_count.fetch_add(1);
                         } else {
                             new_u_data = to_union[u_p]->load(std::memory_order_acquire);
                             mask = new_u_data & node_full_mask;
-//steps_count.fetch_add(1);
                         }
                     }
                     break;
-                } else {
-//std::cerr << "-";
                 }
             }
         }
@@ -215,31 +237,29 @@ steps_count.fetch_add(1);
     }
 
     int load_new_v(int u, int to_node, int with_mask) {
-        steps_count.fetch_add(1);
-/*if (u%2 == 1)*/  //{std::cerr << "load " + std::to_string(u) + " to " + std::to_string(to_node) + "\n";}
-//std::cerr << "in load_new_v\n";
+        //steps_count.fetch_add(1);
         int from_node = get_node_from_mask(with_mask);
-
         auto u_p = u;
+
         while (true) {
             u_p = find_with_copy(u_p, from_node, to_node);
             //if (data[from_node][u_p].load(std::memory_order_acquire) == data[to_node][u_p].load(std::memory_order_acquire)) {
             //auto to_union_data = to_union[u_p]->load(std::memory_order_acquire);
-            auto to_union_data = to_union[u_p]->load(std::memory_order_acquire);
-//std::cerr << " " + std::to_string(to_union_data) + "\n";
-            auto res = data[to_node][u_p].load(std::memory_order_acquire);
-            if ((res >> 3) != (data[from_node][u_p].load(std::memory_order_acquire) >> 3)) {continue;}
-            if (to_union[u_p]->compare_exchange_weak(to_union_data, (to_union_data | (1 << to_node)))) {
-                data[to_node][u_p].compare_exchange_weak(res, res | 2);
-                break;
+            auto to_node_data = data[to_node][u_p].load(std::memory_order_acquire);
+            auto from_node_data = data[from_node][u_p].load(std::memory_order_acquire);
+            if ((to_node_data >> 3) != (from_node_data >> 3)) {continue;}
+            if (from_node_data & 1) {
+                if (!data[from_node][u_p].compare_exchange_weak(from_node_data, from_node_data - 1)) {
+                    continue;
+                }
             }
-            else {
-                uint32_t source_val = to_union_data;
-                uint32_t bitmask = (1 << to_node);
-                uint32_t val = (source_val & bitmask);
-                if (val)// (((source_val / (bitmask)) % 2)==1)//((unsigned int)(to_union_data) & ((unsigned int)(1) << (unsigned int)(to_node))) != 0)
-                {
-                    data[to_node][u_p].compare_exchange_weak(res, res | 2);
+            auto to_union_data = to_union[u_p]->load(std::memory_order_acquire);
+            if (to_union[u_p]->compare_exchange_weak(to_union_data, (to_union_data | (1 << to_node)))) {
+                data[to_node][u_p].compare_exchange_weak(to_node_data, to_node_data | 2);
+                break;
+            } else {
+                if (to_union_data & (1 << to_node)) {
+                    data[to_node][u_p].compare_exchange_weak(to_node_data, to_node_data | 2);
                     break;
                 }
             }
@@ -256,46 +276,40 @@ steps_count.fetch_add(1);
     }
 
     int find_with_copy(int u, int from_node, int to_node) {
-//std::cerr << "in find_with_copy\n";
         auto cur = u;
         while (true) {
             auto par = getParent(from_node, cur);//data[from_node][cur].load(std::memory_order_acquire);
-            if (par == -1) {std::cerr << "ooooooooooooooooooops\n" + std::to_string(to_union[cur]->load()) + "\n";}
-            auto par_data = par * 8;
-            data[to_node][cur].store(par_data);
-            //par = par >> 1;
+            //if (par == -1) {std::cerr << "ooooooooooooooooooops\n" + std::to_string(to_union[cur]->load()) + "\n";}
             if (par == cur) {
                 return par;
             }
+            auto par_data = (par << 3) + 4 + 2;
+            data[to_node][cur].store(par_data);
             cur = par;
-            while (true) {
-                auto q = to_union[cur]->load(std::memory_order_acquire); // or relaxed
-                if (to_union[cur]->compare_exchange_weak(q, q | (1 << to_node)) || (q & (1 << to_node))) {break;}
-                data[to_node][cur].compare_exchange_weak(par_data, (par_data | 2));
-            }
+            //while (true) {
+            //    auto q = to_union[cur]->load(std::memory_order_acquire); // or relaxed
+            //    if (to_union[cur]->compare_exchange_weak(q, q | (1 << to_node)) || (q & (1 << to_node))) {break;}
+            //    data[to_node][cur].compare_exchange_weak(par_data, (par_data | 2));
+            //}
         }
     }
 
     // ends with 1 if ok and with 0 if need info
     int find(int u, int node, bool is_local) {
-//std::cerr << "in find\n";
         if (is_local) {
             int par_data;
             auto cur = u;
             while (true) {
                 auto par = getParent(node, cur);
-/*                if (par == -1) {
-//std::cerr << "find-q\n";
-                    return (cur << 1);//std::make_pair(cur, false);
-                }*/
+                if (par == -1) {
+                    return (cur << 1);
+                }
                 auto grand = getParent(node, par);
-                /*   if (grand == -1) {
-   //std::cerr << "find-w\n";
-                       return (par << 1);//std::make_pair(par, false);
-                   }*/
+                if (grand == -1) {
+                    return (par << 1);
+                }
                 if (par == grand) {
-//std::cerr << "find-e\n";
-                    return ((par << 1) + 1);//std::make_pair(par, true);
+                    return ((par << 1) + 1);
                 } else {
                     par_data = ((par * 2 + 1) * 2 + 1) * 2 + 1; //здесь +1 валидна только для эксперимента
                     data[node][cur].compare_exchange_weak(par_data, (grand * 4 + 2 + 1) * 2 + 1); // здесь тоже
@@ -307,12 +321,10 @@ steps_count.fetch_add(1);
             while (true) {
                 auto par = getParent(node, cur);
                 if (par == -1) {
-//std::cerr << "find-r\n";
-                    return (cur << 1);//std::make_pair(cur, false);
+                    return (cur << 1);
                 }
                 if (par == cur) {
-//std::cerr << "find-t\n";
-                    return ((par << 1) + 1);//std::make_pair(par, true);
+                    return ((par << 1) + 1);
                 }
                 cur = par;
             }
@@ -320,39 +332,45 @@ steps_count.fetch_add(1);
     }
 
     void union_(__int64_t u, __int64_t v, int node, bool is_local) {
-//std::cerr << "in union_\n";
         int u_p = u;
         int v_p = v;
-//        auto u_p_data = ((u_p * 2 + 1)*2 + 1) * 2 + 1; // здесь тоже
         while (true) {
-            u_p = find(u_p, node, is_local);
-            u_p = u_p >> 1; // здесь еще нужен чек про -1
-            auto find_result = find(v_p, node, is_local);
-            v_p = (find_result >> 1);
-            /* if (!(find_result & 1)) {
+            auto find_u = find(u_p, node, is_local);
+            u_p = find_u >> 1;
+            if (!(find_u & 1)) {
+                u_p = load_new_v(u_p, node);
+                continue;
+            }
+            auto find_v = find(v_p, node, is_local);
+            v_p = (find_v >> 1);
+            if (!(find_v & 1)) {
                  v_p = load_new_v(v_p, node);
                  continue;
-             }*/
-            //v_p = find_result.first;
+            }
             if (u_p == v_p) {
                 return;
             }
-            if (v_p < u_p) {
-                auto v_p_data = ((v_p * 2 + 1)*2 + 1) * 2 + 1;
-                if (data[node][v_p].compare_exchange_weak(v_p_data, (u_p * 4 + 3) * 2 + 1)) {
-                    return;
-                } else {
-                    continue;
+//            if (v_p < u_p) {
+//                auto v_p_data = ((v_p * 2 + 1)*2 + 1) * 2 + 1;
+//                if (data[node][v_p].compare_exchange_weak(v_p_data, (u_p * 4 + 3) * 2 + 1)) {
+//                    return;
+//                } else {
+//                    continue;
+//                }
+//            }
+
+            auto u_p_data_was = data[node][u_p].load(std::memory_order_acquire);
+            if (u_p_data_was & 1) {
+                if (data[node][u_p].compare_exchange_weak(u_p_data_was, (v_p*8 + 4 + 2 + 1))) {
+                    break;
                 }
-            }
-
-
-            //auto u_p_data = u_p*2 + 1;
-            auto u_p_data = ((u_p * 2 + 1)*2 + 1) * 2 + 1;
-            if (data[node][u_p].compare_exchange_weak(u_p_data, (v_p * 4 + 3) * 2 + 1)) { // и здесь
-//auto u_p_data = ((u_p * 2 + 1)*2 + 1) * 2 + 1;
-//steps_count.fetch_add(1);
-                return;
+            } else {
+                auto u_p_data = u_p * 8 + 4 + 2 + 0;//  ((u_p * 2 + 1)*2 + 1) * 2 + 1;
+                if (data[node][u_p].compare_exchange_weak(u_p_data,  (v_p * 8 + 0 + 2 + 0))) { // и здесь
+                    // auto u_p_data = ((u_p * 2 + 1)*2 + 1) * 2 + 1;
+                    // steps_count.fetch_add(1);
+                    return;
+                }
             }
         }
     }
@@ -363,35 +381,27 @@ steps_count.fetch_add(1);
     }
 
     int getParent(int node, int u) {
-//steps_count.fetch_add(1);
-//std::cerr << "in getparent\n";
         auto par_data = data[node][u].load(std::memory_order_acquire);
         par_data = par_data >> 1; // здесь тоже
 
         if ((par_data & 2) && (par_data & 1)) {
             return (par_data >> 2);
         } else {
-//steps_count.fetch_add(1);
             auto par = par_data >> 2;
             auto to_union_data = to_union[u]->load(std::memory_order_acquire);
             auto mask = to_union_data & node_full_mask;
             if (!((mask >> node) & 1)) {
                 if (mask == 0) {
                     if (to_union[u]->compare_exchange_weak(to_union_data, to_union_data + (1 << node))) {
-//data[node][u].compare_exchange_weak(par_data, (par_data | 3));
                         return u;
                     } else {
-//std::cerr << "-1 zero mask\n";
-                        if (!(to_union[u]->load() & (1 << node)))
-                        {return -1;}
-                        else {
-//  data[node][u].compare_exchange_weak(par_data, (par_data | 3));
+                        if (!(to_union[u]->load() & (1 << node))) {
+                            return -1;
+                        } else {
                             return u;
                         }
-                        //return -1;
                     }
                 } else {
-//std::cerr << "-1\n";
                     return -1;
                 }
             }
@@ -413,11 +423,13 @@ steps_count.fetch_add(1);
 
     int size;
     int node_count;
-    std::vector<std::atomic<int>*> data;
-    std::vector<std::atomic<int>*> to_union;
+    std::vector<std::atomic<int>*> data; // parent + union_status_bit + is_onnode + is_sole_owner_bit
+    std::vector<std::atomic<int>*> to_union; // v + status + mask
     int node_full_mask;
     int status_bit;
     std::atomic<long long> steps_count;
+
+    std::vector<int> owners_on_start;
 };
 
 #endif //TRY_DSU_PARTS_H

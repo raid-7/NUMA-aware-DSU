@@ -43,7 +43,7 @@ public:
     void Union(int u, int v) override {
         auto node = getNode();
         if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
-            return true;
+            return;
         }
         auto u_p = find(u, node, true);
         auto v_p = find(v, node, true);

@@ -5,29 +5,44 @@
 #include <random>
 #include <fstream>
 
-void shuffle(std::vector<std::pair<int, int>>* edges) {
+class Edge {
+public:
+    int u, v, w;
+
+    Edge() {};
+    Edge(int u, int v, int w) : u(u), v(v), w(w) {};
+    Edge(int u, int v) : u(u), v(v) {};
+};
+
+class Graph {
+public:
+    int N, E;
+    std::vector<Edge>* edges;
+
+    Graph(int N, int E, std::vector<Edge>* edges) : N(N), E(E) {
+        this->edges = edges;
+    }
+};
+
+void shuffle(std::vector<Edge>* edges) {
     std::random_device rd;
     std::mt19937 q(rd());
     std::shuffle(edges->begin(), edges->end(), q);
 }
 
-class Graph {
-public:
-    int N, E;
-    std::vector<std::pair<int, int>>* edges;
-
-    Graph(int N, int E, std::vector<std::pair<int, int>>* edges) : N(N), E(E) {
-        this->edges = edges;
-    }
-};
+int random_weight() {
+    static thread_local std::mt19937 generator;
+    std::uniform_int_distribution<int> distribution(0, 100000);
+    return distribution(generator);
+}
 
 Graph graphRandom(int N, int E) {
-    auto g = new std::vector<std::pair<int, int>>();
+    auto g = new std::vector<Edge>();
 
     for (int i = 0; i < E ; i++) {
         int x = rand() % N;
         int y = rand() % N;
-        g->emplace_back(std::make_pair(x, y));
+        g->emplace_back(Edge(x, y, random_weight()));
     }
 
     return Graph(N, E, g);
@@ -39,25 +54,24 @@ Graph graphFromFile(std::string filename) {
 
     int N, E;
     file >> N >> E;
-    auto g = new std::vector<std::pair<int, int>>();
+    auto g = new std::vector<Edge>();
 
-    int a, b;
+    int a, b, w;
     char c;
 
     // TODO: fix the check
     if (filename[filename.size() - 1] == 'r') {
         for (int i = 0; i < E; i++) {
             file >> c;
-            file >> a >> b;
+            file >> a >> b >> w;
             N = std::max(N, std::max(a, b) + 1);
-            g->emplace_back(std::make_pair(a, b));
-            file >> a;
+            g->emplace_back(Edge(a, b, w));
         }
     } else {
         for (int i = 0; i < E; i++) {
             file >> a >> b;
             N = std::max(N, std::max(a, b) + 1);
-            g->emplace_back(std::make_pair(a, b));
+            g->emplace_back(Edge(a, b, random_weight()));
         }
     }
 
@@ -81,14 +95,14 @@ Graph generateComponents(int n, int N, int E, bool shuffle) {
     std::random_device rd;
     std::mt19937 q(rd());
 
-    auto g = new std::vector<std::pair<int, int>>();
+    auto g = new std::vector<Edge>();
     g->resize(n * E);
     for (int i = 0; i < n; i++) {
         // get permutation
         std::shuffle(perm.begin(), perm.end(), q);
         for (int j = 0 ; j < N - 1; j++) {
-            g->at(j*n + i) = (std::make_pair(
-                    getIndex(perm[j], i, n, N, shuffle),getIndex(perm[j + 1], i, n, N, shuffle)
+            g->at(j*n + i) = (Edge(
+                    getIndex(perm[j], i, n, N, shuffle),getIndex(perm[j + 1], i, n, N, shuffle), random_weight()
             ));
         }
         for (int j = N - 1; j < E; j++) {
@@ -96,7 +110,7 @@ Graph generateComponents(int n, int N, int E, bool shuffle) {
             int y = rand() % N;
             x = getIndex(x, i, n, N, shuffle);
             y = getIndex(y, i, n, N, shuffle);
-            g->at(j*n + i) = (std::make_pair(x, y));
+            g->at(j*n + i) = (Edge(x, y, random_weight()));
         }
     }
 
