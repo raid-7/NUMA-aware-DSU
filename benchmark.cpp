@@ -3,6 +3,7 @@
 #include <pthread.h>
 #include <random>
 #include <algorithm>
+#include <set>
 
 #include "graphs.h"
 #include "DSU.h"
@@ -32,12 +33,12 @@ int LAST_RATIO = 100;
 int RATIO_STEP = 10;
 
 struct ContextRatio {
-    std::vector<Edge>* edges;
+    std::vector<std::vector<Edge>>* edges;
     DSU* dsu;
     pthread_barrier_t* barrier;
     int ratio; // процент SameSet среди всех запросов
 
-    ContextRatio(std::vector<Edge>* edges, DSU* dsu, int ratio) : edges(edges), dsu(dsu), ratio(ratio) {};
+    ContextRatio(std::vector<std::vector<Edge>>* edges, DSU* dsu, int ratio) : edges(edges), dsu(dsu), ratio(ratio) {};
 };
 
 int intRand(const int & min, const int & max) {
@@ -61,11 +62,8 @@ void thread_routine(ContextRatio* ctx, int v1, int v2) {
         if ((i % 2) == node) {
             continue;
         }
-        auto e = ctx->edges->at(i);
+        auto e = ctx->edges->at(node).at(i);
 //std::cerr << "union " + std::to_string(e.first) + " and " + std::to_string(e.second) + " on node " + std::to_string(node) + "\n";
-        if ((e.u % 2 == node) || (e.v % 2 == node)) {
-            std::cerr << "mredor\n";
-        }
         if (intRand(1, 100) <= ctx->ratio) {
             ctx->dsu->SameSet(e.u, e.v);
         } else {
@@ -75,52 +73,29 @@ void thread_routine(ContextRatio* ctx, int v1, int v2) {
     }
 }
 
-void run(ContextRatio* ctx, int e) {
+void run(ContextRatio* ctx, int percent) {
     std::vector<std::thread> threads;
     pthread_barrier_t barrier;
     pthread_barrier_init(&barrier, NULL, THREADS+1);
     ctx->barrier = &barrier;
 
-    int step = e / THREADS;
-    step = step * 2;
-/*
+    std::vector<int> steps(node_count);
+    std::vector<int> ends(node_count);
+    for (int i = 0; i < node_count; i++) {
+        int e = (ctx->edges->at(i).size() / 100) * percent;
+        ends[i] = e;
+        steps[i] = e / THREADS;
+    }
+
     for (int i = 0; i < THREADS; i++) {
-        threads.emplace_back(std::thread(thread_routine, ctx, i*step, std::min(i*step + step, e)));
+        int node = numa_node_of_cpu(i);
+        threads.emplace_back(std::thread(thread_routine, ctx,
+                                         i*steps[node], std::min(i*steps[node] + steps[node], ends[node])));
 
         cpu_set_t cpuset;
         CPU_ZERO(&cpuset);
         CPU_SET(i, &cpuset);
         pthread_setaffinity_np(threads[i].native_handle(), sizeof(cpu_set_t), &cpuset);
-    }
-*/
-    int start = 0;
-    int start2 = e/2;
-    for (int i = 0; i < THREADS / 4; i++) {
-        threads.emplace_back(std::thread(thread_routine, ctx, i*step + start, std::min(i*step + step + start, E)));
-        cpu_set_t cpuset;
-        CPU_ZERO(&cpuset);
-        CPU_SET(i, &cpuset);
-        pthread_setaffinity_np(threads[i*2].native_handle(), sizeof(cpu_set_t), &cpuset);
-
-        threads.emplace_back(std::thread(thread_routine, ctx, i*step + start, std::min(i*step + step + start, E)));
-        cpu_set_t cpuset2;
-        CPU_ZERO(&cpuset2);
-        CPU_SET((i + THREADS/4), &cpuset2);
-        pthread_setaffinity_np(threads[i*2 + 1].native_handle(), sizeof(cpu_set_t), &cpuset2);
-    }
-
-    for (int i = THREADS/2; i < (THREADS/2 + THREADS/4); i++) {
-        cpu_set_t cpuset;
-        CPU_ZERO(&cpuset);
-        CPU_SET(i, &cpuset);
-        threads.emplace_back(std::thread(thread_routine, ctx, (i - THREADS/2)*step + start2, std::min((i - THREADS/2)*step + step + start2, E)));
-        pthread_setaffinity_np(threads[(2*i - THREADS/2)].native_handle(), sizeof(cpu_set_t), &cpuset);
-
-        cpu_set_t cpuset2;
-        CPU_ZERO(&cpuset2);
-        CPU_SET((i + THREADS/4), &cpuset2);
-        threads.emplace_back(std::thread(thread_routine, ctx, (i - THREADS/2)*step + start, std::min((i - THREADS/2)*step + step + start, E)));
-        pthread_setaffinity_np(threads[i*2 - THREADS/2 + 1].native_handle(), sizeof(cpu_set_t), &cpuset2);
     }
     pthread_barrier_wait(&barrier);
 
@@ -129,42 +104,27 @@ void run(ContextRatio* ctx, int e) {
     }
 }
 
-void preUnite(ContextRatio* ctx, int e) {
-    int start = E - e;
-    int start2 = E - (e/2);
-    int ratio = 0;//ctx->ratio;
-    //ctx->ratio = 10;
-    std::vector<std::thread> threads;
-    int step = e / THREADS;
-    step = step * 2;
-    for (int i = 0; i < THREADS / 4; i++) {
-        threads.emplace_back(std::thread(thread_routine, ctx, i*step + start, std::min(i*step + step + start, E)));
-
-        cpu_set_t cpuset;
-        CPU_ZERO(&cpuset);
-        CPU_SET(i, &cpuset);
-        pthread_setaffinity_np(threads[i*2].native_handle(), sizeof(cpu_set_t), &cpuset);
-
-        threads.emplace_back(std::thread(thread_routine, ctx, i*step + start, std::min(i*step + step + start, E)));
-        cpu_set_t cpuset2;
-        CPU_ZERO(&cpuset2);
-        CPU_SET((i + THREADS/4), &cpuset2);
-        pthread_setaffinity_np(threads[i*2 + 1].native_handle(), sizeof(cpu_set_t), &cpuset2);
+void preUnite(ContextRatio* ctx, int percent) {
+    std::vector<int> starts(node_count);
+    std::vector<int> steps(node_count);
+    for (int i = 0; i < node_count; i++) {
+        int e = (ctx->edges->at(i).size() / 100) * percent;
+        starts[i] = ctx->edges->at(i).size() - e;
+        steps[i] = e / THREADS;
     }
-
-    for (int i = THREADS/2; i < (THREADS/2 + THREADS/4); i++) {
-        threads.emplace_back(std::thread(thread_routine, ctx, (i - THREADS/2)*step + start2, std::min((i - THREADS/2)*step + step + start2, E)));
+    int ratio = ctx->ratio;
+    ctx->ratio = 0;
+    std::vector<std::thread> threads;
+    for (int i = 0; i < THREADS; i++) {
+        int node = numa_node_of_cpu(i);
+        threads.emplace_back(std::thread(thread_routine, ctx,
+                                         i*steps[node] + starts[node],
+                                         std::min(i*steps[node] + steps[node] + starts[node], int(ctx->edges->at(i).size()))));
 
         cpu_set_t cpuset;
         CPU_ZERO(&cpuset);
         CPU_SET(i, &cpuset);
-        pthread_setaffinity_np(threads[(2*i - THREADS/2)].native_handle(), sizeof(cpu_set_t), &cpuset);
-
-        threads.emplace_back(std::thread(thread_routine, ctx, (i-THREADS/2)*step + start, std::min((i - THREADS/2)*step + step + start, E)));
-        cpu_set_t cpuset2;
-        CPU_ZERO(&cpuset2);
-        CPU_SET((i + THREADS/4), &cpuset2);
-        pthread_setaffinity_np(threads[i*2 - THREADS/2 + 1].native_handle(), sizeof(cpu_set_t), &cpuset2);
+        pthread_setaffinity_np(threads[i].native_handle(), sizeof(cpu_set_t), &cpuset);
     }
 
     for (int i = 0; i < int(threads.size()); i++) {
@@ -173,20 +133,20 @@ void preUnite(ContextRatio* ctx, int e) {
     ctx->ratio = ratio;
 }
 
-float runWithTime(ContextRatio* ctx, int e) {
+float runWithTime(ContextRatio* ctx, int edges_percent) {
     auto start = std::chrono::high_resolution_clock::now();
-    run(ctx, e);
+    run(ctx, edges_percent);
     auto stop = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
     return duration.count();
 }
 
-float getAverageTime(ContextRatio* ctx, int e, int to_pre_unite) {
+float getAverageTime(ContextRatio* ctx, int pre_unite_percent) {
     auto result = 0;
     for (int i = 0; i < 1; i++) {
-        // preUnite(ctx, to_pre_unite);
+        // preUnite(ctx, pre_unite_percent);
 //ctx->dsu->setStepsCount(0);
-        result += runWithTime(ctx, e);
+        result += runWithTime(ctx, (100 - pre_unite_percent));
         std::cerr << ctx->dsu->ClassName() + "in ratio " + std::to_string(ctx->ratio) + ": " << ctx->dsu->getStepsCount() << std::endl;
         ctx->dsu->ReInit();
     }
@@ -240,6 +200,117 @@ std::string getLastPartOfFilename(std::string filename) {
     return result;
 }
 
+std::vector<int> parts(N);
+std::vector<int> parts_sizes(node_count);
+std::vector<int> wrongs(N);
+
+// val + id
+std::vector<std::set<std::pair<int, int>, std::greater<std::pair<int, int>>>> wrongs_sets(node_count);
+
+void make_parts_with_intersection20(std::vector<Edge>* g) {
+    std::vector<std::vector<int>> gg(N);
+
+    for (int i = 0; i < node_count; i++) {
+        parts_sizes[i] = 0;
+    }
+    parts.resize(N);
+    wrongs.resize(N);
+    gg.resize(N);
+    for (int i = 0; i < N; i++) {
+        parts[i] = i % 2;
+        wrongs[i] = 0;
+        parts_sizes[i%2]++;
+    }
+    int cnt = 0;
+    for (int i = 0; i < E; i++) {
+        int u = g->at(i).u;
+        int v = g->at(i).v;
+        gg[u].emplace_back(v);
+        gg[v].emplace_back(u);
+        if ((v % 2) != (u % 2)) {
+            wrongs[u]++;
+            wrongs[v]++;
+            cnt++;
+        }
+    }
+    for (int i = 0; i < N; i++) {
+        wrongs_sets[parts[i]].insert(std::make_pair(2*wrongs[i] - gg[i].size(), i));
+    }
+    std::cout << "parts ininted\n";
+    int small_part = -1;
+    int it = 0;
+    while (true) {
+        it++;
+        if (it % 1000 == 0) {
+            std::cout << "on iteration " << it << " with E = " << E << " cnt is " << cnt << std::endl;
+        }
+        int id = -1;
+        for (int node = 0; node < node_count; node++) {
+            if (node == small_part) {continue;}
+            std::pair<int, int> best = *wrongs_sets[node].begin();
+            if (best.first <= 0) {continue;}
+            if (id == -1) {
+                id = best.second;
+                continue;
+            }
+            if (best.first > (2*wrongs[id] - gg[id].size())) {
+                id = best.second;
+            }
+        }
+        if (id == -1) {
+            std::cout << ":(" << std::endl;
+            break;
+        }
+
+        wrongs_sets[parts[id]].erase(wrongs_sets[parts[id]].begin());
+
+        for (int i = 0; i < int(gg[id].size()); i++) {
+            wrongs_sets[parts[gg[id][i]]].erase(
+                    wrongs_sets[parts[gg[id][i]]].find(
+                            std::make_pair(2*wrongs[gg[id][i]] - gg[gg[id][i]].size(), gg[id][i])
+                            )
+            );
+            if (parts[id] != parts[gg[id][i]]) {
+                wrongs[gg[id][i]]--;
+                cnt--;
+            } else {
+                wrongs[gg[id][i]]++;
+                cnt++;
+            }
+            wrongs_sets[parts[gg[id][i]]].insert(std::make_pair(2*wrongs[gg[id][i]] - gg[gg[id][i]].size(), gg[id][i]));
+        }
+        wrongs[id] = gg[id].size() - wrongs[id];
+        parts_sizes[parts[id]]--;
+        parts[id] = 1 - parts[id];
+        parts_sizes[parts[id]]++;
+        wrongs_sets[parts[id]].insert(std::make_pair(2 * wrongs[id] - gg[id].size(), id));
+        // std::cout << "with E = " << E << " cnt is " << cnt << std::endl;
+        if (E / cnt >= 5) {
+            break;
+        }
+        if (parts_sizes[0] + parts_sizes[0] / 10 < parts_sizes[1]) {
+            small_part = 0;
+        } else {
+            if (parts_sizes[1] + parts_sizes[1] / 10 < parts_sizes[0]) {
+                small_part = 1;
+            } else {
+                small_part = -1;
+            }
+        }
+    }
+
+    int cnt_check = 0;
+    for (int i = 0; i < E; i++) {
+        int u = g->at(i).u;
+        int v = g->at(i).v;
+        if ((parts[v]) != (parts[u])) {
+            cnt_check++;
+        }
+    }
+    std::cout << "with E = " << E << " cnt_check is " << cnt_check << std::endl;
+    std::cout << "sizes: left=" << parts_sizes[0] << " right=" << parts_sizes[1] << std::endl;
+}
+
 void benchmark(const std::string& graph_filename) {
     std::string outfile = "not_usual_" + getLastPartOfFilename(graph_filename);
     std::vector<Edge>* g;
@@ -254,34 +325,55 @@ void benchmark(const std::string& graph_filename) {
         g = graph.edges;
     }
 
+    make_parts_with_intersection20(g);
+    std::vector<int> owners(N);
+    for (int i = 0; i < N; i++) {
+        owners[i] = (1 << parts[i]);
+    }
+    std::vector<std::vector<Edge>> edges(node_count);
+    for (int i = 0; i < E; i++) {
+        auto e = g->at(i);
+        if (parts[e.u] == parts[e.v]) {
+            edges[parts[e.u]].emplace_back(e);
+        } else {
+            if (rand() % 2) {
+                edges[parts[e.u]].emplace_back(e);
+            } else {
+                edges[parts[e.v]].emplace_back(e);
+            }
+        }
+    }
+
     std::ofstream out;
     out.open(outfile);
-
 
     std::vector<DSU*> dsus;
     dsus.push_back(new DSU_Usual(N));
     dsus.push_back(new DSU_ParallelUnions(N, node_count));
-    dsus.push_back(new DSU_Parts(N, node_count));
+    //dsus.push_back(new DSU_Parts(N, node_count, owners));
     dsus.push_back(new DSU_NO_SYNC(N, node_count));
+    dsus.push_back(new DSU_NoSync_Parts(N, node_count, owners));
 
-    int edges_to_pre_unite = E / 2;
+    int edges_to_pre_unite = E / 10 * 4;
     int edges_to_test = E - edges_to_pre_unite;
+    int pre_unite_percent = 40;
     for (int i = FIRST_RATIO; i <= LAST_RATIO; i += RATIO_STEP) {
         RATIO = i;
         std::cerr << i << std::endl;
-        auto edges_to_pre_unite_on_step = edges_to_pre_unite / 100 * RATIO;
+        auto edges_to_pre_unite_on_step = edges_to_pre_unite;// / 100 * RATIO;
 
-        auto ctx = new ContextRatio(g, dsus[0], RATIO);
+        auto ctx = new ContextRatio(&edges, dsus[0], RATIO);
 
         for (int j = 0; j < dsus.size(); j++) {
             ctx->dsu = dsus[j];
-            auto res = getAverageTime(ctx, edges_to_test, edges_to_pre_unite_on_step);
+            auto res = getAverageTime(ctx, pre_unite_percent);
             out << dsus[j]->ClassName() << " " << RATIO << " " << res << "\n";
         }
     }
 
     out.close();
 
+    return;
 /////////////////////////////////////////////////
 
     for (int pu = 0; pu < 100; pu += 20) {
@@ -292,11 +384,11 @@ void benchmark(const std::string& graph_filename) {
             RATIO = i;
             std::cerr << i << std::endl;
 
-            auto ctx = new ContextRatio(g, dsus[0], RATIO);
+            auto ctx = new ContextRatio(&edges, dsus[0], RATIO);
 
             for (int j = 0; j < dsus.size(); j++) {
                 ctx->dsu = dsus[j];
-                auto res = getAverageTime(ctx, edges_to_test, edges_to_pre_unite / 100 * pu);
+                auto res = getAverageTime(ctx, pu);
                 out << dsus[j]->ClassName() << " " << RATIO << " " << res << "\n";
             }
         }
@@ -315,6 +407,29 @@ void benchmark_components(const std::string& graph_filename) {
         std::cerr << "E:: " << E << "\n";
         std::vector<Edge>* g = graph.edges;
 
+        std::vector<int> owners(N);
+        for (int i = 0; i < N; i++) {
+            if (i % 2 == 0) {
+                owners[i] = 2;
+            } else {
+                owners[i] = 1;
+            }
+        }
+
+        std::vector<std::vector<Edge>> edges(node_count);
+        for (int i = 0; i < E; i++) {
+            auto e = g->at(i);
+            if (parts[e.u] == parts[e.v]) {
+                edges[parts[e.u]].emplace_back(e);
+            } else {
+                if (rand() % 2) {
+                    edges[parts[e.u]].emplace_back(e);
+                } else {
+                    edges[parts[e.v]].emplace_back(e);
+                }
+            }
+        }
+
         std::ofstream out;
         out.open(outfile + "_" + std::to_string(components_number));
 
@@ -323,22 +438,23 @@ void benchmark_components(const std::string& graph_filename) {
         dsus.push_back(new TwoDSU(N, node_count));
         dsus.push_back(new DSU_ParallelUnions(N, node_count));
         dsus.push_back(new DSU_NO_SYNC(N, node_count));
-        dsus.push_back(new DSU_Parts(N, node_count));
-        dsus.push_back(new DSU_NoSync_Parts(N, node_count));
+        dsus.push_back(new DSU_Parts(N, node_count, owners));
+        dsus.push_back(new DSU_NoSync_Parts(N, node_count, owners));
 
         int edges_to_pre_unite = 0;//E / 10 * 4;
         int edges_to_test = E - edges_to_pre_unite;
+        int pre_unite_percent = 0;
         for (int i = FIRST_RATIO; i <= LAST_RATIO; i += RATIO_STEP) {
             RATIO = i;
             std::cerr << i << std::endl;
             auto edges_to_pre_unite_on_step = edges_to_pre_unite;// / 100 * RATIO;
 
-            auto ctx = new ContextRatio(g, dsus[0], RATIO);
+            auto ctx = new ContextRatio(&edges, dsus[0], RATIO);
 
             for (int j = 0; j < dsus.size(); j++) {
                 ctx->dsu = dsus[j];
                 for (int r = 0; r < RUNS; r++) {
-                    auto res = getAverageTime(ctx, edges_to_test, edges_to_pre_unite_on_step);
+                    auto res = getAverageTime(ctx, pre_unite_percent);
                     out << dsus[j]->ClassName() << " " << RATIO << " " << res << "\n";
                 }
             }

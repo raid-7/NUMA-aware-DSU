@@ -38,10 +38,13 @@ public:
         data.resize(node_count);
         owners_on_start.resize(size);
         owners.resize(size);
+        for (int i = 0; i < size; i++) {
+            this->owners[i] = (std::atomic_int*) malloc(sizeof(std::atomic_int));
+        }
         for (int i = 0; i < node_count; i++) {
             data[i] = (std::atomic<int> *) numa_alloc_onnode(sizeof(std::atomic<int>) * size, i);
             for (int j = 0; j < size; j++) {
-                data[i][j].store(j << 2);
+                //data[i][j].store(j << 2);
                 if (j % 2 == i) {
                     data[i][j].store(j << 2);
                 } else {
@@ -64,8 +67,9 @@ public:
             }
         }
         owners_on_start = owners;
-        owners.resize(size);
+        this->owners.resize(size);
         for (int i = 0; i < size; i++) {
+            this->owners[i] = (std::atomic_int*) malloc(sizeof(std::atomic_int));
             this->owners[i]->store(owners[i]);
             int owner = soleOwner(owners[i]);
             if (owner != -1) {
@@ -102,8 +106,8 @@ public:
         if ((data[node][u].load(std::memory_order_relaxed) >> 2) == (data[node][v].load(std::memory_order_relaxed) >> 2)) {
             return;
         }
-        auto u_p = find(u, node, true);
-        auto v_p = find(v, node, true);
+        auto u_p = u;//find(u, node, true);
+        auto v_p = v;//find(v, node, true);
         while (true) {
             auto find_u = find(u_p, node, true);
             u_p = find_u >> 1;
@@ -122,7 +126,7 @@ public:
         if (u_p == v_p) { return; }
         if (u_p > v_p) { std::swap(u_p, v_p); }
 
-        if (data[node][u_p].load(std::memory_order_relaxed) & 1) {
+        if (data[node][u_p].load(std::memory_order_acquire) & 1) {
             union_(u_p, v_p, node, true);
             return;
         }
@@ -183,25 +187,29 @@ public:
                 return i;
             }
         }
+        return -1;
     }
 
     int loadNewV(int u, int to_node) {
         int from_node = get_node_from_mask(owners_on_start[u]);
+        if (from_node == -1) {
+            std::cerr << "on v=" + std::to_string(u) + " bad from_node\n";
+        }
         auto u_p = u;
         while (true) {
             u_p = find_with_copy(u_p, from_node, to_node);
+            while (true) {
+                auto owners_was = owners[u_p]->load(std::memory_order_acquire);
+                if (owners[u_p]->compare_exchange_weak(owners_was, owners_was | (1 << to_node))) {
+                    break;
+                }
+            }
             auto from_node_u_data = data[from_node][u_p].load(std::memory_order_acquire);
             auto to_node_data = data[to_node][u_p].load(std::memory_order_acquire);
             if ((to_node_data >> 2) == (from_node_u_data >> 2)) {
                 if (from_node_u_data & 1) {
                     if (!data[from_node][u_p].compare_exchange_weak(from_node_u_data, from_node_u_data - 1)) {
                         continue;
-                    }
-                }
-                while (true) {
-                    auto owners_was = owners[u_p]->load(std::memory_order_acquire);
-                    if (owners[u_p]->compare_exchange_weak(owners_was, owners_was | (1 << to_node))) {
-                        break;
                     }
                 }
                 data[to_node][u_p].compare_exchange_weak(to_node_data, to_node_data | 2);
@@ -234,7 +242,7 @@ public:
                 }
                 auto grand = data[node][(par >> 2)].load(std::memory_order_relaxed);
                 if (!(grand & 2)) {
-                    return (par << 1);
+                    return ((par >> 2) << 1);
                 }
                 if (par == grand) {
                     return ((par >> 2) << 1) + 1;
@@ -247,8 +255,11 @@ public:
             auto cur = u;
             while (true) {
                 auto par = data[node][cur].load(std::memory_order_acquire);
+                if (!(par & 2)) {
+                    return (cur << 1);
+                }
                 if ((par >> 2) == cur) {
-                    return (par >> 2);
+                    return ((par >> 2) << 1) + 1;
                 }
                 cur = (par >> 2);
             }
@@ -260,12 +271,24 @@ public:
         int v_p = v;
 
         while (true) {
-            u_p = find(u_p, node, is_local);
-            v_p = find(v_p, node, is_local);
+            auto find_u = find(u_p, node, true);
+            u_p = find_u >> 1;
+            if (!(find_u & 1)) {
+                u_p = loadNewV(u_p, node);
+                continue;
+            }
+            auto find_v = find(v_p, node, true);
+            v_p = find_v >> 1;
+            if (!(find_v & 1)) {
+                v_p = loadNewV(v_p, node);
+                continue;
+            }
+            //u_p = find(u_p, node, is_local);
+            //v_p = find(v_p, node, is_local);
             if (u_p == v_p) {
                 return;
             }
-            if (u_p < v_p) {
+            //if (u_p < v_p) {
                 auto u_p_data1 = u_p*4 + 3;
                 auto u_p_data0 = u_p*4 + 2;
                 if (data[node][u_p].compare_exchange_weak(u_p_data1, ((v_p << 2) + 3))) {
@@ -275,7 +298,7 @@ public:
                         return;
                     }
                 }
-            } else {
+            /*} else {
                 auto v_p_data1 = v_p*4 + 3;
                 auto v_p_data0 = v_p*4 + 2;
                 if (data[node][v_p].compare_exchange_weak(v_p_data1, (u_p << 2) + 3)) {
@@ -285,7 +308,7 @@ public:
                         return;
                     }
                 }
-            }
+            }*/
         }
     }
 

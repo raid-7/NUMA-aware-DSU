@@ -20,6 +20,7 @@ public:
     DSU_Parts(int size, int node_count) :size(size), node_count(node_count) {
         data.resize(node_count);
         to_union.resize(size);
+        owners_on_start.resize(size);
         node_full_mask = 0;
         status_bit = 1 << node_count;
         for (int i = 0; i < node_count; i++) {
@@ -69,6 +70,8 @@ public:
         node_full_mask = 0;
         status_bit = 1 << node_count;
         for (int i = 0; i < node_count; i++) {
+            node_full_mask = node_full_mask + (1 << i);
+            data[i] = (std::atomic<int> *) numa_alloc_onnode(sizeof(std::atomic<int>) * size, i);
             for (int j = 0; j < size; j++) {
                 if (soleOwner(owners[j]) == i) {
                     data[i][j].store(((j * 2 + 1) << 2) + 3);
@@ -82,6 +85,7 @@ public:
             }
         }
         for (int i = 0; i < size; i++) {
+            to_union[i] = (std::atomic<int> *) malloc(sizeof(std::atomic<int>));
             to_union[i]->store(((i*2 + 1) << node_count) | owners[i]);
         }
         steps_count.store(0);
