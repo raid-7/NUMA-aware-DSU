@@ -386,7 +386,7 @@ public:
 
     int getParent(int node, int u) {
         auto par_data = data[node][u].load(std::memory_order_acquire);
-        par_data = par_data >> 1; // здесь тоже
+        par_data = par_data >> 1;
 
         if ((par_data & 2) && (par_data & 1)) {
             return (par_data >> 2);

@@ -87,6 +87,39 @@ int getIndex(int x, int componentId, int componentsNumber, int componentSize, bo
     }
 }
 
+Graph generateComponentsForNodesWithIntersection(int node_count, int N, int E, int intersection_percent) {
+    std::vector<int> perm(N);
+    for (int i = 0; i < N; i++) {
+        perm[i] = i;
+    }
+    std::random_device rd;
+    std::mt19937 q(rd());
+
+    auto g = new std::vector<Edge>();
+    g->resize(node_count * E);
+    for (int i = 0; i < node_count; i++) {
+        // get permutation
+        std::shuffle(perm.begin(), perm.end(), q);
+        for (int j = 0 ; j < N - 1; j++) {
+            g->at(j*node_count + i) = (Edge(
+                    getIndex(perm[j], i, node_count, N, shuffle),
+                    getIndex(perm[j + 1], i, node_count, N, shuffle),
+                    random_weight()
+            ));
+        }
+        for (int j = N - 1; j < E; j++) {
+            int x = rand() % N;
+            int y = rand() % N;
+            x = getIndex(x, i, node_count, N, shuffle);
+            y = getIndex(y, i, node_count, N, shuffle);
+            g->at(j*node_count + i) = (Edge(x, y, random_weight()));
+        }
+    }
+
+    int sole_n = N / 100 * intersection_percent;
+
+}
+
 Graph generateComponents(int n, int N, int E, bool shuffle) {
     std::vector<int> perm(N);
     for (int i = 0; i < N; i++) {
