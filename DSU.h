@@ -15,8 +15,14 @@ public:
     virtual int Find(int u) = 0;
     virtual bool SameSet(int u, int v) = 0;
 
+    // для дебаг-целей
     virtual long long getStepsCount() = 0;
     virtual void setStepsCount(int x) = 0;
+
+    int getNode() {
+        thread_local static int node = numa_node_of_cpu(sched_getcpu());
+        return node;
+    }
 };
 
 #endif //TRY_DSU_H
