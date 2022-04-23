@@ -1,12 +1,12 @@
-#ifndef TRY_DSU_FC_H
-#define TRY_DSU_FC_H
+#ifndef TRY_DSU_FC_honest_H
+#define TRY_DSU_FC_honest_H
 
 #include "../DSU.h"
 
-class DSU_FC: public DSU {
+class DSU_FC_honest: public DSU {
 public:
     std::string ClassName() {
-        return "FC";
+        return "FC_honest";
     };
 
     long long getStepsCount() {
@@ -17,7 +17,7 @@ public:
         steps_count.store(x);
     };
 
-    DSU_FC(int size, int node_count) :size(size), node_count(node_count) {
+    DSU_FC_honest(int size, int node_count) :size(size), node_count(node_count) {
         data.resize(node_count);
         for (int i = 0; i < node_count; i++) {
             data[i] = (std::atomic<int> *) numa_alloc_onnode(sizeof(std::atomic<int>) * size, i);
@@ -40,6 +40,14 @@ public:
             last_updated[i] = 0;
         }
 
+        is_done.resize(node_count);
+        for (int i = 0; i < node_count; i++) {
+            is_done[i] = (std::atomic<bool>*) numa_alloc_onnode(size * sizeof(std::atomic<bool>), i);
+            for (int j = 0; j < size; j++) {
+                is_done[i][j].store(false);
+            }
+        }
+
         steps_count.store(0);
         std::cerr << "fc: finished\n";
     }
@@ -58,14 +66,18 @@ public:
         for (int i = 0; i < node_count; i++) {
             upd_in_progress[i]->store(false);
             last_updated.resize(node_count);
+            for (int j = 0; j < size; j++) {
+                is_done[i][j].store(false);
+            }
         }
 
         steps_count.store(0);
     }
 
-    ~DSU_FC() {
+    ~DSU_FC_honest() {
         for (int i = 0; i < node_count; i++) {
             numa_free(data[i], sizeof(int) * size);
+            numa_free(is_done[i], sizeof(std::atomic<bool>)*size);
             free(upd_in_progress[i]);
         }
     }
@@ -102,10 +114,11 @@ public:
         }
         long long to_union = ( ((long long) u) << 32) + v;
 
+        int the_last = 0;
         // add to queue
         while (true) {
             //std::cerr << "1";
-            int the_last = last.load();
+            the_last = last.load();
             if (last.compare_exchange_weak(the_last, the_last + 1)) {
                 updates[the_last]->store(to_union);
                 break;
@@ -126,6 +139,11 @@ public:
             }
         }
 
+        while (true) {
+            if (is_done[node][the_last].load()) {
+                break;
+            }
+        }
     }
 
     int do_find(int node, int v) {
@@ -163,6 +181,7 @@ public:
                 v = to_union - (u << 32);
                 //std::cerr << "do_union " + std::to_string(u) + " " + std::to_string(v) + " from " + std::to_string(to_union) + "\n";
                 do_union(node, u, v);
+                is_done[node][last_updated[node] - 1].store(true);
             }
             if (the_last == last.load()) {
                 break;
@@ -198,6 +217,8 @@ public:
     std::vector<std::atomic<int>*> data;
 
     std::vector<std::atomic<long long>*> updates; // u + v
+    std::vector<std::atomic<bool>*> is_done; //for every node for every update
+    // std::vector<std::atomic<bool>*> result; // for SameSet operations
     std::atomic<int> last; // in queue
     bool FALSE = false;
     bool TRUE = true;
@@ -207,4 +228,4 @@ public:
     std::atomic<long long> steps_count;
 };
 
-#endif //TRY_DSU_FC_H
+#endif //TRY_DSU_FC_honest_H
