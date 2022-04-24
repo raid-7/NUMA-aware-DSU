@@ -6,6 +6,7 @@
 #include <atomic>
 #include <vector>
 #include <numa.h>
+#include <mutex>
 
 class DSU {
 public:

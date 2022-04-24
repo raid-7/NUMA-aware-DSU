@@ -26,17 +26,14 @@ public:
             }
         }
 
-        updates.resize(size);
-        for (int i = 0; i < size; i++) {
+        updates.resize(size*10);
+        for (int i = 0; i < size*10; i++) {
             updates[i] = (std::atomic<long long>*) malloc(sizeof(std::atomic<long long>));
             updates[i]->store(0);
         }
         last.store(0);
-        upd_in_progress.resize(node_count);
         last_updated.resize(node_count);
         for (int i = 0; i < node_count; i++) {
-            upd_in_progress[i] = (std::atomic<bool>*) malloc(sizeof(std::atomic<bool>));
-            upd_in_progress[i]->store(false);
             last_updated[i] = 0;
         }
 
@@ -51,13 +48,13 @@ public:
             }
         }
 
-        for (int i = 0; i < size; i++) {
+        for (int i = 0; i < size*10; i++) {
             updates[i]->store(0);
         }
         last.store(0);
         for (int i = 0; i < node_count; i++) {
-            upd_in_progress[i]->store(false);
-            last_updated.resize(node_count);
+            //upd_in_progress[i]->store(false);
+            last_updated[i] = 0;
         }
 
         steps_count.store(0);
@@ -66,7 +63,6 @@ public:
     ~DSU_FC() {
         for (int i = 0; i < node_count; i++) {
             numa_free(data[i], sizeof(int) * size);
-            free(upd_in_progress[i]);
         }
     }
 
@@ -78,7 +74,6 @@ public:
         auto u_p = u;
         auto v_p = v;
         while (true) {
-            //std::cerr << "0";
             u_p = do_find(node, u_p);
             v_p = do_find(node, v_p);
             if (u_p == v_p) {
@@ -104,7 +99,6 @@ public:
 
         // add to queue
         while (true) {
-            //std::cerr << "1";
             int the_last = last.load();
             if (last.compare_exchange_weak(the_last, the_last + 1)) {
                 updates[the_last]->store(to_union);
@@ -116,23 +110,16 @@ public:
         }
 
         // try to start updating
-        if (upd_in_progress[node]->compare_exchange_weak(FALSE, true)) {
+        if (upd_in_progress[node].try_lock()) {
             do_all(node);
-            while (true) {
-                //std::cerr << "2";
-                if (upd_in_progress[node]->compare_exchange_weak(TRUE, false)) {
-                    break;
-                }
-            }
+            upd_in_progress[node].unlock();
         }
 
     }
 
     int do_find(int node, int v) {
-        //std::cerr << std::to_string(node) + " " + std::to_string(v) + " of " + std::to_string(size) + "\n";
         auto cur = v;
         while (true) {
-            //std::cerr << "3";
             auto par = data[node][cur].load(std::memory_order_relaxed);
             auto grand = data[node][par].load(std::memory_order_relaxed);
             if (par == grand) {
@@ -146,22 +133,17 @@ public:
 
     void do_all(int node) {
         while (true) {
-            //std::cerr << "4";
             int the_last = last.load();
             long long to_union;
             long long u, v;
             while (last_updated[node] < the_last) {
-                //std::cerr << "5";
-                //long long to_union = updates[last_updated[node]++];
                 to_union = updates[last_updated[node]]->load();
                 while (to_union == 0) {
-                    //std::cerr << "6";
-                    to_union = updates[last_updated[node]]->load();
+                    to_union = updates[last_updated[node]]->load(std::memory_order_acquire);
                 }
                 last_updated[node]++;
                 u = to_union >> 32;
                 v = to_union - (u << 32);
-                //std::cerr << "do_union " + std::to_string(u) + " " + std::to_string(v) + " from " + std::to_string(to_union) + "\n";
                 do_union(node, u, v);
             }
             if (the_last == last.load()) {
@@ -171,11 +153,9 @@ public:
     }
 
     void do_union(int node, int u, int v) {
-        //std::cerr << "do_union " + std::to_string(u) + " " + std::to_string(v) + "\n";
         int u_p = u;
         int v_p = v;
         while (true) {
-            //std::cerr << "7";
             u_p = do_find(node, u_p);
             v_p = do_find(node, v_p);
             if (u_p == v_p) {
@@ -201,7 +181,9 @@ public:
     std::atomic<int> last; // in queue
     bool FALSE = false;
     bool TRUE = true;
-    std::vector<std::atomic<bool>*> upd_in_progress; //on node
+    int ZERO = 0;
+    //std::vector<std::atomic<bool>*> upd_in_progress; //on node
+    std::mutex upd_in_progress[4];
     std::vector<int> last_updated; // on node
 
     std::atomic<long long> steps_count;

@@ -27,8 +27,8 @@ const int RUNS = 3;
 int components_number = 100;
 int N = 100000;
 int E = 100000;
-int THREADS = 32;//64;//std::thread::hardware_concurrency();
-int node_count = 4;//2;//4;//numa_num_configured_nodes();
+int THREADS = 16;//32;//64;//std::thread::hardware_concurrency();
+int node_count = 2;//4;//numa_num_configured_nodes();
 
 int RATIO = 90;
 int FIRST_RATIO = 0;
@@ -92,7 +92,7 @@ void run(ContextRatio* ctx, int percent) {
         steps[i] = e / THREADS;
     }
 
-    int th_number = 0;
+    int th_number = 16;
     for (int i = 0; i < THREADS; i++) {
         int node;
         while (true) {
@@ -102,6 +102,7 @@ void run(ContextRatio* ctx, int percent) {
             } else {
                 break;
             }
+            if (th_number > 31) {th_number = 16;}
         }
 
         threads.emplace_back(std::thread(thread_routine, ctx,
@@ -113,6 +114,7 @@ void run(ContextRatio* ctx, int percent) {
         CPU_SET(th_number, &cpuset);
         pthread_setaffinity_np(threads[i].native_handle(), sizeof(cpu_set_t), &cpuset);
         th_done[node]++;
+        th_number++;
     }
     pthread_barrier_wait(&barrier);
 
@@ -484,7 +486,7 @@ void make_parts_with_intersection_on2nodes(std::vector<Edge>* g) {
         parts_sizes[parts[id]]++;
         wrongs_sets[parts[id]].insert(std::make_pair(2 * wrongs[id] - gg[id].size(), id));
         // std::cout << "with E = " << E << " cnt is " << cnt << std::endl;
-        if (E / cnt >= 6) {
+        if (E / cnt >= 5) {
             break;
         }
         if (parts_sizes[0] + parts_sizes[0] / 10 < parts_sizes[1]) {
@@ -519,7 +521,7 @@ void make_parts_with_intersection20(std::vector<Edge>* g) {
 }
 
 void benchmark(const std::string& graph_filename) {
-    std::string outfile = "new2 _" + getLastPartOfFilename(graph_filename);
+    std::string outfile = "new2_" + getLastPartOfFilename(graph_filename);
     std::vector<Edge>* g;
     if (graph_filename == RANDOM) {
         auto graph = graphRandom(N, E);
@@ -533,10 +535,11 @@ void benchmark(const std::string& graph_filename) {
     }
 
     std::cerr << "graph read\n";
+    std::cerr << "N:" << N << " E:" << E << "\n";
 
     make_parts_with_intersection20(g);
 
-    return;
+    //return;
 
     std::vector<int> owners(N);
     for (int i = 0; i < N; i++) {
@@ -567,8 +570,10 @@ void benchmark(const std::string& graph_filename) {
     dsus.push_back(new DSU_Parts(N, node_count, owners));
     dsus.push_back(new DSU_NO_SYNC(N, node_count));
     dsus.push_back(new DSU_NoSync_Parts(N, node_count, owners));
-    std::cerr << "DSUS done\n";
     dsus.push_back(new DSU_FC(N, node_count));
+    dsus.push_back(new DSU_FC_honest(N, node_count));
+    dsus.push_back(new DSU_FC_on_seq(N, node_count));
+    std::cerr << "DSUS done\n";
     std::cerr << "fc done\n";
 
     int edges_to_pre_unite = E / 10 * 4;

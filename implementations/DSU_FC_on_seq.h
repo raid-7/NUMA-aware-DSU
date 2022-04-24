@@ -6,7 +6,7 @@
 class DSU_FC_on_seq: public DSU {
 public:
     std::string ClassName() {
-        return "FC_honest";
+        return "FC_on_seq";
     };
 
     long long getStepsCount() {
@@ -26,25 +26,25 @@ public:
             }
         }
 
-        operations.resize(size);
-        for (int i = 0; i < size; i++) {
+        operations.resize(size*10);
+        for (int i = 0; i < size*10; i++) {
             operations[i] = (std::atomic<long long>*) malloc(sizeof(std::atomic<long long>));
             operations[i]->store(0);
         }
         last.store(0);
-        upd_in_progress.resize(node_count);
         last_updated.resize(node_count);
         for (int i = 0; i < node_count; i++) {
-            upd_in_progress[i] = (std::atomic<bool>*) malloc(sizeof(std::atomic<bool>));
-            upd_in_progress[i]->store(false);
             last_updated[i] = 0;
         }
 
         is_done.resize(node_count);
+        result.resize(node_count);
         for (int i = 0; i < node_count; i++) {
-            is_done[i] = (std::atomic<bool>*) numa_alloc_onnode(size * sizeof(std::atomic<bool>), i);
-            for (int j = 0; j < size; j++) {
+            is_done[i] = (std::atomic<bool>*) numa_alloc_onnode(size * 10 * sizeof(std::atomic<bool>), i);
+            result[i] = (std::atomic<bool>*) numa_alloc_onnode(size * 10 * sizeof(std::atomic<bool>), i);
+            for (int j = 0; j < size*10; j++) {
                 is_done[i][j].store(false);
+                result[i][j].store(false);
             }
         }
 
@@ -59,14 +59,13 @@ public:
             }
         }
 
-        for (int i = 0; i < size; i++) {
+        for (int i = 0; i < size*10; i++) {
             operations[i]->store(0);
         }
         last.store(0);
         for (int i = 0; i < node_count; i++) {
-            upd_in_progress[i]->store(false);
-            last_updated.resize(node_count);
-            for (int j = 0; j < size; j++) {
+            last_updated[i] = 0;
+            for (int j = 0; j < size*10; j++) {
                 is_done[i][j].store(false);
             }
         }
@@ -78,7 +77,6 @@ public:
         for (int i = 0; i < node_count; i++) {
             free(data[i]);
             numa_free(is_done[i], sizeof(std::atomic<bool>)*size);
-            free(upd_in_progress[i]);
         }
     }
 
@@ -104,14 +102,10 @@ public:
         }
 
         // try to start updating
-        if (upd_in_progress[node]->compare_exchange_weak(FALSE, true)) {
+        if (upd_in_progress[node].try_lock()) {
+        //if (upd_in_progress[node]->compare_exchange_weak(FALSE, true)) {
             do_all(node);
-            while (true) {
-                //std::cerr << "2";
-                if (upd_in_progress[node]->compare_exchange_weak(TRUE, false)) {
-                    break;
-                }
-            }
+            upd_in_progress[node].unlock();
         }
 
         while (true) {
@@ -138,7 +132,6 @@ public:
         int the_last = 0;
         // add to queue
         while (true) {
-            //std::cerr << "1";
             the_last = last.load();
             if (last.compare_exchange_weak(the_last, the_last + 1)) {
                 operations[the_last]->store(to_union);
@@ -150,14 +143,10 @@ public:
         }
 
         // try to start updating
-        if (upd_in_progress[node]->compare_exchange_weak(FALSE, true)) {
+        if (upd_in_progress[node].try_lock()) {
+        //if (upd_in_progress[node]->compare_exchange_weak(FALSE, true)) {
             do_all(node);
-            while (true) {
-                //std::cerr << "2";
-                if (upd_in_progress[node]->compare_exchange_weak(TRUE, false)) {
-                    break;
-                }
-            }
+            upd_in_progress[node].unlock();
         }
 
         while (true) {
@@ -196,33 +185,29 @@ public:
 
     void do_all(int node) {
         while (true) {
-            //std::cerr << "4";
             int the_last = last.load();
             long long op_data;
             long long u, v;
             while (last_updated[node] < the_last) {
-                //std::cerr << "5";
-                //long long to_union = updates[last_updated[node]++];
-                op_data = operations[last_updated[node]]->load();
+                int id = last_updated[node];
+                op_data = operations[id]->load();
                 while (op_data == 0) {
-                    //std::cerr << "6";
-                    op_data = operations[last_updated[node]]->load();
+                    op_data = operations[id]->load();
                 }
                 last_updated[node]++;
-                if (op_data & 1) {
-                    op_data >> 1;
+                if ((op_data & 1) == 0) {
+                    op_data = op_data >> 1;
                     u = op_data >> 32;
                     v = op_data - (u << 32);
-                    //std::cerr << "do_union " + std::to_string(u) + " " + std::to_string(v) + " from " + std::to_string(to_union) + "\n";
                     do_union(node, u, v);
                 } else {
-                    op_data >> 1;
+                    op_data = op_data >> 1;
                     u = op_data >> 32;
                     v = op_data - (u << 32);
                     bool res = do_sameset(node, u, v);
-                    result[node][last_updated[node] - 1].store(res);
+                    result[node][id].store(res);
                 }
-                is_done[node][last_updated[node] - 1].store(true);
+                is_done[node][id].store(true);
             }
             if (the_last == last.load()) {
                 break;
@@ -240,7 +225,8 @@ public:
     std::atomic<int> last; // in queue
     bool FALSE = false;
     bool TRUE = true;
-    std::vector<std::atomic<bool>*> upd_in_progress; //on node
+    //std::vector<std::atomic<bool>*> upd_in_progress; //on node
+    std::mutex upd_in_progress[4];
     std::vector<int> last_updated; // on node
 
     std::atomic<long long> steps_count;
