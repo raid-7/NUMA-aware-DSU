@@ -22,7 +22,7 @@ const std::string RANDOM = "random";
 const std::string SPLIT = "split";
 const std::string COMPONENTS = "components";
 
-const int RUNS = 3;
+const int RUNS = 60;
 
 int components_number = 100;
 int N = 100000;
@@ -521,7 +521,7 @@ void make_parts_with_intersection20(std::vector<Edge>* g) {
 }
 
 void benchmark(const std::string& graph_filename) {
-    std::string outfile = "new2_" + getLastPartOfFilename(graph_filename);
+    std::string outfile = "res_" + getLastPartOfFilename(graph_filename);
     std::vector<Edge>* g;
     if (graph_filename == RANDOM) {
         auto graph = graphRandom(N, E);
@@ -570,9 +570,10 @@ void benchmark(const std::string& graph_filename) {
     dsus.push_back(new DSU_Parts(N, node_count, owners));
     dsus.push_back(new DSU_NO_SYNC(N, node_count));
     dsus.push_back(new DSU_NoSync_Parts(N, node_count, owners));
-    dsus.push_back(new DSU_FC(N, node_count));
-    dsus.push_back(new DSU_FC_honest(N, node_count));
-    dsus.push_back(new DSU_FC_on_seq(N, node_count));
+    // dsus.push_back(new DSU_Helper(N, node_count));
+    // dsus.push_back(new DSU_FC(N, node_count));
+    // dsus.push_back(new DSU_FC_honest(N, node_count));
+    // dsus.push_back(new DSU_FC_on_seq(N, node_count));
     std::cerr << "DSUS done\n";
     std::cerr << "fc done\n";
 
@@ -610,8 +611,10 @@ void benchmark(const std::string& graph_filename) {
 
             for (int j = 0; j < dsus.size(); j++) {
                 ctx->dsu = dsus[j];
-                auto res = getAverageTime(ctx, pu);
-                out << dsus[j]->ClassName() << " " << RATIO << " " << res << "\n";
+                for (int r = 0; r < RUNS; r++) {
+                    auto res = getAverageTime(ctx, pu);
+                    out << dsus[j]->ClassName() << " " << RATIO << " " << res << "\n";
+                }
             }
         }
         out.close();
@@ -623,6 +626,7 @@ void benchmark_components(const std::string& graph_filename) {
 
     components_number = 2;
     for (int i = 0; i < 1; i++) {
+        int mixed = E / 20;
         auto graph = generateComponentsShuffled(components_number, N / components_number, E / components_number);
         N = graph.N;
         E = graph.E;
@@ -630,20 +634,24 @@ void benchmark_components(const std::string& graph_filename) {
         std::vector<Edge>* g = graph.edges;
 
         std::vector<int> owners(N);
+        parts.resize(N);
         for (int i = 0; i < N; i++) {
             if (i % 2 == 0) {
+                parts[i] = 1;
                 owners[i] = 2;
             } else {
+                parts[i] = 0;
                 owners[i] = 1;
             }
         }
-
+std::cerr << "after owners\n";
         std::vector<std::vector<Edge>> edges(node_count);
-        for (int i = 0; i < E; i++) {
+        for (int i = 0; i < (E); i++) {
             auto e = g->at(i);
             if (parts[e.u] == parts[e.v]) {
                 edges[parts[e.u]].emplace_back(e);
             } else {
+std::cerr << "ERROR\n";
                 if (rand() % 2) {
                     edges[parts[e.u]].emplace_back(e);
                 } else {
@@ -652,16 +660,40 @@ void benchmark_components(const std::string& graph_filename) {
             }
         }
 
+        for (int i = 0; i < mixed; i++) {
+            int x = rand() % N;
+            int y = rand() % N;
+            while (x & 1) {
+                x = rand() % N;
+            }
+            while (!(y & 1)) {
+                y = rand() % N;
+            }
+            edges[rand() % 2].emplace_back(Edge(x, y));
+            E++;
+        }
+
+        for (int i = 0; i < node_count; i++) {
+            shuffle(&edges[i]);
+        }
+
+std::cerr << "edges done\n";
         std::ofstream out;
         out.open(outfile + "_" + std::to_string(components_number));
 
+
+std::cerr << "before dsus\n";
         std::vector<DSU*> dsus;
         dsus.push_back(new DSU_Usual(N));
-        dsus.push_back(new TwoDSU(N, node_count));
+        //dsus.push_back(new TwoDSU(N, node_count));
         dsus.push_back(new DSU_ParallelUnions(N, node_count));
         dsus.push_back(new DSU_NO_SYNC(N, node_count));
         dsus.push_back(new DSU_Parts(N, node_count, owners));
         dsus.push_back(new DSU_NoSync_Parts(N, node_count, owners));
+        // dsus.push_back(new DSU_Helper(N, node_count));
+        // dsus.push_back(new DSU_FC(N, node_count));
+        // dsus.push_back(new DSU_FC_honest(N, node_count));
+        // dsus.push_back(new DSU_FC_on_seq(N, node_count));
 
         int edges_to_pre_unite = 0;//E / 10 * 4;
         int edges_to_test = E - edges_to_pre_unite;
