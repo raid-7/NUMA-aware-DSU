@@ -11,24 +11,31 @@
 #include "implementations/DSU_No_Sync.h"
 #include "implementations/DSU_ParallelUnions.h"
 #include "implementations/DSU_Usual.h"
+#include "implementations/DSU_Usual_malloc.h"
 #include "implementations/DSU_Parts.h"
 #include "implementations/DSU_NoSync_Parts.h"
 #include "implementations/TwoDSU.h"
 #include "implementations/DSU_FC.h"
 #include "implementations/DSU_FC_honest.h"
 #include "implementations/DSU_FC_on_seq.h"
+#include "implementations/DSU_Usual_noimm.h"
+#include "implementations/DSU_No_Sync_noimm.h"
+#include "implementations/DSU_ParallelUnions_no_imm.h"
+#include "implementations/DSU_NoSync_Parts_NoImm.h"
+#include "implementations/DSU_Parts_NoImm.h"
+#include "implementations/SeveralDSU.h"
 
 const std::string RANDOM = "random";
 const std::string SPLIT = "split";
 const std::string COMPONENTS = "components";
 
-const int RUNS = 60;
+const int RUNS = 3;
 
-int components_number = 100;
+int components_number = 1000;
 int N = 100000;
 int E = 100000;
-int THREADS = 16;//32;//64;//std::thread::hardware_concurrency();
-int node_count = 2;//4;//numa_num_configured_nodes();
+int THREADS = 36;//32;//64;//std::thread::hardware_concurrency();
+int node_count = 2;//2;//4;//numa_num_configured_nodes();
 
 int RATIO = 90;
 int FIRST_RATIO = 0;
@@ -92,7 +99,7 @@ void run(ContextRatio* ctx, int percent) {
         steps[i] = e / THREADS;
     }
 
-    int th_number = 16;
+    int th_number = 0;
     for (int i = 0; i < THREADS; i++) {
         int node;
         while (true) {
@@ -102,7 +109,7 @@ void run(ContextRatio* ctx, int percent) {
             } else {
                 break;
             }
-            if (th_number > 31) {th_number = 16;}
+            //if (th_number > 31) {th_number = 16;}
         }
 
         threads.emplace_back(std::thread(thread_routine, ctx,
@@ -124,32 +131,48 @@ void run(ContextRatio* ctx, int percent) {
 }
 
 void preUnite(ContextRatio* ctx, int percent) {
+    std::vector<std::thread> threads;
+    pthread_barrier_t barrier;
+    pthread_barrier_init(&barrier, NULL, THREADS+1);
+    ctx->barrier = &barrier;
+
     std::vector<int> starts(node_count);
     std::vector<int> steps(node_count);
+    std::vector<int> th_done(node_count);
     for (int i = 0; i < node_count; i++) {
         int e = (ctx->edges->at(i).size() / 100) * percent;
         starts[i] = ctx->edges->at(i).size() - e;
         steps[i] = e / THREADS;
+        th_done[i] = 0;
     }
-    int ratio = ctx->ratio;
-    ctx->ratio = 0;
-    std::vector<std::thread> threads;
+    
+    int th_number = 0;
     for (int i = 0; i < THREADS; i++) {
-        int node = numa_node_of_cpu(i);
+        int node;
+        while (true) {
+            node = numa_node_of_cpu(th_number);
+            if (node > node_count - 1) {
+                th_number++;
+            } else {
+                break;
+            }
+        }
         threads.emplace_back(std::thread(thread_routine, ctx,
-                                         i*steps[node] + starts[node],
-                                         std::min(i*steps[node] + steps[node] + starts[node], int(ctx->edges->at(i).size()))));
-
+                                         th_done[node]*steps[node] + starts[node],
+                                         std::min(th_done[node]*steps[node] + steps[node] + starts[node], int(ctx->edges->at(node).size()))));
         cpu_set_t cpuset;
         CPU_ZERO(&cpuset);
-        CPU_SET(i, &cpuset);
+        CPU_SET(th_number, &cpuset);
         pthread_setaffinity_np(threads[i].native_handle(), sizeof(cpu_set_t), &cpuset);
+        th_done[node]++;
+        th_number++;
     }
+    pthread_barrier_wait(&barrier);
 
     for (int i = 0; i < int(threads.size()); i++) {
         threads[i].join();
     }
-    ctx->ratio = ratio;
+    //ctx->ratio = ratio;
 }
 
 float runWithTime(ContextRatio* ctx, int edges_percent) {
@@ -163,7 +186,7 @@ float runWithTime(ContextRatio* ctx, int edges_percent) {
 float getAverageTime(ContextRatio* ctx, int pre_unite_percent) {
     auto result = 0;
     for (int i = 0; i < 1; i++) {
-        // preUnite(ctx, pre_unite_percent);
+        preUnite(ctx, pre_unite_percent);
 //ctx->dsu->setStepsCount(0);
         result += runWithTime(ctx, (100 - pre_unite_percent));
         std::cerr << ctx->dsu->ClassName() + " in ratio " + std::to_string(ctx->ratio) + ": " << ctx->dsu->getStepsCount() << std::endl;
@@ -220,18 +243,18 @@ std::string getLastPartOfFilename(std::string filename) {
 }
 
 std::vector<int> parts(N);
-std::vector<int> parts_sizes(node_count);
-std::vector<int> wrongs(N);
+std::vector<long long> parts_sizes(node_count);
+std::vector<long long> wrongs(N);
 
-std::vector<std::vector<int>> edges_from_to(node_count);
+std::vector<std::vector<long long>> edges_from_to(node_count);
 
 // val + id
-std::vector<std::set<std::pair<int, int>, std::greater<std::pair<int, int>>>> wrongs_sets(node_count);
+std::vector<std::set<std::pair<long long, long long>, std::greater<std::pair<long long, long long>>>> wrongs_sets(node_count);
 
-std::vector<std::vector<std::set<std::pair<int, int>, std::greater<std::pair<int, int>>>>> wrongs_sets_from_to(node_count);
+std::vector<std::vector<std::set<std::pair<long long, long long>, std::greater<std::pair<long long, long long>>>>> wrongs_sets_from_to(node_count);
 
 bool partIsTooSmall(int node) {
-    int mx = 0;
+    long long mx = 0;
     for (int i = 0; i < node_count; i++) { mx = std::max(mx, parts_sizes[i]); }
     return (parts_sizes[node] < mx * 0.9);
 }
@@ -329,10 +352,10 @@ void make_parts_with_intersection_on4nodes(std::vector<Edge>* g) {
             break;
         }
 
-//std::cout << id << " " << id_val << " " << id_to << "\n";
+        //std::cout << id << " " << id_val << " " << id_to << "\n";
         wrongs_sets_from_to[parts[id]][id_to].erase(wrongs_sets_from_to[parts[id]][id_to].begin());
-//std::cout << "erased\n";
-//std::cout << gg[id].size() << "\n";
+        //std::cout << "erased\n";
+        //std::cout << gg[id].size() << "\n";
         for (int i = 0; i < int(gg[id].size()); i++) {
             //std::cout << i << "\n";
             int u = gg[id][i];
@@ -388,7 +411,7 @@ void make_parts_with_intersection_on4nodes(std::vector<Edge>* g) {
         wrongs_sets_from_to[parts[id]][prev_part].insert(
                 std::make_pair(edges_from_to[prev_part][id] - edges_from_to[parts[id]][id], id));
 
-        if (E / cnt >= 5) {
+        if (E / cnt >= 100) {
             break;
         }
     }
@@ -420,7 +443,7 @@ void make_parts_with_intersection_on2nodes(std::vector<Edge>* g) {
     for (int i = 0; i < N; i++) {
         parts[i] = i % 2;
         wrongs[i] = 0;
-        parts_sizes[i%2]++;
+        parts_sizes[i % 2]++;
     }
     int cnt = 0;
     for (int i = 0; i < E; i++) {
@@ -448,13 +471,13 @@ void make_parts_with_intersection_on2nodes(std::vector<Edge>* g) {
         int id = -1;
         for (int node = 0; node < node_count; node++) {
             if (node == small_part) {continue;}
-            std::pair<int, int> best = *wrongs_sets[node].begin();
+            std::pair<long long, long long> best = *wrongs_sets[node].begin();
             if (best.first <= 0) {continue;}
             if (id == -1) {
                 id = best.second;
                 continue;
             }
-            if (best.first > (2*wrongs[id] - gg[id].size())) {
+            if (best.first > (2 * wrongs[id] - gg[id].size())) {
                 id = best.second;
             }
         }
@@ -462,31 +485,39 @@ void make_parts_with_intersection_on2nodes(std::vector<Edge>* g) {
             std::cout << ":(" << std::endl;
             break;
         }
+        //std::cerr << "before erase\n";
 
         wrongs_sets[parts[id]].erase(wrongs_sets[parts[id]].begin());
 
+        //std::cerr << "after erase\n";
         for (int i = 0; i < int(gg[id].size()); i++) {
-            wrongs_sets[parts[gg[id][i]]].erase(
-                    wrongs_sets[parts[gg[id][i]]].find(
-                            std::make_pair(2*wrongs[gg[id][i]] - gg[gg[id][i]].size(), gg[id][i])
+            //std::cerr << "+";
+            int u = gg[id][i];
+            if (u == id) {continue;}
+            //std::cerr << u << "\n";
+            wrongs_sets[parts[u]].erase(
+                    wrongs_sets[parts[u]].find(
+                            std::make_pair(2*wrongs[u] - gg[u].size(), u)
                             )
             );
-            if (parts[id] != parts[gg[id][i]]) {
-                wrongs[gg[id][i]]--;
+            //std::cerr << "-";
+            if (parts[id] != parts[u]) {
+                wrongs[u]--;
                 cnt--;
             } else {
-                wrongs[gg[id][i]]++;
+                wrongs[u]++;
                 cnt++;
             }
-            wrongs_sets[parts[gg[id][i]]].insert(std::make_pair(2*wrongs[gg[id][i]] - gg[gg[id][i]].size(), gg[id][i]));
+            wrongs_sets[parts[u]].insert(std::make_pair(2*wrongs[u] - gg[u].size(), u));
         }
+        //std::cerr << "after loop\n";
         wrongs[id] = gg[id].size() - wrongs[id];
         parts_sizes[parts[id]]--;
         parts[id] = 1 - parts[id];
         parts_sizes[parts[id]]++;
         wrongs_sets[parts[id]].insert(std::make_pair(2 * wrongs[id] - gg[id].size(), id));
         // std::cout << "with E = " << E << " cnt is " << cnt << std::endl;
-        if (E / cnt >= 5) {
+        if (E / cnt >= 100) {
             break;
         }
         if (parts_sizes[0] + parts_sizes[0] / 10 < parts_sizes[1]) {
@@ -521,7 +552,7 @@ void make_parts_with_intersection20(std::vector<Edge>* g) {
 }
 
 void benchmark(const std::string& graph_filename) {
-    std::string outfile = "res_" + getLastPartOfFilename(graph_filename);
+    std::string outfile = "res_on" + std::to_string(node_count) + "nodes_" + getLastPartOfFilename(graph_filename);
     std::vector<Edge>* g;
     if (graph_filename == RANDOM) {
         auto graph = graphRandom(N, E);
@@ -542,11 +573,14 @@ void benchmark(const std::string& graph_filename) {
     //return;
 
     std::vector<int> owners(N);
+    //parts.resize(N);
     for (int i = 0; i < N; i++) {
+        //parts[i] = i % node_count;
         owners[i] = (1 << parts[i]);
     }
     std::vector<std::vector<Edge>> edges(node_count);
     for (int i = 0; i < E; i++) {
+        //std::cerr << "!!!\n";
         auto e = g->at(i);
         if (parts[e.u] == parts[e.v]) {
             edges[parts[e.u]].emplace_back(e);
@@ -566,20 +600,24 @@ void benchmark(const std::string& graph_filename) {
 
     std::vector<DSU*> dsus;
     dsus.push_back(new DSU_Usual(N));
+    //dsus.push_back(new DSU_Usual_NoImm(N));
+    //dsus.push_back(new DSU_Usual_malloc(N));
     dsus.push_back(new DSU_ParallelUnions(N, node_count));
-    dsus.push_back(new DSU_Parts(N, node_count, owners));
+    //dsus.push_back(new DSU_ParallelUnions_NoImm(N, node_count));
     dsus.push_back(new DSU_NO_SYNC(N, node_count));
+    //dsus.push_back(new DSU_NO_SYNC_NoImm(N, node_count));
     dsus.push_back(new DSU_NoSync_Parts(N, node_count, owners));
-    // dsus.push_back(new DSU_Helper(N, node_count));
-    // dsus.push_back(new DSU_FC(N, node_count));
-    // dsus.push_back(new DSU_FC_honest(N, node_count));
-    // dsus.push_back(new DSU_FC_on_seq(N, node_count));
+    dsus.push_back(new DSU_Parts(N, node_count, owners));
+    //dsus.push_back(new DSU_Helper(N, node_count));
+    //dsus.push_back(new DSU_FC(N, node_count));
+    //dsus.push_back(new DSU_FC_honest(N, node_count));
+    //dsus.push_back(new DSU_FC_on_seq(N, node_count));
     std::cerr << "DSUS done\n";
     std::cerr << "fc done\n";
 
-    int edges_to_pre_unite = E / 10 * 4;
+    int edges_to_pre_unite = E / 10 * 2; //0;//E / 10 * 4;
     int edges_to_test = E - edges_to_pre_unite;
-    int pre_unite_percent = 40;
+    int pre_unite_percent = 20; //40;
     for (int i = FIRST_RATIO; i <= LAST_RATIO; i += RATIO_STEP) {
         RATIO = i;
         std::cerr << i << std::endl;
@@ -589,8 +627,11 @@ void benchmark(const std::string& graph_filename) {
 
         for (int j = 0; j < dsus.size(); j++) {
             ctx->dsu = dsus[j];
-            auto res = getAverageTime(ctx, pre_unite_percent);
-            out << dsus[j]->ClassName() << " " << RATIO << " " << res << "\n";
+            for (int r = 0; r < RUNS; r++) {
+                auto res = getAverageTime(ctx, pre_unite_percent);
+                out << dsus[j]->ClassName() << " " << RATIO << " " << res << "\n";
+                std::cerr << dsus[j]->ClassName() << " " << RATIO << " " << res << "\n";
+            }
         }
     }
 
@@ -622,12 +663,13 @@ void benchmark(const std::string& graph_filename) {
 }
 
 void benchmark_components(const std::string& graph_filename) {
-    std::string outfile = "test_components_with_status_updates" + std::to_string(N) + "_" + std::to_string(E);
+    std::string outfile = "test_components_" + std::to_string(N) + "_" + std::to_string(E);
 
-    components_number = 2;
     for (int i = 0; i < 1; i++) {
-        int mixed = E / 20;
+        int mixed = E / 4;
+        std::cerr << "before graphs.h\n";
         auto graph = generateComponentsShuffled(components_number, N / components_number, E / components_number);
+        std::cerr << "after graphs.h\n";
         N = graph.N;
         E = graph.E;
         std::cerr << "E:: " << E << "\n";
@@ -636,22 +678,25 @@ void benchmark_components(const std::string& graph_filename) {
         std::vector<int> owners(N);
         parts.resize(N);
         for (int i = 0; i < N; i++) {
-            if (i % 2 == 0) {
-                parts[i] = 1;
-                owners[i] = 2;
-            } else {
-                parts[i] = 0;
-                owners[i] = 1;
-            }
+            int cur_node = i % node_count;
+            parts[i] = cur_node;
+            owners[i] = (1 << cur_node);
+//            if (i % 2 == 0) {
+//                parts[i] = 1;
+//                owners[i] = 2;
+//            } else {
+//                parts[i] = 0;
+//                owners[i] = 1;
+//            }
         }
 std::cerr << "after owners\n";
         std::vector<std::vector<Edge>> edges(node_count);
         for (int i = 0; i < (E); i++) {
             auto e = g->at(i);
-            if (parts[e.u] == parts[e.v]) {
-                edges[parts[e.u]].emplace_back(e);
-            } else {
-std::cerr << "ERROR\n";
+           if (parts[e.u] == parts[e.v]) {
+               edges[parts[e.u]].emplace_back(e);
+           } else {
+ std::cerr << "ERROR: " << e.u << " " << e.v << "\n";
                 if (rand() % 2) {
                     edges[parts[e.u]].emplace_back(e);
                 } else {
@@ -663,13 +708,14 @@ std::cerr << "ERROR\n";
         for (int i = 0; i < mixed; i++) {
             int x = rand() % N;
             int y = rand() % N;
-            while (x & 1) {
+            while (parts[x] == parts[y]) {
                 x = rand() % N;
             }
-            while (!(y & 1)) {
-                y = rand() % N;
+            if (rand() % 2) {
+                edges[parts[x]].emplace_back(Edge(x, y));
+            } else {
+                edges[parts[y]].emplace_back(Edge(x, y));
             }
-            edges[rand() % 2].emplace_back(Edge(x, y));
             E++;
         }
 
@@ -685,19 +731,31 @@ std::cerr << "edges done\n";
 std::cerr << "before dsus\n";
         std::vector<DSU*> dsus;
         dsus.push_back(new DSU_Usual(N));
+        //dsus.push_back(new DSU_Usual_NoImm(N));
+        
         //dsus.push_back(new TwoDSU(N, node_count));
+        dsus.push_back(new SeveralDSU(N, node_count));
+
         dsus.push_back(new DSU_ParallelUnions(N, node_count));
+        //dsus.push_back(new DSU_ParallelUnions_NoImm(N, node_count));
+
         dsus.push_back(new DSU_NO_SYNC(N, node_count));
+        //dsus.push_back(new DSU_NO_SYNC_NoImm(N, node_count));
+
         dsus.push_back(new DSU_Parts(N, node_count, owners));
+        //dsus.push_back(new DSU_Parts_NoImm(N, node_count, owners));
+
         dsus.push_back(new DSU_NoSync_Parts(N, node_count, owners));
+        //dsus.push_back(new DSU_NoSync_Parts_NoImm(N, node_count, owners));
+
         // dsus.push_back(new DSU_Helper(N, node_count));
         // dsus.push_back(new DSU_FC(N, node_count));
         // dsus.push_back(new DSU_FC_honest(N, node_count));
         // dsus.push_back(new DSU_FC_on_seq(N, node_count));
 
-        int edges_to_pre_unite = 0;//E / 10 * 4;
+        int edges_to_pre_unite = E / 10 * 6;
         int edges_to_test = E - edges_to_pre_unite;
-        int pre_unite_percent = 0;
+        int pre_unite_percent = 60;
         for (int i = FIRST_RATIO; i <= LAST_RATIO; i += RATIO_STEP) {
             RATIO = i;
             std::cerr << i << std::endl;

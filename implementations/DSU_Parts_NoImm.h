@@ -1,12 +1,12 @@
-#ifndef TRY_DSU_PARTS_H
-#define TRY_DSU_PARTS_H
+#ifndef TRY_DSU_PARTS_NO_IMM_H
+#define TRY_DSU_PARTS_NO_IMM_H
 
 #include "../DSU.h"
 
-class DSU_Parts : public DSU {
+class DSU_Parts_NoImm : public DSU {
 public:
     std::string ClassName() {
-        return "Parts";
+        return "Parts_NoImm";
     };
 
     long long getStepsCount() {
@@ -17,7 +17,7 @@ public:
         steps_count.store(x);
     };
 
-    DSU_Parts(int size, int node_count) :size(size), node_count(node_count) {
+    DSU_Parts_NoImm(int size, int node_count) :size(size), node_count(node_count) {
         data.resize(node_count);
         to_union.resize(size);
         owners_on_start.resize(size);
@@ -63,7 +63,7 @@ public:
         return result;
     }
 
-    DSU_Parts(int size, int node_count, std::vector<int> owners)
+    DSU_Parts_NoImm(int size, int node_count, std::vector<int> owners)
             :size(size), node_count(node_count), owners_on_start(owners) {
         data.resize(node_count);
         to_union.resize(size);
@@ -111,7 +111,7 @@ public:
         steps_count.store(0);
     }
 
-    ~DSU_Parts() {
+    ~DSU_Parts_NoImm() {
         for (int i = 0; i < node_count; i++) {
             numa_free(data[i], sizeof(int) * size);
         }
@@ -119,7 +119,6 @@ public:
 
     bool SameSet(int u, int v) override {
         int node = getNode();
-        if ((data[node][u].load(std::memory_order_relaxed) >> 3) == (data[node][v].load(std::memory_order_relaxed) >> 3)) {return true;}
 
         auto u_p = u;
         auto v_p = v;
@@ -163,7 +162,6 @@ public:
 
     void Union(int u, int v) {
         int node = getNode();
-        if ((data[node][u].load(std::memory_order_relaxed) >> 3) == (data[node][v].load(std::memory_order_relaxed) >> 3)) {return;}
 
         auto u_p = u;
         auto v_p = v;

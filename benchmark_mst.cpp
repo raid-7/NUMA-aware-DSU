@@ -23,8 +23,8 @@ int components_number = 100;
 int N = 100000;
 int E = 100000;
 
-int THREADS = std::thread::hardware_concurrency();
-int node_count = numa_num_configured_nodes();
+int THREADS = 36;//std::thread::hardware_concurrency();
+int node_count = 2;//numa_num_configured_nodes();
 
 struct Context {
     std::vector<Edge>* edges;
@@ -34,15 +34,29 @@ struct Context {
     std::atomic_int* roots_count;
 
     Context(std::vector<Edge>* edges, DSU* dsu) : edges(edges), dsu(dsu) {
+        std::cerr << "in context init\n";
         edges->push_back(Edge(0, 0, 1e9));
         best_edges.resize(N);
         is_root.resize(N);
+        std::cerr << "before for\n";
+        for (int i = 0; i < N; i++) {
+            best_edges[i] = (std::atomic_int*) malloc(sizeof(std::atomic_int));
+            best_edges[i]->store(E);
+            is_root[i] = (std::atomic_int*) malloc(sizeof(std::atomic_int));
+            is_root[i]->store(0);
+        }
+        std::cerr << "after for\n";
+        roots_count = (std::atomic_int*) malloc(sizeof(std::atomic_int));
+        roots_count->store(N);
+    };
+
+    void ReInit() {
         for (int i = 0; i < N; i++) {
             best_edges[i]->store(E);
             is_root[i]->store(0);
         }
         roots_count->store(N);
-    };
+    }
 };
 
 // для каждой вершины с v1 до v2 находит лучшее ребро, которое не добавляет в цикл
@@ -85,7 +99,7 @@ void thread_routine_second(Context* ctx, int from, int to) {
         if (ctx->is_root[i]->load(std::memory_order_acquire) == 0) {
             continue;
         }
-        ctx->roots_count->fetch_add(1);
+        ctx->roots_count->fetch_add(-1);
         auto e = ctx->edges->at(ctx->best_edges[i]->load(std::memory_order_acquire));
         ctx->dsu->Union(e.u, e.v);
     }
@@ -128,14 +142,22 @@ void run_second_routine(Context* ctx) {
 }
 
 void mst(Context* ctx) {
+    int prev_roots = N;
     while (true) {
         for (int i = 0; i <  N; i++) {
             ctx->best_edges[i]->store(E);
             ctx->is_root[i]->store(0);
         }
+        //std::cerr << "before 1st routine\n";
         run_first_routine(ctx);
+        //std::cerr << "after 1st routine\n";
         run_second_routine(ctx);
-        if (ctx->roots_count->load(std::memory_order_acquire) < (THREADS * 2)) {
+        //std::cerr << "after 2d routine\n";
+        int now_roots = ctx->roots_count->load();
+        //std::cerr << now_roots << "\n";
+        if (now_roots== prev_roots) {break;}
+        prev_roots = now_roots;
+        if (now_roots< (THREADS * 2)) {
             break;
         }
     }
@@ -167,31 +189,36 @@ void benchmark(const std::string& graph_filename) {
         auto graph = graphRandom(N, E);
         g = graph.edges;
     } else {
-        auto graph = (graph_filename == COMPONENTS) ? generateComponentsShuffled(components_number, N, E) : graphFromFile(graph_filename);
+        auto graph = (graph_filename == COMPONENTS) ? generateComponentsShuffled(components_number, N/components_number, E/components_number) : graphFromFile(graph_filename);
         N = graph.N;
         E = graph.E;
         g = graph.edges;
     }
+    std::cerr << "N:: " << N << " and E:: " << E << "\n";
     outfile = outfile + "_" + std::to_string(N) + "_" + std::to_string(E);
     std::ofstream out;
     out.open(outfile);
-
+std::cerr << "before dsus\n";
     std::vector<DSU*> dsus;
     dsus.push_back(new DSU_Usual(N));
-    dsus.push_back(new TwoDSU(N, node_count));
+    //dsus.push_back(new TwoDSU(N, node_count));
     dsus.push_back(new DSU_ParallelUnions(N, node_count));
     dsus.push_back(new DSU_NO_SYNC(N, node_count));
-    dsus.push_back(new DSU_Parts(N, node_count));
-    dsus.push_back(new DSU_NoSync_Parts(N, node_count));
+    // dsus.push_back(new DSU_Parts(N, node_count));
+    // dsus.push_back(new DSU_NoSync_Parts(N, node_count));
+std::cerr << "after dsus\n";
 
     Context* ctx = new Context(g, dsus[0]);
+std::cerr << "after context\n";
 
     for (int i = 0; i < dsus.size(); i++) {
         ctx->dsu = dsus[i];
         for (int run = 0; run < RUNS; run++) {
             ctx->dsu->ReInit();
+            ctx->ReInit();
             auto result = runWithTime(ctx);
             out << ctx->dsu->ClassName() << " " << result << "\n";
+            std::cerr << ctx->dsu->ClassName() << "done\n";
         }
     }
 
@@ -200,6 +227,17 @@ void benchmark(const std::string& graph_filename) {
 
 int main(int argc, char* argv[]) {
     std::string graph = argv[1];
+
+    if (graph == "full") {
+        N = 10000000;
+        E = 10000000;
+        for (int i = 0; i < 7; i++) {
+            std::cerr << i << std::endl;
+            benchmark(RANDOM);
+            E = E * 2;
+        }
+        return 0;
+    }
 
     if (graph == RANDOM) {
         if (argc > 2) {

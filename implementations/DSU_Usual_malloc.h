@@ -6,6 +6,14 @@ public:
         return "Usual_malloc";
     };
 
+    long long getStepsCount() {
+        return 0;
+    }
+
+    void setStepsCount(int x) {
+        return;
+    }
+
     DSU_Usual_malloc(int size) :size(size) {
         data = (std::atomic<int> *) malloc(sizeof(std::atomic<int>) * size);
         for (int i = 0; i < size; i++) {

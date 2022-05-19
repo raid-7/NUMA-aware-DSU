@@ -44,8 +44,8 @@ public:
     }
 
     void Union(int u, int v) override {
-        auto node = 1 - u % 2;
-        u = u / 2; v = v / 2;
+        auto node = u & 1;
+        u = (u >> 1); v = (v >> 1);
         if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
             return;
         }
@@ -57,8 +57,8 @@ public:
     }
 
     bool SameSet(int u, int v) override {
-        int node = 1 - u % 2;
-        u = u / 2; v = v / 2;
+        int node = u & 1;
+        u = (u >> 1); v = (v >> 1);
         if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
             return true;
         }
@@ -77,7 +77,7 @@ public:
     }
 
     int Find(int u) override {
-        return find(u, 1 - u%2);
+        return find(u, u & 1);
     }
 
 

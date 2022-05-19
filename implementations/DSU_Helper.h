@@ -18,6 +18,7 @@ public:
             }
         }
         to_union.store(1);
+        steps_count.store(0);
     }
 
     void ReInit() override {
@@ -27,6 +28,7 @@ public:
             }
         }
         to_union.store(1);
+        steps_count.store(0);
     }
 
     ~DSU_Helper() {

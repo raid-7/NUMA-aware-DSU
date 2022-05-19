@@ -53,7 +53,14 @@ Graph graphFromFile(std::string filename) {
     file.open(filename);
 
     int N, E;
+    if (filename[filename.size() - 1] == 'x') {
+        std::string tmp;
+        std::getline(file, tmp);
+        std::getline(file, tmp);
+        file >> N;
+    }
     file >> N >> E;
+    std::cerr << "got N=" << N << " and E=" << E << std::endl;
     auto g = new std::vector<Edge>();
 
     int a, b, w;
@@ -68,10 +75,18 @@ Graph graphFromFile(std::string filename) {
             g->emplace_back(Edge(a, b, w));
         }
     } else {
-        for (int i = 0; i < E; i++) {
-            file >> a >> b;
-            N = std::max(N, std::max(a, b) + 1);
-            g->emplace_back(Edge(a, b, random_weight()));
+        if (filename[filename.size() - 1] == 'y') {
+            for (int i = 0; i < E; i++) {
+                file >> a >> b >> w;
+                N = std::max(N, std::max(a, b) + 1);
+                g->emplace_back(Edge(a, b, random_weight()));
+            }
+        } else {
+            for (int i = 0; i < E; i++) {
+                file >> a >> b;
+                N = std::max(N, std::max(a, b) + 1);
+                g->emplace_back(Edge(a, b, random_weight()));
+            }
         }
     }
 
@@ -133,11 +148,13 @@ Graph generateComponents(int n, int N, int E, bool shuffle) {
     for (int i = 0; i < n; i++) {
         // get permutation
         std::shuffle(perm.begin(), perm.end(), q);
+        //std::cerr << "before 1st\n";
         for (int j = 0 ; j < N - 1; j++) {
             g->at(j*n + i) = (Edge(
                     getIndex(perm[j], i, n, N, shuffle),getIndex(perm[j + 1], i, n, N, shuffle), random_weight()
             ));
         }
+        //std::cerr << "before 2d\n";
         for (int j = N - 1; j < E; j++) {
             int x = rand() % N;
             int y = rand() % N;
@@ -145,6 +162,7 @@ Graph generateComponents(int n, int N, int E, bool shuffle) {
             y = getIndex(y, i, n, N, shuffle);
             g->at(j*n + i) = (Edge(x, y, random_weight()));
         }
+        //std::cerr << "after 2d\n";
     }
 
     return Graph(N * n, E * n, g);
