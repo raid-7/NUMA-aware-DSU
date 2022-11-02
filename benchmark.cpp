@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <set>
 
-#include "graphs.h"
+#include "lib/graphs.h"
 #include "DSU.h"
 #include "implementations/DSU_Helper.h"
 #include "implementations/DSU_No_Sync.h"
@@ -34,7 +34,7 @@ const int RUNS = 3;
 int components_number = 1000;
 int N = 100000;
 int E = 100000;
-int THREADS = 36;//32;//64;//std::thread::hardware_concurrency();
+int THREADS = std::thread::hardware_concurrency();//36;//32;//64;//
 int node_count = 2;//2;//4;//numa_num_configured_nodes();
 
 int RATIO = 90;
@@ -556,13 +556,13 @@ void benchmark(const std::string& graph_filename) {
     std::vector<Edge>* g;
     if (graph_filename == RANDOM) {
         auto graph = graphRandom(N, E);
-        g = graph.edges;
+        g = new std::vector(graph.Edges);
         outfile = outfile + "_" + std::to_string(N) + "_" + std::to_string(E);
     } else {
         auto graph = (graph_filename == COMPONENTS) ? generateComponentsShuffled(components_number, N, E) : graphFromFile(graph_filename);
         N = graph.N;
         E = graph.E;
-        g = graph.edges;
+        g = new std::vector(graph.Edges);
     }
 
     std::cerr << "graph read\n";
@@ -673,7 +673,7 @@ void benchmark_components(const std::string& graph_filename) {
         N = graph.N;
         E = graph.E;
         std::cerr << "E:: " << E << "\n";
-        std::vector<Edge>* g = graph.edges;
+        std::vector<Edge>& g = graph.Edges;
 
         std::vector<int> owners(N);
         parts.resize(N);
@@ -692,7 +692,7 @@ void benchmark_components(const std::string& graph_filename) {
 std::cerr << "after owners\n";
         std::vector<std::vector<Edge>> edges(node_count);
         for (int i = 0; i < (E); i++) {
-            auto e = g->at(i);
+            auto e = g[i];
            if (parts[e.u] == parts[e.v]) {
                edges[parts[e.u]].emplace_back(e);
            } else {
@@ -720,7 +720,7 @@ std::cerr << "after owners\n";
         }
 
         for (int i = 0; i < node_count; i++) {
-            shuffle(&edges[i]);
+            shuffle(edges[i]);
         }
 
 std::cerr << "edges done\n";

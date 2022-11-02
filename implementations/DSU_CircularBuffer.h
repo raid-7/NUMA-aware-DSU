@@ -77,7 +77,7 @@ public:
     }
 
     bool SameSet(int u, int v) override {
-        int node = getNode();
+        int node = NUMAContext::CurrentThreadNode();
         auto u_p = u;
         auto v_p = v;
         while (true) {
@@ -94,13 +94,13 @@ public:
 
     int Find(int u) override {
         readLogR();
-        return _find(u, getNode());
+        return _find(u, NUMAContext::CurrentThreadNode());
     }
 
 private:
     // читаем лог перед операцией чтения
     void readLogR() {
-        auto node = getNode();
+        auto node = NUMAContext::CurrentThreadNode();
         while (true) {
             int local = local_tail[node]->load();
             if (local == log_tail.load()) {
@@ -125,7 +125,7 @@ private:
 
     // читаем лог перед операцией записи
     void readLogW(int last) {
-        auto node = getNode();
+        auto node = NUMAContext::CurrentThreadNode();
         while (true) {
             int local = local_tail[node]->load();
             if (local > last) {
@@ -184,11 +184,6 @@ private:
             }
             cur = par;
         }
-    }
-
-    int getNode() {
-        thread_local static int node = numa_node_of_cpu(sched_getcpu());
-        return node;
     }
 
     int size;

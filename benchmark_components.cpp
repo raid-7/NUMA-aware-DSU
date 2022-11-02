@@ -4,7 +4,7 @@
 #include <random>
 #include <algorithm>
 
-#include "graphs.h"
+#include "lib/graphs.h"
 #include "DSU.h"
 #include "implementations/DSU_Helper.h"
 #include "implementations/DSU_No_Sync.h"
@@ -20,7 +20,7 @@ int components_number = 100;
 int N = 100000;
 int E = 100000;
 int THREADS = std::thread::hardware_concurrency();
-int node_count = numa_num_configured_nodes();
+int node_count = 2;//numa_num_configured_nodes();
 
 int RATIO = 90;
 int FIRST_RATIO = 0;
@@ -136,7 +136,7 @@ void benchmark_components() {
         N = graph.N;
         E = graph.E;
         std::cerr << "E:: " << E << "\n";
-        std::vector<Edge>* g = graph.edges;
+        std::vector<Edge>& g = graph.Edges;
 
         std::ofstream out;
 

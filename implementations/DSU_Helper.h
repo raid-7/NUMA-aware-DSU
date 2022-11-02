@@ -46,7 +46,7 @@ public:
     };
 
     void Union(int u, int v) override {
-        auto node = getNode();
+        auto node = NUMAContext::CurrentThreadNode();
 
         __int64_t u_p = find(u, node, true);
         __int64_t v_p = find(v, node, true);
@@ -69,11 +69,11 @@ public:
     }
 
     bool SameSet(int u, int v) override {
-        return SameSetOnNode(u, v, getNode());
+        return SameSetOnNode(u, v, NUMAContext::CurrentThreadNode());
     }
 
     int Find(int u) override {
-        return find(u, getNode(), true);
+        return find(u, NUMAContext::CurrentThreadNode(), true);
     }
 
     bool SameSetOnNode(int u, int v, int node) {
@@ -165,11 +165,6 @@ private:
                 return;
             }
         }
-    }
-
-    int getNode() {
-        thread_local static int node = numa_node_of_cpu(sched_getcpu());
-        return node;
     }
 
     __int64_t getParent(int node, int u) {

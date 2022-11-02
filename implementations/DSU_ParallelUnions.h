@@ -6,7 +6,7 @@
 
 class DSU_ParallelUnions : public DSU {
 public:
-    std::string ClassName() {
+    std::string ClassName() override {
         return "ParallelUnions";
     };
 
@@ -53,7 +53,7 @@ public:
     }
 
     void Union(int u, int v) override {
-        auto node = getNode();
+        auto node = NUMAContext::CurrentThreadNode();
         if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
             return;
         }
@@ -92,7 +92,7 @@ public:
     }
 
     bool SameSet(int u, int v) override {
-        int node = getNode();
+        int node = NUMAContext::CurrentThreadNode();
         if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
             return true;
         }
@@ -111,7 +111,7 @@ public:
     }
 
     int Find(int u) override {
-        return find(u, getNode(), true);
+        return find(u, NUMAContext::CurrentThreadNode(), true);
     }
 
 private:
@@ -158,11 +158,6 @@ private:
                 return;
             }
         }
-    }
-
-    int getNode() {
-        thread_local static int node = numa_node_of_cpu(sched_getcpu());
-        return node;
     }
 
     int getParent(int node, int u) {

@@ -102,7 +102,7 @@ public:
     }
 
     void Union(int u, int v) override {
-        auto node = getNode();
+        auto node = NUMAContext::CurrentThreadNode();
         if ((data[node][u].load(std::memory_order_relaxed) >> 2) == (data[node][v].load(std::memory_order_relaxed) >> 2)) {
             return;
         }
@@ -149,7 +149,7 @@ public:
     }
 
     bool SameSet(int u, int v) override {
-        auto node = getNode();
+        auto node = NUMAContext::CurrentThreadNode();
         if ((data[node][u].load(std::memory_order_relaxed) >> 2) == (data[node][v].load(std::memory_order_relaxed) >> 2)) {
             return true;
         }
@@ -178,7 +178,7 @@ public:
     }
 
     int Find(int u) override {
-        return (find(u, getNode(), true) >> 1);
+        return (find(u, NUMAContext::CurrentThreadNode(), true) >> 1);
     }
 
     int get_node_from_mask(int mask) {
@@ -310,11 +310,6 @@ public:
                 }
             }*/
         }
-    }
-
-    int getNode() {
-        thread_local static int node = numa_node_of_cpu(sched_getcpu());
-        return node;
     }
 
     int getParent(int u, int node) {

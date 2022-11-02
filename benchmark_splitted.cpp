@@ -4,7 +4,7 @@
 #include <random>
 #include <algorithm>
 
-#include "graphs.h"
+#include "lib/graphs.h"
 #include "DSU.h"
 #include "implementations/DSU_Helper.h"
 #include "implementations/DSU_No_Sync.h"
