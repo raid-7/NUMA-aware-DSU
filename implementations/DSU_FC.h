@@ -9,14 +9,6 @@ public:
         return "FC";
     };
 
-    long long getStepsCount() {
-        return steps_count.load();
-    }
-
-    void setStepsCount(int x) {
-        steps_count.store(x);
-    };
-
     DSU_FC(int size, int node_count) :size(size), node_count(node_count) {
         data.resize(node_count);
         for (int i = 0; i < node_count; i++) {
@@ -37,7 +29,6 @@ public:
             last_updated[i] = 0;
         }
 
-        steps_count.store(0);
         std::cerr << "fc: finished\n";
     }
 
@@ -56,8 +47,6 @@ public:
             //upd_in_progress[i]->store(false);
             last_updated[i] = 0;
         }
-
-        steps_count.store(0);
     }
 
     ~DSU_FC() {
@@ -185,8 +174,6 @@ public:
     //std::vector<std::atomic<bool>*> upd_in_progress; //on node
     std::mutex upd_in_progress[4];
     std::vector<int> last_updated; // on node
-
-    std::atomic<long long> steps_count;
 };
 
 #endif //TRY_DSU_FC_H

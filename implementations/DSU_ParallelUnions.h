@@ -10,14 +10,6 @@ public:
         return "ParallelUnions";
     };
 
-    long long getStepsCount() {
-        return steps_count.load();
-    }
-
-    void setStepsCount(int x) {
-        steps_count.store(x);
-    }
-
     DSU_ParallelUnions(int size, int node_count) :size(size), node_count(node_count) {
         data.resize(node_count);
         to_union.resize(size);
@@ -31,7 +23,6 @@ public:
             to_union[i] = (std::atomic<int> *) malloc(sizeof(std::atomic<int>));
             to_union[i]->store(1);
         }
-        steps_count.store(0);
     }
 
     void ReInit() override {
@@ -43,7 +34,6 @@ public:
         for (int i = 0; i < size; i++) {
             to_union[i]->store(1);
         }
-        steps_count.store(0);
     }
 
     ~DSU_ParallelUnions() {
@@ -184,7 +174,7 @@ private:
     int node_count;
     std::vector<std::atomic<int>*> data;
     std::vector<std::atomic<int>*> to_union;
-    std::atomic<long long> steps_count;
+
 };
 
 

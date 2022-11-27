@@ -9,14 +9,6 @@ public:
         return "SeveralDSU";
     };
 
-    long long getStepsCount() {
-        return steps_count.load();
-    }
-
-    void setStepsCount(int x) {
-        steps_count.store(x);
-    }
-
     SeveralDSU(int size, int node_count) :size(size), node_count(node_count) {
         data.resize(node_count);
         for (int i = 0; i < node_count; i++) {
@@ -25,7 +17,6 @@ public:
                 data[i][j].store(j);
             }
         }
-        steps_count.store(0);
     }
 
     void ReInit() override {
@@ -34,7 +25,6 @@ public:
                 data[i][j].store(j);
             }
         }
-        steps_count.store(0);
     }
 
     ~SeveralDSU() {
@@ -123,7 +113,6 @@ public:
     int size;
     int node_count;
     std::vector<std::atomic<int>*> data;
-    std::atomic<long long> steps_count;
 };
 
 #endif

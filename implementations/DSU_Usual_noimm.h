@@ -6,14 +6,6 @@ public:
         return "Usual_NoImm";
     };
 
-    long long getStepsCount() {
-        return steps_count.load();
-    }
-
-    void setStepsCount(int x) {
-        steps_count.store(x);
-    }
-
     DSU_Usual_NoImm(int size) :size(size) {
         data1 = (std::atomic<int> *) numa_alloc_onnode(sizeof(std::atomic<int>) * (size / 2), 0);
         data2 = (std::atomic<int>*) numa_alloc_onnode(sizeof(std::atomic<int>) * (size - (size / 2)), 1);
@@ -23,7 +15,6 @@ public:
         for (int i = size / 2; i < size; i++) {
             data2[i - (size / 2)] = i;
         }
-        steps_count.store(0);
     }
 
     void ReInit() override {
@@ -33,7 +24,6 @@ public:
         for (int i = size / 2; i < size; i++) {
             data2[i - (size / 2)] = i;
         }
-        steps_count.store(0);
     }
 
     ~DSU_Usual_NoImm() {
@@ -102,5 +92,4 @@ public:
     int size;
     std::atomic<int>* data1;
     std::atomic<int>* data2;
-    std::atomic<long long> steps_count;
 };

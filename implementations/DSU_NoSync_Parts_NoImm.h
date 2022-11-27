@@ -9,13 +9,6 @@ public:
         return "NoSync_Parts_NoImm";
     };
 
-    long long getStepsCount() {
-        return steps_count.load();
-    }
-
-    void setStepsCount(int x) {
-        steps_count.store(x);
-    }
     // используется только в конструкторе
     int soleOwner(int mask) {
         int result = -1;
@@ -54,7 +47,6 @@ public:
                 }
             }
         }
-        steps_count.store(0);
     }
 
     // owners -- for every v: node mask
@@ -76,7 +68,7 @@ public:
                 data[owner][i].store(i * 4 + 3);
             }
         }
-        steps_count.store(0);
+
     }
 
     void ReInit() override {
@@ -92,7 +84,7 @@ public:
                 data[owner][i].store(i * 4 + 3);
             }
         }
-        steps_count.store(0);
+
     }
 
     ~DSU_NoSync_Parts_NoImm() {
@@ -326,7 +318,7 @@ public:
     int node_count;
     std::vector<std::atomic<int>*> data; // parent + is_onnode + is_sole_owner_bit
     std::vector<std::atomic<int>*> owners;
-    std::atomic<long long> steps_count;
+
 
     std::vector<int> owners_on_start;
 };

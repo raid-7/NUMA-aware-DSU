@@ -9,14 +9,6 @@ public:
         return "Parts_NoImm";
     };
 
-    long long getStepsCount() {
-        return steps_count.load();
-    }
-
-    void setStepsCount(int x) {
-        steps_count.store(x);
-    };
-
     DSU_Parts_NoImm(int size, int node_count) :size(size), node_count(node_count) {
         data.resize(node_count);
         to_union.resize(size);
@@ -44,7 +36,6 @@ public:
                 owners_on_start[i] = 1;
             }
         }
-        steps_count.store(0);
     }
 
     int soleOwner(int mask) {
@@ -88,7 +79,7 @@ public:
             to_union[i] = (std::atomic<int> *) malloc(sizeof(std::atomic<int>));
             to_union[i]->store(((i*2 + 1) << node_count) | owners[i]);
         }
-        steps_count.store(0);
+
     }
 
     void ReInit() override {
@@ -108,7 +99,7 @@ public:
         for (int i = 0; i < size; i++) {
             to_union[i]->store(((i*2 + 1) << node_count) | owners_on_start[i]);
         }
-        steps_count.store(0);
+
     }
 
     ~DSU_Parts_NoImm() {
@@ -172,26 +163,26 @@ public:
             u_p = (res >> 1);
             if (!(res & 1)) {
                 u_p = load_new_v(u_p, node);
-                //steps_count.fetch_add(1);
+
                 continue;
             }
             res = find(v_p, node, true);
             v_p = (res >> 1);
             if (!(res & 1)) {
                 v_p = load_new_v(v_p, node);
-                //steps_count.fetch_add(1);
+
                 continue;
             }
             if (u_p == v_p) { return; }
 
-            //steps_count.fetch_add(1);
+
             if (u_p < v_p) {
                 std::swap(u_p, v_p);
             }
 
             if (data[node][u_p].load(std::memory_order_acquire) & 1) {
                 union_(u_p, v_p, node, true);
-                //steps_count.fetch_add(1);
+
                 return;
             }
 
@@ -243,7 +234,7 @@ public:
     }
 
     int load_new_v(int u, int to_node, int with_mask) {
-        //steps_count.fetch_add(1);
+
         int from_node = get_node_from_mask(with_mask);
         auto u_p = u;
 
@@ -379,7 +370,7 @@ public:
                 auto u_p_data = u_p * 8 + 4 + 2 + 0;//  ((u_p * 2 + 1)*2 + 1) * 2 + 1;
                 if (data[node][u_p].compare_exchange_weak(u_p_data,  (v_p * 8 + 0 + 2 + 0))) { // и здесь
                     // auto u_p_data = ((u_p * 2 + 1)*2 + 1) * 2 + 1;
-                    // steps_count.fetch_add(1);
+
                     return;
                 }
             }
@@ -433,7 +424,6 @@ public:
     std::vector<std::atomic<int>*> to_union; // v + status + mask
     int node_full_mask;
     int status_bit;
-    std::atomic<long long> steps_count;
 
     std::vector<int> owners_on_start;
 };

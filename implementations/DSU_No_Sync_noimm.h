@@ -6,14 +6,6 @@ public:
         return "NoSync_NoImm";
     };
 
-    long long getStepsCount() {
-        return steps_count.load();
-    }
-
-    void setStepsCount(int x) {
-        steps_count.store(x);
-    }
-
     DSU_NO_SYNC_NoImm(int size, int node_count) :size(size), node_count(node_count) {
         data.resize(node_count);
         for (int i = 0; i < node_count; i++) {
@@ -22,7 +14,6 @@ public:
                 data[i][j].store(j);
             }
         }
-        steps_count.store(0);
     }
 
     void ReInit() override {
@@ -31,7 +22,6 @@ public:
                 data[i][j].store(j);
             }
         }
-        steps_count.store(0);
     }
 
     ~DSU_NO_SYNC_NoImm() {
@@ -137,5 +127,4 @@ public:
     int size;
     int node_count;
     std::vector<std::atomic<int>*> data;
-    std::atomic<long long> steps_count;
 };

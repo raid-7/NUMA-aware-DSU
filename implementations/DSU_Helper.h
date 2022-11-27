@@ -18,7 +18,6 @@ public:
             }
         }
         to_union.store(1);
-        steps_count.store(0);
     }
 
     void ReInit() override {
@@ -28,7 +27,6 @@ public:
             }
         }
         to_union.store(1);
-        steps_count.store(0);
     }
 
     ~DSU_Helper() {
@@ -36,14 +34,6 @@ public:
             numa_free(data[i], sizeof(int) * size);
         }
     }
-
-    long long getStepsCount() {
-        return steps_count.load();
-    }
-
-    void setStepsCount(int x) {
-        steps_count.store(x);
-    };
 
     void Union(int u, int v) override {
         auto node = NUMAContext::CurrentThreadNode();
@@ -212,8 +202,6 @@ private:
     int node_count;
     std::vector<std::atomic<__int64_t>*> data;
     std::atomic<__int128_t> to_union;
-
-    std::atomic<long long> steps_count;
 };
 
 #endif
