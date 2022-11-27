@@ -185,9 +185,7 @@ float getAverageTime(ContextRatio* ctx, int e, int to_pre_unite) {
     auto result = 0;
     for (int i = 0; i < 1; i++) {
         // preUnite(ctx, to_pre_unite);
-//ctx->dsu->setStepsCount(0);
         result += runWithTime(ctx, e);
-        std::cerr << ctx->dsu->ClassName() + "in ratio " + std::to_string(ctx->ratio) + ": " << ctx->dsu->getStepsCount() << std::endl;
         ctx->dsu->ReInit();
     }
     return result;// / RUNS;

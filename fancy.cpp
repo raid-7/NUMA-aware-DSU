@@ -3,12 +3,15 @@
 #include "lib/timer.hpp"
 #include "lib/graphs.h"
 #include "lib/util.hpp"
+#include "lib/csv.hpp"
+#include "lib/parameters.hpp"
 
 #include "DSU.h"
 #include "implementations/DSU_ParallelUnions.h"
 #include "implementations/DSU_ParallelUnions_no_imm.h"
 #include "implementations/DSU_Usual.h"
 #include "implementations/DSU_Usual_noimm.h"
+#include "implementations/SeveralDSU.h"
 
 #include <CLI/App.hpp>
 #include <CLI/Formatter.hpp>
@@ -18,6 +21,7 @@
 #include <iomanip>
 #include <vector>
 #include <thread>
+#include <regex>
 #include <random>
 #include <span>
 #include <barrier>
@@ -52,15 +56,14 @@ public:
         size_t numThreads = workload.ThreadRequests.size();
         std::barrier barrier(numThreads);
         dsu->ReInit();
-        ApplyRequests(dsu, workload.PreHeatRequests);
-        dsu->setStepsCount(0);
-        size_t resultsOffset = AverageTimeResults_.size();
-        AverageTimeResults_.resize(resultsOffset + numThreads, 0.0);
+        ApplyRequests(dsu, workload.PreHeatRequests, false);
+        size_t resultsOffset = ThroughputResults_[dsu].size();
+        ThroughputResults_[dsu].resize(resultsOffset + numThreads, 0.0);
         Ctx_->StartNThreads(
             [this, &barrier, &workload, dsu, resultsOffset]() {
                 barrier.arrive_and_wait();
                 double avgNs = ThreadWork(dsu, workload.ThreadRequests[NUMAContext::CurrentThreadId()]);
-                AverageTimeResults_[resultsOffset + NUMAContext::CurrentThreadId()] = avgNs;
+                ThroughputResults_[dsu][resultsOffset + NUMAContext::CurrentThreadId()] = avgNs;
             },
             numThreads
         );
@@ -68,28 +71,30 @@ public:
     }
 
     double ThreadWork(DSU* dsu, std::span<const Request> requests) {
+        constexpr size_t NS = 1'000'000'000ull;
         Timer timer;
-        ApplyRequests(dsu, requests);
-        return timer.Get<std::chrono::nanoseconds>().count() * 1. / requests.size();
+        ApplyRequests(dsu, requests, true);
+        return requests.size() * NS / timer.Get<std::chrono::nanoseconds>().count();
     }
 
-    Stats<double> CollectAverageTimeStats() {
-        Stats<double> res = stats(AverageTimeResults_.begin(), AverageTimeResults_.end());
-        AverageTimeResults_.clear();
+    Stats<double> CollectThroughputStats(DSU* dsu) {
+        Stats<double> res = stats(ThroughputResults_[dsu].begin(), ThroughputResults_[dsu].end());
+        ThroughputResults_[dsu].clear();
         return res;
     }
 
 private:
-    void ApplyRequests(DSU* dsu, std::span<const Request> requests) const {
+    void ApplyRequests(DSU* dsu, std::span<const Request> requests, bool useAdditionalWork) const {
         for (const auto& request : requests) {
             request.Apply(dsu);
-            RandomAdditionalWork(AdditionalWork_);
+            if (useAdditionalWork)
+                RandomAdditionalWork(AdditionalWork_);
         }
     }
 
 private:
     NUMAContext* Ctx_;
-    std::vector<double> AverageTimeResults_;
+    std::map<DSU*, std::vector<double>> ThroughputResults_;
     double AdditionalWork_ = 2.0;
 };
 
@@ -118,6 +123,7 @@ StaticWorkload BuildTotallyRandomWorkload(size_t N, size_t E,
 
 StaticWorkload BuildComponentsRandomWorkload(size_t numComponents, size_t singleComponentN, size_t singleComponentE,
                                              size_t interPairE, double sameSetFraction) {
+    // TODO create one component per node, not per thread
     std::vector<std::vector<Request>> threadWork(numComponents);
     std::bernoulli_distribution sameSetDistribution(sameSetFraction);
     for (size_t componentId = 0; componentId < numComponents; ++componentId) {
@@ -154,16 +160,98 @@ StaticWorkload BuildComponentsRandomWorkload(size_t numComponents, size_t single
     };
 }
 
-int main() {
-    NUMAContext ctx(8, 2, true);
-    Benchmark benchmark(&ctx);
-    size_t N = 1'000'000, E = 20'000'000;
-    DSU_ParallelUnions dsuPU(N, ctx.NodeCount());
-    for (size_t i = 0; i < 3; ++i) {
-        StaticWorkload workload = BuildTotallyRandomWorkload(N, E, 8, 0.8, 1. / 8);
-        benchmark.Run(&dsuPU, workload);
+std::vector<std::unique_ptr<DSU>> GetAvailableDsus(size_t N, size_t node_count, const std::regex& filter) {
+    std::vector<std::unique_ptr<DSU>> dsus;
+    dsus.emplace_back(new DSU_Usual(N));
+    //dsus.emplace_back(new DSU_Usual_NoImm(N));
+
+    //dsus.emplace_back(new TwoDSU(N, node_count));
+    dsus.emplace_back(new SeveralDSU(N, node_count));
+
+    dsus.emplace_back(new DSU_ParallelUnions(N, node_count));
+    //dsus.emplace_back(new DSU_ParallelUnions_NoImm(N, node_count));
+
+//    dsus.emplace_back(new DSU_NO_SYNC(N, node_count));
+    //dsus.emplace_back(new DSU_NO_SYNC_NoImm(N, node_count));
+
+//    dsus.emplace_back(new DSU_Parts(N, node_count, owners));
+    //dsus.emplace_back(new DSU_Parts_NoImm(N, node_count, owners));
+
+//    dsus.emplace_back(new DSU_NoSync_Parts(N, node_count, owners));
+    //dsus.emplace_back(new DSU_NoSync_Parts_NoImm(N, node_count, owners));
+
+    auto end = std::remove_if(dsus.begin(), dsus.end(), [&filter](const std::unique_ptr<DSU>& dsu) {
+        return !std::regex_match(dsu->ClassName(), filter);
+    });
+    dsus.resize(end - dsus.begin());
+    return dsus;
+}
+
+
+void RunComponentsBenchmark(NUMAContext* ctx, CsvFile* out, const std::regex& filter,
+                  size_t numWorkloads, size_t numIterationsPerWorkload,
+                  const std::vector<ParameterSet>& parameters) {
+    if (out) {
+        *out << "DSU" << "componentN" << "componentE" << "interpairFraction" << "sameSetFraction" << "Score" << "Score Error";
     }
-    Stats<double> s = benchmark.CollectAverageTimeStats();
-    std::cout << std::setprecision(3) << s.mean << " " << s.stddev << " ns/op" << std::endl;
+
+    Benchmark benchmark(ctx); // TODO pass additional work
+    for (const auto& params : parameters) {
+        size_t componentN = params.Get<size_t>("componentN");
+        size_t componentE = params.Get<size_t>("componentE");
+        double interpairFraction = params.Get<double>("ipf");
+        double sameSetFraction = params.Get<double>("ssf");
+        size_t interpairE = std::round(componentE * interpairFraction);
+
+        std::vector<std::unique_ptr<DSU>> dsus = GetAvailableDsus(componentN * ctx->MaxConcurrency(), ctx->NodeCount(),
+                                                                  filter);
+        for (size_t i = 0; i < numWorkloads; ++i) {
+            StaticWorkload workload = BuildComponentsRandomWorkload(ctx->MaxConcurrency(), componentN, componentE,
+                                                                    interpairE, sameSetFraction);
+            for (size_t j = 0; j < numIterationsPerWorkload; ++j) {
+                for (auto& ptr: dsus) {
+                    DSU* dsu = ptr.get();
+                    std::cout << "Benchmark iteration #" << j << " for workload #" << i << "; DSU " << dsu->ClassName()
+                              << std::endl;
+                    benchmark.Run(dsu, workload);
+                }
+            }
+        }
+        for (auto& ptr: dsus) {
+            DSU* dsu = ptr.get();
+            Stats<double> result = benchmark.CollectThroughputStats(dsu);
+            std::cout << std::fixed << std::setprecision(3)
+                      << dsu->ClassName() << ": " << result.mean << "+-" << result.stddev << std::endl;
+            if (out)
+                *out << dsu->ClassName()
+                     << componentN << componentE << interpairFraction << sameSetFraction
+                     << result.mean << result.stddev;
+        }
+    }
+}
+
+
+int main(int argc, const char* argv[]) {
+    CLI::App app("NUMA DSU Benchmark");
+    std::vector<std::string> rawParameters;
+    app.add_option("-p,--param", rawParameters, "Parameter in the form key=val1,val2,...,valN");
+
+    ParameterSet defaultParams = ParseParameters({
+         "componentN=1000000",
+         "componentE=8000000",
+         "ipf=0.2",
+         "ssf=0.1"
+    })[0];
+
+    CLI11_PARSE(app, argc, argv);
+    auto parameters = ParseParameters(rawParameters, &defaultParams);
+
+    NUMAContext ctx(8, 2, true);
+    CsvFile out("out.csv");
+
+    RunComponentsBenchmark(&ctx, &out, std::regex(".*"), 2, 3, parameters);
+
+//    Stats<double> s = benchmark.CollectThroughputStats();
+//    std::cout << std::fixed << std::setprecision(3) << s.mean << " " << s.stddev << " op/s" << std::endl;
     return 0;
 }

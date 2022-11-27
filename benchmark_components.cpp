@@ -116,12 +116,10 @@ void preUnite(ContextRatio* ctx, int e) {
 
 float getAverageTime(ContextRatio* ctx, int e, int to_pre_unite) {
     // preUnite(ctx, to_pre_unite);
-    ctx->dsu->setStepsCount(0);
     auto start = std::chrono::high_resolution_clock::now();
     run(ctx, e);
     auto stop = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-    std::cerr << ctx->dsu->ClassName() + " in ratio " + std::to_string(ctx->ratio) + ": " << ctx->dsu->getStepsCount() << std::endl;
     ctx->dsu->ReInit();
 
     return duration.count();

@@ -19,10 +19,10 @@ static thread_local int NumaNodeId;
 class NUMAContext {
 public:
     NUMAContext(size_t numCpu = std::thread::hardware_concurrency(),
-            size_t numNuma = numa_max_node() + 1, bool tesingNumIds = false)
+            size_t numNuma = numa_max_node() + 1, bool testingNumaIds = false)
         : NumCpu_(numCpu)
         , NumNuma_(numNuma)
-        , TestingNumaIds_(tesingNumIds)
+        , TestingNumaIds_(testingNumaIds)
     {}
 
     template <class R>
@@ -45,6 +45,10 @@ public:
 
     size_t NodeCount() const {
         return NumNuma_;
+    }
+
+    size_t MaxConcurrency() const {
+        return NumCpu_;
     }
 
     size_t CpuCount() const {
