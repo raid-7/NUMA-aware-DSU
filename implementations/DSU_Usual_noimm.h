@@ -2,7 +2,7 @@
 
 class DSU_Usual_NoImm : public DSU {
 public:
-    std::string ClassName() {
+    std::string ClassName() override {
         return "Usual_NoImm";
     };
 

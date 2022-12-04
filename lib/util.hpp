@@ -2,6 +2,17 @@
 
 #include <atomic>
 #include <random>
+#include <iostream>
+#include <stdexcept>
+
+
+#define VERIFY(cond, message) if (!(cond)) {                      \
+    std::cerr << "Fatal: " << message << std::endl; std::abort(); \
+}
+
+#define REQUIRE(cond, message) if (!(cond)) {                     \
+    throw std::runtime_error(message);                            \
+}
 
 extern thread_local std::mt19937 TlRandom;
 

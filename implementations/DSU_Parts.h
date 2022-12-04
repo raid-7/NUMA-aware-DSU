@@ -11,7 +11,7 @@ public:
 
     DSU_Parts(int size, int node_count) :size(size), node_count(node_count) {
         data.resize(node_count);
-        to_union.resize(size);
+        to_union = std::vector<std::atomic<int>>(size);;
         owners_on_start.resize(size);
         node_full_mask = 0;
         status_bit = 1 << node_count;
@@ -26,13 +26,12 @@ public:
             }
         }
         for (int i = 0; i < size; i++) {
-            to_union[i] = (std::atomic<int> *) malloc(sizeof(std::atomic<int>));
-            to_union[i]->store((i*2 + 1) << node_count);
+            to_union[i].store((i*2 + 1) << node_count);
             if (i % 2 == 0) {
-                to_union[i]->store(((i*2 + 1) << node_count) | (2));
+                to_union[i].store(((i*2 + 1) << node_count) | (2));
                 owners_on_start[i] = 2;
             } else {
-                to_union[i]->store(((i*2 + 1) << node_count) | (1));
+                to_union[i].store(((i*2 + 1) << node_count) | (1));
                 owners_on_start[i] = 1;
             }
         }
@@ -57,7 +56,7 @@ public:
     DSU_Parts(int size, int node_count, std::vector<int> owners)
             :size(size), node_count(node_count), owners_on_start(owners) {
         data.resize(node_count);
-        to_union.resize(size);
+        to_union = std::vector<std::atomic<int>>(size);;
         node_full_mask = 0;
         status_bit = 1 << node_count;
         for (int i = 0; i < node_count; i++) {
@@ -76,8 +75,7 @@ public:
             }
         }
         for (int i = 0; i < size; i++) {
-            to_union[i] = (std::atomic<int> *) malloc(sizeof(std::atomic<int>));
-            to_union[i]->store(((i*2 + 1) << node_count) | owners[i]);
+            to_union[i].store(((i*2 + 1) << node_count) | owners[i]);
         }
     }
 
@@ -96,7 +94,7 @@ public:
             }
         }
         for (int i = 0; i < size; i++) {
-            to_union[i]->store(((i*2 + 1) << node_count) | owners_on_start[i]);
+            to_union[i].store(((i*2 + 1) << node_count) | owners_on_start[i]);
         }
 
     }
@@ -187,7 +185,7 @@ public:
                 return;
             }
 
-            auto u_data = to_union[u_p]->load(std::memory_order_relaxed);
+            auto u_data = to_union[u_p].load(std::memory_order_relaxed);
             if (!(u_data & status_bit)) {
                 // union_(u_p, v_p, node, true);
                 // __builtin_ia32_pause()
@@ -195,7 +193,7 @@ public:
             } else {
                 auto u_mask = u_data & node_full_mask;
                 auto new_u_data = ((v_p*2) << node_count) | u_mask;
-                if (to_union[u_p]->compare_exchange_strong(u_data, new_u_data)) {
+                if (to_union[u_p].compare_exchange_strong(u_data, new_u_data)) {
                     int mask = u_mask;
                     while (true) {
                         //std::cerr << "4";
@@ -205,7 +203,7 @@ public:
                             }
                         }
 
-                        if (to_union[u_p]->compare_exchange_strong(new_u_data, (new_u_data | status_bit))) {
+                        if (to_union[u_p].compare_exchange_strong(new_u_data, (new_u_data | status_bit))) {
                             for (int i = 0; i < node_count; i++) {
                                 if (mask & (1 << i)) {
                                     auto par = data[i][u_p].load(std::memory_order_acquire);
@@ -216,7 +214,7 @@ public:
                             }
                             break;
                         } else {
-                            new_u_data = to_union[u_p]->load(std::memory_order_acquire);
+                            new_u_data = to_union[u_p].load(std::memory_order_acquire);
                             mask = new_u_data & node_full_mask;
                         }
                     }
@@ -227,7 +225,7 @@ public:
     }
 
     int get_mask(int u) {
-        return (to_union[u]->load(std::memory_order_acquire) & node_full_mask);
+        return (to_union[u].load(std::memory_order_acquire) & node_full_mask);
     }
 
     int load_new_v(int u, int to_node) {
@@ -243,7 +241,7 @@ public:
             //std::cerr << "5";
             u_p = find_with_copy(u_p, from_node, to_node);
             //if (data[from_node][u_p].load(std::memory_order_acquire) == data[to_node][u_p].load(std::memory_order_acquire)) {
-            //auto to_union_data = to_union[u_p]->load(std::memory_order_acquire);
+            //auto to_union_data = to_union[u_p].load(std::memory_order_acquire);
             auto to_node_data = data[to_node][u_p].load(std::memory_order_acquire);
             auto from_node_data = data[from_node][u_p].load(std::memory_order_acquire);
             if ((to_node_data >> 3) != (from_node_data >> 3)) {continue;}
@@ -252,8 +250,8 @@ public:
                     continue;
                 }
             }
-            auto to_union_data = to_union[u_p]->load(std::memory_order_acquire);
-            if (to_union[u_p]->compare_exchange_weak(to_union_data, (to_union_data | (1 << to_node)))) {
+            auto to_union_data = to_union[u_p].load(std::memory_order_acquire);
+            if (to_union[u_p].compare_exchange_weak(to_union_data, (to_union_data | (1 << to_node)))) {
                 data[to_node][u_p].compare_exchange_weak(to_node_data, to_node_data | 2);
                 break;
             } else {
@@ -279,7 +277,7 @@ public:
         while (true) {
             //std::cerr << "6";
             auto par = getParent(from_node, cur);//data[from_node][cur].load(std::memory_order_acquire);
-            //if (par == -1) {std::cerr << "ooooooooooooooooooops\n" + std::to_string(to_union[cur]->load()) + "\n";}
+            //if (par == -1) {std::cerr << "ooooooooooooooooooops\n" + std::to_string(to_union[cur].load()) + "\n";}
             if (par == cur) {
                 return par;
             }
@@ -287,8 +285,8 @@ public:
             data[to_node][cur].store(par_data);
             cur = par;
             //while (true) {
-            //    auto q = to_union[cur]->load(std::memory_order_acquire); // or relaxed
-            //    if (to_union[cur]->compare_exchange_weak(q, q | (1 << to_node)) || (q & (1 << to_node))) {break;}
+            //    auto q = to_union[cur].load(std::memory_order_acquire); // or relaxed
+            //    if (to_union[cur].compare_exchange_weak(q, q | (1 << to_node)) || (q & (1 << to_node))) {break;}
             //    data[to_node][cur].compare_exchange_weak(par_data, (par_data | 2));
             //}
         }
@@ -386,14 +384,14 @@ public:
             return (par_data >> 2);
         } else {
             auto par = par_data >> 2;
-            auto to_union_data = to_union[u]->load(std::memory_order_acquire);
+            auto to_union_data = to_union[u].load(std::memory_order_acquire);
             auto mask = to_union_data & node_full_mask;
             if (!((mask >> node) & 1)) {
                 if (mask == 0) {
-                    if (to_union[u]->compare_exchange_weak(to_union_data, to_union_data + (1 << node))) {
+                    if (to_union[u].compare_exchange_weak(to_union_data, to_union_data + (1 << node))) {
                         return u;
                     } else {
-                        if (!(to_union[u]->load() & (1 << node))) {
+                        if (!(to_union[u].load() & (1 << node))) {
                             return -1;
                         } else {
                             return u;
@@ -422,7 +420,7 @@ public:
     int size;
     int node_count;
     std::vector<std::atomic<int>*> data; // parent + union_status_bit + is_onnode + is_sole_owner_bit
-    std::vector<std::atomic<int>*> to_union; // v + status + mask
+    std::vector<std::atomic<int>> to_union; // v + status + mask
     int node_full_mask;
     int status_bit;
 

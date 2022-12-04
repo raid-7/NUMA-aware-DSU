@@ -12,11 +12,21 @@
 
 class DSU {
 public:
+    explicit DSU(NUMAContext* ctx)
+            : Ctx_(ctx) {}
+
+    DSU()
+        : DSU(nullptr) {}
+
     virtual std::string ClassName() = 0;
     virtual void ReInit() = 0;
     virtual void Union(int u, int v) = 0;
     virtual int Find(int u) = 0;
     virtual bool SameSet(int u, int v) = 0;
+    virtual ~DSU() = default;
+
+protected:
+    NUMAContext* Ctx_;
 };
 
 #endif //TRY_DSU_H

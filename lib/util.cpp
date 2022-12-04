@@ -2,6 +2,7 @@
 
 #include <atomic>
 #include <random>
+#include <numa.h>
 
 static std::atomic<int> BlackholeValue;
 
@@ -18,4 +19,8 @@ void RandomAdditionalWork(double mean) {
         return;
     std::uniform_real_distribution<double> distribution{0., mean};
     while (distribution(TlRandom) >= 1.0);
+}
+
+bool IsNumaAvailable() {
+    return numa_available() != -1;
 }

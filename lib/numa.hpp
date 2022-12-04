@@ -1,16 +1,34 @@
 #pragma once
 
+#include "util.hpp"
+
 #include <vector>
 #include <atomic>
 #include <thread>
 #include <stdexcept>
+#include <cmath>
 
 #include <sched.h>
 #include <numa.h>
 #include <pthread.h>
 
 
+bool IsNumaAvailable();
+
 class NUMAContext;
+
+//template <class T>
+//class NUMAAllocator {
+//public:
+//    NUMAAllocator(NUMAContext* ctx) : Ctx_(ctx) {}
+//
+//    void* Allocate(size_t);
+//
+//    void Deallocate(void*, size_t);
+//
+//private:
+//    NUMAContext* Ctx_;
+//};
 
 static thread_local NUMAContext* NumaCtx;
 static thread_local int ThreadId;
@@ -18,12 +36,19 @@ static thread_local int NumaNodeId;
 
 class NUMAContext {
 public:
-    NUMAContext(size_t numCpu = std::thread::hardware_concurrency(),
-            size_t numNuma = numa_max_node() + 1, bool testingNumaIds = false)
-        : NumCpu_(numCpu)
-        , NumNuma_(numNuma)
-        , TestingNumaIds_(testingNumaIds)
-    {}
+    NUMAContext(size_t fallbackNumNuma = 4)
+            : NumCpu_(std::thread::hardware_concurrency())
+            , NumNuma_(IsNumaAvailable() ? numa_max_node() + 1 : std::min(fallbackNumNuma, NumCpu_))
+            , TestingNumaIds_(!IsNumaAvailable())
+            , NumaAvailable_(IsNumaAvailable())
+    {
+    }
+
+    void SetupForTests(size_t numCpu, size_t numNuma) {
+        TestingNumaIds_ = true;
+        NumCpu_ = numCpu;
+        NumNuma_ = numNuma;
+    }
 
     template <class R>
     void StartThread(R runnable) {
@@ -51,8 +76,8 @@ public:
         return NumCpu_;
     }
 
-    size_t CpuCount() const {
-        return NumCpu_;
+    int NumaNodeForThread(int tid) const {
+        return TestingNumaIds_ ? (tid * (int)NumNuma_ / (int)NumCpu_) : numa_node_of_cpu(tid % (int) NumCpu_);
     }
 
     void Join() {
@@ -60,6 +85,23 @@ public:
             thread.join();
         }
         Threads_.clear();
+    }
+
+    void* Allocate(int nodeId, size_t size) const {
+        if (NumaAvailable_) {
+            int realNodeId = nodeId % (numa_max_node() + 1);
+            return numa_alloc_onnode(size, realNodeId);
+        } else {
+            return ::malloc(size);
+        }
+    }
+
+    void Free(void* ptr, size_t size) const {
+        if (NumaAvailable_) {
+            numa_free(ptr, size);
+        } else {
+            ::free(ptr);
+        }
     }
 
     ~NUMAContext() {
@@ -98,4 +140,5 @@ private:
     size_t NumCpu_;
     size_t NumNuma_;
     bool TestingNumaIds_;
+    bool NumaAvailable_;
 };

@@ -5,14 +5,16 @@
 
 class SeveralDSU : public DSU {
 public:
-    std::string ClassName() {
+    std::string ClassName() override {
         return "SeveralDSU";
     };
 
-    SeveralDSU(int size, int node_count) :size(size), node_count(node_count) {
+    SeveralDSU(NUMAContext* ctx, int size)
+        : DSU(ctx)
+        , size(size), node_count(ctx->NodeCount()) {
         data.resize(node_count);
         for (int i = 0; i < node_count; i++) {
-            data[i] = (std::atomic<int> *) numa_alloc_onnode(sizeof(std::atomic<int>) * (size / node_count + 1), i);
+            data[i] = (std::atomic<int> *) Ctx_->Allocate(i, sizeof(std::atomic<int>) * (size / node_count + 1));
             for (int j = 0; j < (size / node_count + 1); j++) {
                 data[i][j].store(j);
             }
@@ -27,14 +29,14 @@ public:
         }
     }
 
-    ~SeveralDSU() {
+    ~SeveralDSU() override {
         for (int i = 0; i < node_count; i++) {
-            numa_free(data[i], sizeof(std::atomic<int>) * (size / node_count + 1));
+            Ctx_->Free(data[i], sizeof(std::atomic<int>) * (size / node_count + 1));
         }
     }
 
     void Union(int u, int v) override {
-        auto node = u % node_count;//u & 1;
+        auto node = u % node_count;//u & 1; // TODO WTF???
         //u = (u >> 1); v = (v >> 1);
         u = u / node_count; v = v / node_count;
         if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {

@@ -11,6 +11,7 @@
 #include "implementations/DSU_ParallelUnions_no_imm.h"
 #include "implementations/DSU_Usual.h"
 #include "implementations/DSU_Usual_noimm.h"
+#include "implementations/DSU_Adaptive.h"
 #include "implementations/SeveralDSU.h"
 
 #include <CLI/App.hpp>
@@ -46,6 +47,30 @@ struct StaticWorkload {
     size_t N;
 };
 
+/*
+ * For each vertex find a node which most frequently accesses the vertex and sets it as an owner of the vertex.
+ */
+template <class FGetThreadNode>
+void PrepareDSUForWorkload(DSU_Adaptive* dsu, const StaticWorkload& workload, FGetThreadNode getThreadNode) {
+    std::unordered_map<int, std::vector<uint32_t>> stats;
+    for (size_t tId = 0; tId < workload.ThreadRequests.size(); ++tId) {
+        int node = getThreadNode((int)tId);
+        for (const auto& edge : workload.ThreadRequests[tId]) {
+            for (int u : std::array{edge.u, edge.v}) {
+                auto& uStats = stats[u];
+                if (uStats.size() <= 16)
+                    uStats.resize(16);
+                ++uStats[node];
+            }
+        }
+    }
+    for (const auto& [u, nStats] : stats) {
+        auto maxIt = std::max_element(nStats.begin(), nStats.end());
+        int maxId = maxIt - nStats.begin();
+        dsu->SetOwner(u, maxId);
+    }
+}
+
 class Benchmark {
 public:
     Benchmark(NUMAContext* ctx)
@@ -53,6 +78,13 @@ public:
     {}
 
     void Run(DSU* dsu, const StaticWorkload& workload) {
+        // FIXME This is a hack to test the conjecture.
+        if (auto* adsu = dynamic_cast<DSU_Adaptive*>(dsu); adsu) {
+            PrepareDSUForWorkload(adsu, workload, [ctx = Ctx_](int tid) {
+               return ctx->NumaNodeForThread(tid);
+            });
+        }
+
         size_t numThreads = workload.ThreadRequests.size();
         std::barrier barrier(numThreads);
         dsu->ReInit();
@@ -160,15 +192,15 @@ StaticWorkload BuildComponentsRandomWorkload(size_t numComponents, size_t single
     };
 }
 
-std::vector<std::unique_ptr<DSU>> GetAvailableDsus(size_t N, size_t node_count, const std::regex& filter) {
+std::vector<std::unique_ptr<DSU>> GetAvailableDsus(NUMAContext* ctx, size_t N, const std::regex& filter) {
     std::vector<std::unique_ptr<DSU>> dsus;
     dsus.emplace_back(new DSU_Usual(N));
     //dsus.emplace_back(new DSU_Usual_NoImm(N));
 
     //dsus.emplace_back(new TwoDSU(N, node_count));
-    dsus.emplace_back(new SeveralDSU(N, node_count));
+    dsus.emplace_back(new SeveralDSU(ctx, N));
 
-    dsus.emplace_back(new DSU_ParallelUnions(N, node_count));
+    dsus.emplace_back(new DSU_ParallelUnions(ctx, N));
     //dsus.emplace_back(new DSU_ParallelUnions_NoImm(N, node_count));
 
 //    dsus.emplace_back(new DSU_NO_SYNC(N, node_count));
@@ -179,6 +211,8 @@ std::vector<std::unique_ptr<DSU>> GetAvailableDsus(size_t N, size_t node_count, 
 
 //    dsus.emplace_back(new DSU_NoSync_Parts(N, node_count, owners));
     //dsus.emplace_back(new DSU_NoSync_Parts_NoImm(N, node_count, owners));
+
+    dsus.emplace_back(new DSU_Adaptive(ctx, N));
 
     auto end = std::remove_if(dsus.begin(), dsus.end(), [&filter](const std::unique_ptr<DSU>& dsu) {
         return !std::regex_match(dsu->ClassName(), filter);
@@ -203,8 +237,7 @@ void RunComponentsBenchmark(NUMAContext* ctx, CsvFile* out, const std::regex& fi
         double sameSetFraction = params.Get<double>("ssf");
         size_t interpairE = std::round(componentE * interpairFraction);
 
-        std::vector<std::unique_ptr<DSU>> dsus = GetAvailableDsus(componentN * ctx->MaxConcurrency(), ctx->NodeCount(),
-                                                                  filter);
+        std::vector<std::unique_ptr<DSU>> dsus = GetAvailableDsus(ctx, componentN * ctx->MaxConcurrency(), filter);
         for (size_t i = 0; i < numWorkloads; ++i) {
             StaticWorkload workload = BuildComponentsRandomWorkload(ctx->MaxConcurrency(), componentN, componentE,
                                                                     interpairE, sameSetFraction);
@@ -246,7 +279,7 @@ int main(int argc, const char* argv[]) {
     CLI11_PARSE(app, argc, argv);
     auto parameters = ParseParameters(rawParameters, &defaultParams);
 
-    NUMAContext ctx(8, 2, true);
+    NUMAContext ctx(4);
     CsvFile out("out.csv");
 
     RunComponentsBenchmark(&ctx, &out, std::regex(".*"), 2, 3, parameters);

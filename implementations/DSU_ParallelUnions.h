@@ -10,18 +10,19 @@ public:
         return "ParallelUnions";
     };
 
-    DSU_ParallelUnions(int size, int node_count) :size(size), node_count(node_count) {
+    DSU_ParallelUnions(NUMAContext* ctx, int size)
+        : DSU(ctx)
+        , size(size), node_count(ctx->NodeCount()) {
         data.resize(node_count);
-        to_union.resize(size);
+        to_union = std::vector<std::atomic<int>>(size);
         for (int i = 0; i < node_count; i++) {
-            data[i] = (std::atomic<int> *) numa_alloc_onnode(sizeof(std::atomic<int>) * size, i);
+            data[i] = (std::atomic<int> *) Ctx_->Allocate(i, sizeof(std::atomic<int>) * size);
             for (int j = 0; j < size; j++) {
                 data[i][j].store(j * 2 + 1);
             }
         }
         for (int i = 0; i < size; i++) {
-            to_union[i] = (std::atomic<int> *) malloc(sizeof(std::atomic<int>));
-            to_union[i]->store(1);
+            to_union[i].store(1);
         }
     }
 
@@ -32,13 +33,13 @@ public:
             }
         }
         for (int i = 0; i < size; i++) {
-            to_union[i]->store(1);
+            to_union[i].store(1);
         }
     }
 
     ~DSU_ParallelUnions() {
         for (int i = 0; i < node_count; i++) {
-            numa_free(data[i], sizeof(int) * size);
+            Ctx_->Free(data[i], sizeof(int) * size);
         }
     }
 
@@ -58,18 +59,18 @@ public:
             if (u_p < v_p) {
                 std::swap(u_p, v_p);
             }
-            auto u_data = to_union[u_p]->load(std::memory_order_acquire);
+            auto u_data = to_union[u_p].load(std::memory_order_acquire);
             if (u_data % 2 == 0) {
                 // union_(u_p, v_p, node, true);
                 // __builtin_ia32_pause()
                 continue;
             } else {
-                if (to_union[u_p]->compare_exchange_strong(u_data, v_p * 2)) {
+                if (to_union[u_p].compare_exchange_strong(u_data, v_p * 2)) {
                     for (int i = 0; i < node_count; i++) {
                         union_(u_p, v_p, i, (node == i));
                     }
                     u_data = v_p * 2;
-                    if (to_union[u_p]->compare_exchange_strong(u_data, v_p * 2 + 1)) {
+                    if (to_union[u_p].compare_exchange_strong(u_data, v_p * 2 + 1)) {
                         for (int i = 0; i < node_count; i++) {
                             auto par = data[i][u_p].load(std::memory_order_acquire);
                             data[i][u_p].compare_exchange_strong(par, par | 1);
@@ -157,7 +158,7 @@ private:
             return (par >> 1);
         } else {
             par = par >> 1;
-            auto data = to_union[u]->load(std::memory_order_acquire);
+            auto data = to_union[u].load(std::memory_order_acquire);
             if (par == (data >> 1)) {
                 if ((data & 1) == 1) {
                     return par;
@@ -173,7 +174,7 @@ private:
     int size;
     int node_count;
     std::vector<std::atomic<int>*> data;
-    std::vector<std::atomic<int>*> to_union;
+    std::vector<std::atomic<int>> to_union;
 
 };
 
