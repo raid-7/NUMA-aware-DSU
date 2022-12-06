@@ -210,7 +210,7 @@ StaticWorkload BuildComponentsRandomWorkloadV2(size_t numThreads, size_t numComp
     std::vector<std::vector<Request>> threadWork(numThreads);
 
     for (size_t tid = 0; tid < numThreads; ++tid) {
-        size_t componentId = tid / numComponents;
+        size_t componentId = tid * numComponents / numThreads;
         size_t minComponentVertex = componentN * componentId;
         std::uniform_int_distribution<int> uvDistribution(minComponentVertex, minComponentVertex + componentN - 1);
         for (size_t i = 0; i < internalThreadE; ++i) {
