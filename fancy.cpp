@@ -192,6 +192,71 @@ StaticWorkload BuildComponentsRandomWorkload(size_t numComponents, size_t single
     };
 }
 
+
+StaticWorkload BuildComponentsRandomWorkloadV2(size_t numThreads, size_t numComponents, size_t N, size_t E,
+                                             double intercomponentEFraction, double sameSetFraction) {
+    REQUIRE(numThreads % numComponents == 0, "Number of threads must be divisible by number of components");
+    REQUIRE(numComponents > 1, "Number of components must be greater than 1");
+    // assign a component # tid/numComponents to each thread
+    // independently generate random edges for each thread inside the component
+    // independently generate random edges between components for each thread
+    // shuffle edges of each thread
+    size_t componentN = N / numComponents;
+    size_t intercomponentE = std::round(intercomponentEFraction * E);
+    size_t internalE = E - intercomponentE;
+    size_t internalThreadE = internalE / numThreads;
+
+    std::bernoulli_distribution sameSetDistribution(sameSetFraction);
+    std::vector<std::vector<Request>> threadWork(numThreads);
+
+    for (size_t tid = 0; tid < numThreads; ++tid) {
+        size_t componentId = tid / numComponents;
+        size_t minComponentVertex = componentN * componentId;
+        std::uniform_int_distribution<int> uvDistribution(minComponentVertex, minComponentVertex + componentN - 1);
+        for (size_t i = 0; i < internalThreadE; ++i) {
+            int u = uvDistribution(TlRandom);
+            int v = uvDistribution(TlRandom);
+            threadWork[tid].push_back({sameSetDistribution(TlRandom), u, v});
+        }
+    }
+
+    std::vector<Request> interpairRequests;
+    size_t interPairE = intercomponentE / ((numComponents - 1) * numComponents / 2);
+    for (size_t c1 = 0; c1 < numComponents; ++c1) {
+        size_t minC1Vertex = componentN * c1;
+        std::uniform_int_distribution<int> uDistribution(minC1Vertex, minC1Vertex + componentN - 1);
+        for (size_t c2 = c1 + 1; c2 < numComponents; ++c2) {
+            size_t minC2Vertex = componentN * c2;
+            std::uniform_int_distribution<int> vDistribution(minC2Vertex, minC2Vertex + componentN - 1);
+            for (size_t i = 0; i < interPairE; ++i) {
+                int u = uDistribution(TlRandom);
+                int v = vDistribution(TlRandom);
+                interpairRequests.push_back({sameSetDistribution(TlRandom), u, v});
+            }
+        }
+    }
+
+    Shuffle(interpairRequests);
+    size_t intercomponentThreadE = interpairRequests.size() / numThreads;
+    size_t intercomponentThreadERem = interpairRequests.size() % numThreads;
+    for (size_t tid = 0; tid < numThreads; ++tid) {
+        size_t thisThreadE = intercomponentThreadE + (tid < intercomponentThreadERem ? 1 : 0);
+        for (size_t j = 0; j < thisThreadE; ++j) {
+            threadWork[tid].push_back(interpairRequests.back());
+            interpairRequests.pop_back();
+        }
+    }
+
+    for (auto& work : threadWork) {
+        Shuffle(work);
+    }
+    return StaticWorkload{
+            {},
+            std::move(threadWork),
+            numComponents * componentN
+    };
+}
+
 std::vector<std::unique_ptr<DSU>> GetAvailableDsus(NUMAContext* ctx, size_t N, const std::regex& filter) {
     std::vector<std::unique_ptr<DSU>> dsus;
     dsus.emplace_back(new DSU_Usual(N));
@@ -226,21 +291,20 @@ void RunComponentsBenchmark(NUMAContext* ctx, CsvFile* out, const std::regex& fi
                   size_t numWorkloads, size_t numIterationsPerWorkload,
                   const std::vector<ParameterSet>& parameters) {
     if (out) {
-        *out << "DSU" << "componentN" << "componentE" << "interpairFraction" << "sameSetFraction" << "Score" << "Score Error";
+        *out << "DSU" << "N" << "E" << "interpairFraction" << "sameSetFraction" << "Score" << "Score Error";
     }
 
     Benchmark benchmark(ctx); // TODO pass additional work
     for (const auto& params : parameters) {
-        size_t componentN = params.Get<size_t>("componentN");
-        size_t componentE = params.Get<size_t>("componentE");
+        size_t N = params.Get<size_t>("N");
+        size_t E = params.Get<size_t>("E");
         double interpairFraction = params.Get<double>("ipf");
         double sameSetFraction = params.Get<double>("ssf");
-        size_t interpairE = std::round(componentE * interpairFraction);
 
-        std::vector<std::unique_ptr<DSU>> dsus = GetAvailableDsus(ctx, componentN * ctx->MaxConcurrency(), filter);
+        std::vector<std::unique_ptr<DSU>> dsus = GetAvailableDsus(ctx, N, filter);
         for (size_t i = 0; i < numWorkloads; ++i) {
-            StaticWorkload workload = BuildComponentsRandomWorkload(ctx->MaxConcurrency(), componentN, componentE,
-                                                                    interpairE, sameSetFraction);
+            StaticWorkload workload = BuildComponentsRandomWorkloadV2(ctx->MaxConcurrency(), ctx->NodeCount(), N, E,
+                                                                    interpairFraction, sameSetFraction);
             for (size_t j = 0; j < numIterationsPerWorkload; ++j) {
                 for (auto& ptr: dsus) {
                     DSU* dsu = ptr.get();
@@ -257,7 +321,7 @@ void RunComponentsBenchmark(NUMAContext* ctx, CsvFile* out, const std::regex& fi
                       << dsu->ClassName() << ": " << result.mean << "+-" << result.stddev << std::endl;
             if (out)
                 *out << dsu->ClassName()
-                     << componentN << componentE << interpairFraction << sameSetFraction
+                     << N << E << interpairFraction << sameSetFraction
                      << result.mean << result.stddev;
         }
     }
@@ -266,12 +330,16 @@ void RunComponentsBenchmark(NUMAContext* ctx, CsvFile* out, const std::regex& fi
 
 int main(int argc, const char* argv[]) {
     CLI::App app("NUMA DSU Benchmark");
+
     std::vector<std::string> rawParameters;
     app.add_option("-p,--param", rawParameters, "Parameter in the form key=val1,val2,...,valN");
 
+    bool testing = false;
+    app.add_flag("--testing", testing, "Setup NUMA context for testing with 8 CPUs on 4 nodes");
+
     ParameterSet defaultParams = ParseParameters({
-         "componentN=1000000",
-         "componentE=8000000",
+         "N=4000000",
+         "E=64000000",
          "ipf=0.2",
          "ssf=0.1"
     })[0];
@@ -280,6 +348,9 @@ int main(int argc, const char* argv[]) {
     auto parameters = ParseParameters(rawParameters, &defaultParams);
 
     NUMAContext ctx(4);
+    if (testing) {
+        ctx.SetupForTests(8, 4);
+    }
     CsvFile out("out.csv");
 
     RunComponentsBenchmark(&ctx, &out, std::regex(".*"), 2, 3, parameters);
