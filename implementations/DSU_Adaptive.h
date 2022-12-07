@@ -25,7 +25,7 @@ public:
 
     DSU_Adaptive(NUMAContext* ctx, int size)
         : DSU(ctx)
-        , size(size), node_count(ctx->NodeCount()), to_union(size) {
+        , size(size), node_count(ctx->NodeCount()) {
         using namespace std::string_literals;
         REQUIRE(size <= MAX_VERTICES, "Max supported size: "s + std::to_string(MAX_VERTICES)
                                              + "; given size "s + std::to_string(size));
@@ -72,30 +72,12 @@ public:
                 std::swap(u, v);
                 std::swap(uDat, vDat);
             }
-            auto uUnionData = to_union[u].load(std::memory_order_acquire);
-            if (uUnionData != u * 2 + 1) {
-#if defined(__x86_64__)
-                __builtin_ia32_pause();
-#endif
-                continue;
-            } else {
-                if (to_union[u].compare_exchange_strong(uUnionData, v * 2)) { // lock
-                    int newUDat = makeData(v, getDataOwners(uDat), false);
-                    for (int i = 0; i < node_count; i++) {
-                        if (isDataOwner(uDat, i))
-                            data[i][u].store(newUDat);
-                    }
 
-                    to_union[u].store(v * 2 + 1, std::memory_order_release); // unlock
-
-                    for (int i = 0; i < node_count; i++) { // TODO owners (keep them from prev step or read locally)
-                        if (isDataOwner(uDat, i))
-                            data[i][u].store(newUDat | M_FINALIZED);
-                    }
-
-                    break;
-                }
-            }
+            int owner = getAnyDataOwnerId(uDat);
+            // every root must have exactly one owner
+            // assert getDataOwners(uDat) == (1 << owner)
+            if (data[owner][u].compare_exchange_strong(uDat, makeData(v, 1 << owner, true)))
+                break;
         }
     }
 
@@ -170,7 +152,7 @@ private:
     inline int readDataChecked(int primaryNode, int u, int& localData) const {
         localData = data[primaryNode][u].load(std::memory_order_acquire);
         if (isDataOwner(localData, primaryNode)) {
-            return doReadData(u, localData);
+            return localData;
         }
 
         int node = getAnyDataOwnerId(localData);
@@ -178,36 +160,16 @@ private:
     }
 
     inline int readDataUnsafe(int node, int u) const {
-        auto par = data[node][u].load(std::memory_order_acquire);
+        int dat = data[node][u].load(std::memory_order_acquire);
         // assert isDataOwner(par, node)
-        return doReadData(u, par);
-    }
-
-    inline int doReadData(int u, int par) const {
-        if (getDataFinalized(par)) {
-            return par;
-        } else {
-            auto lock = to_union[u].load(std::memory_order_acquire);
-            if (getDataParent(par) == (lock >> 1)) {
-                if ((lock & 1) == 1) {
-                    return par | M_FINALIZED;
-                } else {
-                    return makeData(u, getDataOwners(par), true);
-                }
-            } else {
-                return par | M_FINALIZED;
-            }
-        }
+        return dat;
     }
 
     void doReInit() {
         for (int i = 0; i < node_count; i++) {
             for (int j = 0; j < size; j++) {
-                data[i][j].store(j | M_OWNERS | M_FINALIZED);
+                data[i][j].store(makeData(j, 1, true));
             }
-        }
-        for (int i = 0; i < size; i++) {
-            to_union[i].store(i * 2 + 1);
         }
     }
 
@@ -242,7 +204,6 @@ private:
     int size;
     int node_count;
     std::vector<std::atomic<int>*> data;
-    std::vector<std::atomic<int>> to_union;
 
     static constexpr int MAX_NUMA_NODES = 4;
     static constexpr int MAX_VERTICES = (1 << (31 - MAX_NUMA_NODES)) - 1;
