@@ -50,11 +50,10 @@ struct StaticWorkload {
 /*
  * For each vertex find a node which most frequently accesses the vertex and sets it as an owner of the vertex.
  */
-template <class FGetThreadNode>
-void PrepareDSUForWorkload(DSU_Adaptive* dsu, const StaticWorkload& workload, FGetThreadNode getThreadNode) {
+void PrepareDSUForWorkload(DSU_Adaptive* dsu, const StaticWorkload& workload, auto threadNodeLayout) {
     std::unordered_map<int, std::vector<uint32_t>> stats;
     for (size_t tId = 0; tId < workload.ThreadRequests.size(); ++tId) {
-        int node = getThreadNode((int)tId);
+        int node = threadNodeLayout((int)tId);
         for (const auto& edge : workload.ThreadRequests[tId]) {
             for (int u : std::array{edge.u, edge.v}) {
                 auto& uStats = stats[u];
@@ -77,7 +76,7 @@ public:
         : Ctx_(ctx)
     {}
 
-    void Run(DSU* dsu, const StaticWorkload& workload) {
+    void Run(DSU* dsu, const StaticWorkload& workload, bool ignoreMeasurements = false) {
         // FIXME This is a hack to test the conjecture.
         if (auto* adsu = dynamic_cast<DSU_Adaptive*>(dsu); adsu) {
             PrepareDSUForWorkload(adsu, workload, [ctx = Ctx_](int tid) {
@@ -90,12 +89,14 @@ public:
         dsu->ReInit();
         ApplyRequests(dsu, workload.PreHeatRequests, false);
         size_t resultsOffset = ThroughputResults_[dsu].size();
-        ThroughputResults_[dsu].resize(resultsOffset + numThreads, 0.0);
+        if (!ignoreMeasurements)
+            ThroughputResults_[dsu].resize(resultsOffset + numThreads, 0.0);
         Ctx_->StartNThreads(
-            [this, &barrier, &workload, dsu, resultsOffset]() {
+            [this, &barrier, &workload, dsu, resultsOffset, ignoreMeasurements]() {
                 barrier.arrive_and_wait();
                 double avgNs = ThreadWork(dsu, workload.ThreadRequests[NUMAContext::CurrentThreadId()]);
-                ThroughputResults_[dsu][resultsOffset + NUMAContext::CurrentThreadId()] = avgNs;
+                if (!ignoreMeasurements)
+                    ThroughputResults_[dsu][resultsOffset + NUMAContext::CurrentThreadId()] = avgNs;
             },
             numThreads
         );
@@ -194,7 +195,8 @@ StaticWorkload BuildComponentsRandomWorkload(size_t numComponents, size_t single
 
 
 StaticWorkload BuildComponentsRandomWorkloadV2(size_t numThreads, size_t numComponents, size_t N, size_t E,
-                                             double intercomponentEFraction, double sameSetFraction) {
+                                             double intercomponentEFraction, double sameSetFraction,
+                                             auto threadNodeLayout) {
     REQUIRE(numThreads % numComponents == 0, "Number of threads must be divisible by number of components");
     REQUIRE(numComponents > 1, "Number of components must be greater than 1");
     // assign a component # tid/numComponents to each thread
@@ -210,7 +212,7 @@ StaticWorkload BuildComponentsRandomWorkloadV2(size_t numThreads, size_t numComp
     std::vector<std::vector<Request>> threadWork(numThreads);
 
     for (size_t tid = 0; tid < numThreads; ++tid) {
-        size_t componentId = tid * numComponents / numThreads;
+        size_t componentId = threadNodeLayout(tid);
         size_t minComponentVertex = componentN * componentId;
         std::uniform_int_distribution<int> uvDistribution(minComponentVertex, minComponentVertex + componentN - 1);
         for (size_t i = 0; i < internalThreadE; ++i) {
@@ -303,11 +305,19 @@ void RunComponentsBenchmark(NUMAContext* ctx, CsvFile* out, const std::regex& fi
 
         std::vector<std::unique_ptr<DSU>> dsus = GetAvailableDsus(ctx, N, filter);
         for (size_t i = 0; i < numWorkloads; ++i) {
+            std::cout << "Preparing workload #" << i << std::endl;
             StaticWorkload workload = BuildComponentsRandomWorkloadV2(ctx->MaxConcurrency(), ctx->NodeCount(), N, E,
-                                                                    interpairFraction, sameSetFraction);
-            for (size_t j = 0; j < numIterationsPerWorkload; ++j) {
-                for (auto& ptr: dsus) {
-                    DSU* dsu = ptr.get();
+                        interpairFraction, sameSetFraction, [ctx](int tid) { return ctx->NumaNodeForThread(tid); });
+            for (auto& ptr: dsus) {
+                DSU* dsu = ptr.get();
+
+                if (i == 0) {
+                    // warmup for the given parameter set
+                    std::cout << "Warmup iteration for workload #" << i << "; DSU " << dsu->ClassName() << std::endl;
+                    benchmark.Run(dsu, workload, true);
+                }
+
+                for (size_t j = 0; j < numIterationsPerWorkload; ++j) {
                     std::cout << "Benchmark iteration #" << j << " for workload #" << i << "; DSU " << dsu->ClassName()
                               << std::endl;
                     benchmark.Run(dsu, workload);
