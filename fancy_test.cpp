@@ -2,6 +2,8 @@
 
 #include "implementations/DSU_Usual.h"
 #include "implementations/DSU_Adaptive.h"
+#include "implementations/DSU_AdaptiveLocks.h"
+#include "implementations/DSU_LazyUnion.h"
 #include "implementations/DSU_ParallelUnions.h"
 
 #include "lib/numa.hpp"
@@ -20,7 +22,8 @@ public:
     }
 };
 
-using Dsus = ::testing::Types<DSU_Adaptive, DSU_ParallelUnions>;
+using Dsus = ::testing::Types<DSU_Adaptive<true>, DSU_AdaptiveLocks<true>, DSU_LazyUnions<true>, DSU_ParallelUnions<true>,
+        DSU_Adaptive<false>, DSU_AdaptiveLocks<false>, DSU_LazyUnions<false>, DSU_ParallelUnions<false>>;
 TYPED_TEST_SUITE(DSUTest, Dsus);
 
 TYPED_TEST(DSUTest, Simple) {

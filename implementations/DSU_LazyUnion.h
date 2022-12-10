@@ -7,19 +7,20 @@
 
 
 template <bool Halfing>
-class DSU_Adaptive : public DSU {
+class DSU_LazyUnions : public DSU {
 public:
     std::string ClassName() override {
         using namespace std::string_literals;
-        return "Adaptive/"s + (Halfing ? "halfing" : "squashing");
+        return "LazyUnions/"s + (Halfing ? "halfing" : "squashing");
     };
 
-    DSU_Adaptive(NUMAContext* ctx, int size)
+    DSU_LazyUnions(NUMAContext* ctx, int size)
         : DSU(ctx)
         , size(size), node_count(ctx->NodeCount()) {
         using namespace std::string_literals;
         REQUIRE(size <= MAX_VERTICES, "Max supported size: "s + std::to_string(MAX_VERTICES)
                                              + "; given size "s + std::to_string(size));
+        REQUIRE(ctx->NodeCount() > 1, "Single node is not supported by LazyUnions implementation");
 
         data.resize(node_count);
         for (int i = 0; i < node_count; i++) {
@@ -32,14 +33,7 @@ public:
         doReInit();
     }
 
-    void SetOwner(int v, int node) {
-        for (int i = 0; i < node_count; i++) {
-            int par = data[i][v].load(std::memory_order_relaxed);
-            data[i][v].store(makeData(getDataParent(par), 1 << node, true), std::memory_order_relaxed);
-        }
-    }
-
-    ~DSU_Adaptive() override {
+    ~DSU_LazyUnions() override {
         for (int i = 0; i < node_count; i++) {
             Ctx_->Free(data[i], sizeof(int) * size);
         }
@@ -64,10 +58,13 @@ public:
                 std::swap(uDat, vDat);
             }
 
-            int owner = getAnyDataOwnerId(uDat);
-            // every root must have exactly one owner
-            // assert getDataOwners(uDat) == (1 << owner)
-            if (data[owner][u].compare_exchange_strong(uDat, makeData(v, 1 << owner, true)))
+            if ((uDat & M_OWNERS) != M_OWNERS) {
+                int uOwner = getAnyDataOwnerId(uDat);
+                while (getDataParent(data[uOwner][u].load()) == u)
+                    __builtin_ia32_pause();
+            }
+
+            if (tryUpdateParent(u, v, node))
                 break;
         }
     }
@@ -139,6 +136,17 @@ private:
         }
     }
 
+    inline bool tryUpdateParent(int u, int v, int node) {
+        int expected = u | M_OWNERS | M_FINALIZED;
+        if (!data[0][u].compare_exchange_strong(expected, makeData(u, 1 << node, true)))
+            return false;
+        for (int i = 1; i < node_count; ++i) {
+            data[i][u].store(makeData(u, 1 << node, true));
+        }
+        data[node][u].store(makeData(v, 1 << node, true));
+        return true;
+    }
+
     inline int readDataChecked(int primaryNode, int u) const {
         int localData;
         return readDataChecked(primaryNode, u, localData);
@@ -163,7 +171,7 @@ private:
     void doReInit() {
         for (int i = 0; i < node_count; i++) {
             for (int j = 0; j < size; j++) {
-                data[i][j].store(makeData(j, 1, true));
+                data[i][j].store(j | M_OWNERS | M_FINALIZED);
             }
         }
     }

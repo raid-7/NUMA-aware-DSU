@@ -4,10 +4,13 @@
 
 #include "../DSU.h"
 
+
+template <bool Halfing>
 class DSU_ParallelUnions : public DSU {
 public:
     std::string ClassName() override {
-        return "ParallelUnions";
+        using namespace std::string_literals;
+        return "ParallelUnions/"s + (Halfing ? "halfing" : "squashing");
     };
 
     DSU_ParallelUnions(NUMAContext* ctx, int size)
@@ -22,7 +25,7 @@ public:
             }
         }
         for (int i = 0; i < size; i++) {
-            to_union[i].store(1);
+            to_union[i].store(i * 2 + 1);
         }
     }
 
@@ -33,7 +36,7 @@ public:
             }
         }
         for (int i = 0; i < size; i++) {
-            to_union[i].store(1);
+            to_union[i].store(i * 2 + 1);
         }
     }
 
@@ -59,10 +62,11 @@ public:
             if (u_p < v_p) {
                 std::swap(u_p, v_p);
             }
-            auto u_data = to_union[u_p].load(std::memory_order_acquire);
+            auto u_data = u_p * 2 + 1;
             if (u_data % 2 == 0) {
-                // union_(u_p, v_p, node, true);
-                // __builtin_ia32_pause()
+#if defined(__x86_64__)
+                __builtin_ia32_pause();
+#endif
                 continue;
             } else {
                 if (to_union[u_p].compare_exchange_strong(u_data, v_p * 2)) {
@@ -119,7 +123,11 @@ private:
                     auto par_data = (par << 1) | 1;
                     data[node][cur].compare_exchange_weak(par_data, ((grand << 1) | 1));
                 }
-                cur = par;
+                if constexpr(Halfing) {
+                    cur = grand;
+                } else {
+                    cur = par;
+                }
             }
         } else {
             auto cur = u;

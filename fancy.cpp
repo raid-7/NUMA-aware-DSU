@@ -12,6 +12,8 @@
 #include "implementations/DSU_Usual.h"
 #include "implementations/DSU_Usual_noimm.h"
 #include "implementations/DSU_Adaptive.h"
+#include "implementations/DSU_AdaptiveLocks.h"
+#include "implementations/DSU_LazyUnion.h"
 #include "implementations/SeveralDSU.h"
 
 #include <CLI/App.hpp>
@@ -50,7 +52,8 @@ struct StaticWorkload {
 /*
  * For each vertex find a node which most frequently accesses the vertex and sets it as an owner of the vertex.
  */
-void PrepareDSUForWorkload(DSU_Adaptive* dsu, const StaticWorkload& workload, auto threadNodeLayout) {
+template <bool Halfing>
+void PrepareDSUForWorkload(DSU_Adaptive<Halfing>* dsu, const StaticWorkload& workload, auto threadNodeLayout) {
     std::unordered_map<int, std::vector<uint32_t>> stats;
     for (size_t tId = 0; tId < workload.ThreadRequests.size(); ++tId) {
         int node = threadNodeLayout((int)tId);
@@ -78,9 +81,14 @@ public:
 
     void Run(DSU* dsu, const StaticWorkload& workload, bool ignoreMeasurements = false) {
         // FIXME This is a hack to test the conjecture.
-        if (auto* adsu = dynamic_cast<DSU_Adaptive*>(dsu); adsu) {
+        if (auto* adsu = dynamic_cast<DSU_Adaptive<false>*>(dsu); adsu) {
             PrepareDSUForWorkload(adsu, workload, [ctx = Ctx_](int tid) {
-               return ctx->NumaNodeForThread(tid);
+                return ctx->NumaNodeForThread(tid);
+            });
+        }
+        if (auto* adsu = dynamic_cast<DSU_Adaptive<true>*>(dsu); adsu) {
+            PrepareDSUForWorkload(adsu, workload, [ctx = Ctx_](int tid) {
+                return ctx->NumaNodeForThread(tid);
             });
         }
 
@@ -197,8 +205,13 @@ StaticWorkload BuildComponentsRandomWorkload(size_t numComponents, size_t single
 StaticWorkload BuildComponentsRandomWorkloadV2(size_t numThreads, size_t numComponents, size_t N, size_t E,
                                              double intercomponentEFraction, double sameSetFraction,
                                              auto threadNodeLayout) {
+    // E is the number of union requests
+    // so we transform to the number of all requests
+    E = static_cast<size_t>(std::round(E / (1. - sameSetFraction)));
+
     REQUIRE(numThreads % numComponents == 0, "Number of threads must be divisible by number of components");
     REQUIRE(numComponents > 1, "Number of components must be greater than 1");
+
     // assign a component # tid/numComponents to each thread
     // independently generate random edges for each thread inside the component
     // independently generate random edges between components for each thread
@@ -261,13 +274,23 @@ StaticWorkload BuildComponentsRandomWorkloadV2(size_t numThreads, size_t numComp
 
 std::vector<std::unique_ptr<DSU>> GetAvailableDsus(NUMAContext* ctx, size_t N, const std::regex& filter) {
     std::vector<std::unique_ptr<DSU>> dsus;
+
     dsus.emplace_back(new DSU_Usual(N));
+    dsus.emplace_back(new SeveralDSU(ctx, N));
+
+    auto construct = [&]<class T> (T) {
+        dsus.emplace_back(new DSU_ParallelUnions<T::value>(ctx, N));
+        dsus.emplace_back(new DSU_Adaptive<T::value>(ctx, N));
+        dsus.emplace_back(new DSU_AdaptiveLocks<T::value>(ctx, N));
+    };
+
+    construct(std::true_type{});
+    construct(std::false_type{});
+
+
     //dsus.emplace_back(new DSU_Usual_NoImm(N));
 
     //dsus.emplace_back(new TwoDSU(N, node_count));
-    dsus.emplace_back(new SeveralDSU(ctx, N));
-
-    dsus.emplace_back(new DSU_ParallelUnions(ctx, N));
     //dsus.emplace_back(new DSU_ParallelUnions_NoImm(N, node_count));
 
 //    dsus.emplace_back(new DSU_NO_SYNC(N, node_count));
@@ -279,7 +302,6 @@ std::vector<std::unique_ptr<DSU>> GetAvailableDsus(NUMAContext* ctx, size_t N, c
 //    dsus.emplace_back(new DSU_NoSync_Parts(N, node_count, owners));
     //dsus.emplace_back(new DSU_NoSync_Parts_NoImm(N, node_count, owners));
 
-    dsus.emplace_back(new DSU_Adaptive(ctx, N));
 
     auto end = std::remove_if(dsus.begin(), dsus.end(), [&filter](const std::unique_ptr<DSU>& dsu) {
         return !std::regex_match(dsu->ClassName(), filter);
