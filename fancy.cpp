@@ -282,6 +282,7 @@ std::vector<std::unique_ptr<DSU>> GetAvailableDsus(NUMAContext* ctx, size_t N, c
         dsus.emplace_back(new DSU_ParallelUnions<T::value>(ctx, N));
         dsus.emplace_back(new DSU_Adaptive<T::value>(ctx, N));
         dsus.emplace_back(new DSU_AdaptiveLocks<T::value>(ctx, N));
+        dsus.emplace_back(new DSU_LazyUnions<T::value>(ctx, N));
     };
 
     construct(std::true_type{});
