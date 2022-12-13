@@ -107,7 +107,7 @@ private:
                         // copy non-root vertex to local memory
                         data[node][u].compare_exchange_strong(localDat, mixDataOwner(parDat, node));
                     }
-                    return parDat;
+                    return grandDat;
                 } else {
                     if (isDataOwner(localDat, node)) {
                         // compress local
