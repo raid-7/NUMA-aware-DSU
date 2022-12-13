@@ -40,7 +40,7 @@ public:
             : NumCpu_(std::thread::hardware_concurrency())
             , NumNuma_(IsNumaAvailable() ? numa_max_node() + 1 : std::min(fallbackNumNuma, NumCpu_))
             , TestingNumaIds_(!IsNumaAvailable())
-            , NumaAvailable_(IsNumaAvailable())
+            , NumaAvailable_(IsNumaAvailable() && numa_max_node() > 0)
     {
     }
 
