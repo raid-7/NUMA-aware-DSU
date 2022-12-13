@@ -327,6 +327,9 @@ void RunComponentsBenchmark(NUMAContext* ctx, CsvFile* out, const std::regex& fi
         double sameSetFraction = params.Get<double>("ssf");
 
         std::vector<std::unique_ptr<DSU>> dsus = GetAvailableDsus(ctx, N, filter);
+        if (dsus.empty())
+            continue;
+
         for (size_t i = 0; i < numWorkloads; ++i) {
             std::cout << "Preparing workload #" << i << std::endl;
             StaticWorkload workload = BuildComponentsRandomWorkloadV2(ctx->MaxConcurrency(), ctx->NodeCount(), N, E,
@@ -370,6 +373,9 @@ int main(int argc, const char* argv[]) {
     bool testing = false;
     app.add_flag("--testing", testing, "Setup NUMA context for testing with 8 CPUs on 4 nodes");
 
+    std::string dsuFilter = ".*";
+    app.add_option("-d,--dsu", dsuFilter, "ECMAScript regular expression specifying DSUs to benchmark");
+
     ParameterSet defaultParams = ParseParameters({
          "N=4000000",
          "E=64000000",
@@ -380,13 +386,15 @@ int main(int argc, const char* argv[]) {
     CLI11_PARSE(app, argc, argv);
     auto parameters = ParseParameters(rawParameters, &defaultParams);
 
+    auto filter = std::regex(dsuFilter, std::regex::ECMAScript | std::regex::icase | std::regex::nosubs);
+
     NUMAContext ctx(4);
     if (testing) {
         ctx.SetupForTests(8, 4);
     }
     CsvFile out("out.csv");
 
-    RunComponentsBenchmark(&ctx, &out, std::regex(".*"), 2, 3, parameters);
+    RunComponentsBenchmark(&ctx, &out, filter, 2, 3, parameters);
 
 //    Stats<double> s = benchmark.CollectThroughputStats();
 //    std::cout << std::fixed << std::setprecision(3) << s.mean << " " << s.stddev << " op/s" << std::endl;
