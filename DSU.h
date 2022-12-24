@@ -13,8 +13,8 @@
 
 class DSU : public MetricsAwareBase {
 public:
-    explicit DSU(NUMAContext* ctx, size_t numThreads = 0)
-            : MetricsAwareBase(std::max(numThreads, ctx ? ctx->MaxConcurrency() : std::thread::hardware_concurrency()))
+    explicit DSU(NUMAContext* ctx, [[maybe_unused]] size_t numThreads = 0)
+            : MetricsAwareBase(0)
             , Ctx_(ctx) {}
 
     DSU()

@@ -90,7 +90,8 @@ public:
             :tlMetrics(tlMetrics) {}
 
         void inc(const size_t value, int tid = NUMAContext::CurrentThreadId()) const {
-            tlMetrics[tid] += value;
+            if (tlMetrics)
+                tlMetrics[tid] += value;
         }
     };
 
@@ -102,6 +103,8 @@ public:
     MetricsCollector& operator=(Metrics&&) = delete;
 
     Accessor accessor(std::string metric) {
+        if (!numThreads)
+            return Accessor(nullptr);
         std::lock_guard lock(mutex);
         std::vector<size_t>& tlMetrics = allMetrics[std::move(metric)];
         if (tlMetrics.size() < numThreads)

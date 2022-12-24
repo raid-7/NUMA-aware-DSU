@@ -52,8 +52,12 @@ struct StaticWorkload {
 /*
  * For each vertex find a node which most frequently accesses the vertex and sets it as an owner of the vertex.
  */
-template <bool Halfing>
-void PrepareDSUForWorkload(DSU_Adaptive<Halfing>* dsu, const StaticWorkload& workload, auto threadNodeLayout) {
+template <class DSUType>
+void PrepareDSUForWorkload(DSU* someDsu, const StaticWorkload& workload, auto threadNodeLayout) {
+    DSUType* dsu = dynamic_cast<DSUType*>(someDsu);
+    if (!dsu)
+        return;
+
     std::unordered_map<int, std::vector<uint32_t>> stats;
     for (size_t tId = 0; tId < workload.ThreadRequests.size(); ++tId) {
         int node = threadNodeLayout((int)tId);
@@ -84,16 +88,10 @@ public:
         dsu->resetMetrics();
 
         // FIXME This is a hack to test the conjecture.
-        if (auto* adsu = dynamic_cast<DSU_Adaptive<false>*>(dsu); adsu) {
-            PrepareDSUForWorkload(adsu, workload, [ctx = Ctx_](int tid) {
-                return ctx->NumaNodeForThread(tid);
-            });
-        }
-        if (auto* adsu = dynamic_cast<DSU_Adaptive<true>*>(dsu); adsu) {
-            PrepareDSUForWorkload(adsu, workload, [ctx = Ctx_](int tid) {
-                return ctx->NumaNodeForThread(tid);
-            });
-        }
+        PrepareDSUForWorkload<DSU_Adaptive<false>>(dsu, workload, [ctx = Ctx_](int tid) { return ctx->NumaNodeForThread(tid); });
+        PrepareDSUForWorkload<DSU_Adaptive<true>>(dsu, workload, [ctx = Ctx_](int tid) { return ctx->NumaNodeForThread(tid); });
+        PrepareDSUForWorkload<DSU_AdaptiveLocks<false>>(dsu, workload, [ctx = Ctx_](int tid) { return ctx->NumaNodeForThread(tid); });
+        PrepareDSUForWorkload<DSU_AdaptiveLocks<true>>(dsu, workload, [ctx = Ctx_](int tid) { return ctx->NumaNodeForThread(tid); });
 
         size_t numThreads = workload.ThreadRequests.size();
         std::barrier barrier(numThreads);
