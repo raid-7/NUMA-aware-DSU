@@ -47,7 +47,7 @@
 //        }
 //    }
 //
-//    void Union(int u, int v) override {
+//    void DoUnion(int u, int v) override {
 //        auto node = numa_node_of_cpu(sched_getcpu());
 //        if (node_count == 1) {
 //            node = 0;
@@ -67,7 +67,7 @@
 //        union_(u, v, node);
 //    }
 //
-//    bool SameSet(int u, int v) override {
+//    bool DoSameSet(int u, int v) override {
 //        auto node = numa_node_of_cpu(sched_getcpu());
 //        if (node_count == 1) {
 //            node = 0;

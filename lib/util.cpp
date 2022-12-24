@@ -6,7 +6,7 @@
 
 static std::atomic<int> BlackholeValue;
 
-thread_local std::mt19937 TlRandom{std::random_device()()};
+thread_local SplitMix64 TlRandom{std::random_device()()};
 
 void Blackhole(int* c) {
     if ((*c ^ 0x1E32234) == -17) {

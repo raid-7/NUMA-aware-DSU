@@ -2,6 +2,7 @@
 #define TRY_DSU_H
 
 #include "lib/numa.hpp"
+#include "lib/metrics.hpp"
 
 #include <sched.h>
 #include <thread>
@@ -10,23 +11,49 @@
 #include <numa.h>
 #include <mutex>
 
-class DSU {
+class DSU : public MetricsAwareBase {
 public:
-    explicit DSU(NUMAContext* ctx)
-            : Ctx_(ctx) {}
+    explicit DSU(NUMAContext* ctx, size_t numThreads = 0)
+            : MetricsAwareBase(std::max(numThreads, ctx ? ctx->MaxConcurrency() : std::thread::hardware_concurrency()))
+            , Ctx_(ctx) {}
 
     DSU()
         : DSU(nullptr) {}
 
     virtual std::string ClassName() = 0;
     virtual void ReInit() = 0;
-    virtual void Union(int u, int v) = 0;
+    virtual void DoUnion(int u, int v) = 0;
     virtual int Find(int u) = 0;
-    virtual bool SameSet(int u, int v) = 0;
+    virtual bool DoSameSet(int u, int v) = 0;
     virtual ~DSU() = default;
+
+    void Union(int u, int v) {
+        mUnionRequests.inc(1);
+        DoUnion(u, v);
+    }
+
+    bool SameSet(int u, int v) {
+        bool r = DoSameSet(u, v);
+        if (r) {
+            mSameSetRequestsTrue.inc(1);
+        } else {
+            mSameSetRequestsFalse.inc(1);
+        }
+        return r;
+    }
 
 protected:
     NUMAContext* Ctx_;
+    MetricsCollector::Accessor mCrossNodeRead = accessor("cross_node_read");
+    MetricsCollector::Accessor mCrossNodeWrite = accessor("cross_node_write");
+    MetricsCollector::Accessor mThisNodeRead = accessor("this_node_read");
+    MetricsCollector::Accessor mThisNodeReadSuccess = accessor("this_node_read_success");
+    MetricsCollector::Accessor mThisNodeWrite = accessor("this_node_write");
+
+private:
+    MetricsCollector::Accessor mSameSetRequestsTrue = accessor("same_set_requests_true");
+    MetricsCollector::Accessor mSameSetRequestsFalse = accessor("same_set_requests_false");
+    MetricsCollector::Accessor mUnionRequests = accessor("union_requests");
 };
 
 

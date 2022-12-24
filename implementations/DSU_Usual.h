@@ -31,7 +31,7 @@ public:
         numa_free(data2, sizeof(std::atomic<int>) * (size - (size / 2)));
     }
 
-    void Union(int u, int v) override {
+    void DoUnion(int u, int v) override {
         if (get(u)->load(std::memory_order_relaxed) == get(v)->load(std::memory_order_relaxed)) {
             return;
         }
@@ -55,7 +55,7 @@ public:
         }
     }
 
-    bool SameSet(int u, int v) override {
+    bool DoSameSet(int u, int v) override {
         if (get(u)->load(std::memory_order_relaxed) == get(v)->load(std::memory_order_relaxed)) {
             return true;
         }

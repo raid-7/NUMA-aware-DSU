@@ -80,6 +80,9 @@ public:
     {}
 
     void Run(DSU* dsu, const StaticWorkload& workload, bool ignoreMeasurements = false) {
+        dsu->ReInit();
+        dsu->resetMetrics();
+
         // FIXME This is a hack to test the conjecture.
         if (auto* adsu = dynamic_cast<DSU_Adaptive<false>*>(dsu); adsu) {
             PrepareDSUForWorkload(adsu, workload, [ctx = Ctx_](int tid) {
@@ -94,7 +97,6 @@ public:
 
         size_t numThreads = workload.ThreadRequests.size();
         std::barrier barrier(numThreads);
-        dsu->ReInit();
         ApplyRequests(dsu, workload.PreHeatRequests, false);
         size_t resultsOffset = ThroughputResults_[dsu].size();
         if (!ignoreMeasurements)
@@ -102,13 +104,15 @@ public:
         Ctx_->StartNThreads(
             [this, &barrier, &workload, dsu, resultsOffset, ignoreMeasurements]() {
                 barrier.arrive_and_wait();
-                double avgNs = ThreadWork(dsu, workload.ThreadRequests[NUMAContext::CurrentThreadId()]);
+                double avgThrpt = ThreadWork(dsu, workload.ThreadRequests[NUMAContext::CurrentThreadId()]);
                 if (!ignoreMeasurements)
-                    ThroughputResults_[dsu][resultsOffset + NUMAContext::CurrentThreadId()] = avgNs;
+                    ThroughputResults_[dsu][resultsOffset + NUMAContext::CurrentThreadId()] = avgThrpt;
             },
             numThreads
         );
         Ctx_->Join();
+        if (!ignoreMeasurements)
+            Metrics_[dsu].emplace_back(dsu->collectMetrics());
     }
 
     double ThreadWork(DSU* dsu, std::span<const Request> requests) {
@@ -124,6 +128,12 @@ public:
         return res;
     }
 
+    std::unordered_map<std::string, Stats<long double>> CollectMetricStats(DSU* dsu) {
+        auto res = metricStats(Metrics_[dsu].begin(), Metrics_[dsu].end());
+        Metrics_[dsu].clear();
+        return res;
+    }
+
 private:
     void ApplyRequests(DSU* dsu, std::span<const Request> requests, bool useAdditionalWork) const {
         for (const auto& request : requests) {
@@ -136,6 +146,7 @@ private:
 private:
     NUMAContext* Ctx_;
     std::map<DSU*, std::vector<double>> ThroughputResults_;
+    std::map<DSU*, std::vector<Metrics>> Metrics_;
     double AdditionalWork_ = 2.0;
 };
 
@@ -353,12 +364,24 @@ void RunComponentsBenchmark(NUMAContext* ctx, CsvFile* out, const std::regex& fi
         for (auto& ptr: dsus) {
             DSU* dsu = ptr.get();
             Stats<double> result = benchmark.CollectThroughputStats(dsu);
+            auto metrics = benchmark.CollectMetricStats(dsu);
             std::cout << std::fixed << std::setprecision(3)
                       << dsu->ClassName() << ": " << result.mean << "+-" << result.stddev << std::endl;
-            if (out)
+            for (const auto& [metric, value] : metrics) {
+                std::cout << std::fixed << std::setprecision(3)
+                     << "  :" << metric << ": "
+                     << value.mean << "+-" << value.stddev << std::endl;
+            }
+            if (out) {
                 *out << dsu->ClassName()
                      << N << E << interpairFraction << sameSetFraction
                      << result.mean << result.stddev;
+                for (const auto& [metric, value] : metrics) {
+                    *out << (dsu->ClassName() + ":" + metric)
+                         << N << E << interpairFraction << sameSetFraction
+                         << value.mean << value.stddev;
+                }
+            }
         }
     }
 }

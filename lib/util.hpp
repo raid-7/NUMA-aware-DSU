@@ -1,5 +1,7 @@
 #pragma once
 
+#include "splitmix64.hpp"
+
 #include <atomic>
 #include <random>
 #include <iostream>
@@ -14,7 +16,7 @@
     throw std::runtime_error(message);                            \
 }
 
-extern thread_local std::mt19937 TlRandom;
+extern thread_local SplitMix64 TlRandom;
 
 void Blackhole(int*);
 

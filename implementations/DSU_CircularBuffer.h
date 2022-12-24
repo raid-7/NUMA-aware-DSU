@@ -48,7 +48,7 @@ public:
         numa_free(log, sizeof(std::atomic<__int64_t>) * LOG_SIZE);
     }
 
-    void Union(int u, int v) override {
+    void DoUnion(int u, int v) override {
         __int64_t uv = (__int64_t(u) << 32) + v;
         while (true) {
             int tail = log_tail.load(std::memory_order_acquire);
@@ -76,7 +76,7 @@ public:
         }
     }
 
-    bool SameSet(int u, int v) override {
+    bool DoSameSet(int u, int v) override {
         int node = NUMAContext::CurrentThreadNode();
         auto u_p = u;
         auto v_p = v;

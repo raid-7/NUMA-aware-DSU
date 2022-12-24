@@ -35,7 +35,7 @@ public:
         }
     }
 
-    void Union(int u, int v) override {
+    void DoUnion(int u, int v) override {
         auto node = NUMAContext::CurrentThreadNode();
 
         __int64_t u_p = find(u, node, true);
@@ -58,7 +58,7 @@ public:
         old_unions(node);
     }
 
-    bool SameSet(int u, int v) override {
+    bool DoSameSet(int u, int v) override {
         return SameSetOnNode(u, v, NUMAContext::CurrentThreadNode());
     }
 

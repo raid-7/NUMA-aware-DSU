@@ -33,7 +33,7 @@ public:
         }
     }
 
-    void Union(int u, int v) override {
+    void DoUnion(int u, int v) override {
         auto node = u & 1;
         u = (u >> 1); v = (v >> 1);
         if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
@@ -46,7 +46,7 @@ public:
         union_(u_p, v_p, node);
     }
 
-    bool SameSet(int u, int v) override {
+    bool DoSameSet(int u, int v) override {
         int node = u & 1;
         u = (u >> 1); v = (v >> 1);
         if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {

@@ -31,7 +31,7 @@ public:
         numa_free(data2, sizeof(std::atomic<int>) * (size - (size / 2)));
     }
 
-    void Union(int u, int v) override {
+    void DoUnion(int u, int v) override {
         int u_p = u;
         int v_p = v;
         while (true) {
@@ -52,7 +52,7 @@ public:
         }
     }
 
-    bool SameSet(int u, int v) override {
+    bool DoSameSet(int u, int v) override {
         auto u_p = u;
         auto v_p = v;
         while (true) {

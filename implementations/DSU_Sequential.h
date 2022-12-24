@@ -17,7 +17,7 @@ public:
         }
     }
 
-    void Union(int u, int v) override {
+    void DoUnion(int u, int v) override {
         int u_p = Find(u);
         int v_p = Find(v);
         if (u_p == v_p) {
@@ -40,7 +40,7 @@ public:
         return cur;
     }
 
-    bool SameSet(int u, int v) override {
+    bool DoSameSet(int u, int v) override {
         return Find(u) == Find(v);
     }
 

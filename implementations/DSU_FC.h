@@ -55,7 +55,7 @@ public:
         }
     }
 
-    bool SameSet(int u, int v) override {
+    bool DoSameSet(int u, int v) override {
         auto node = NUMAContext::CurrentThreadNode();
         if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
             return true;
@@ -79,7 +79,7 @@ public:
         return do_find(node, u);
     }
 
-    void Union(int u, int v) {
+    void DoUnion(int u, int v) {
         int node = NUMAContext::CurrentThreadNode();
         if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
             return;

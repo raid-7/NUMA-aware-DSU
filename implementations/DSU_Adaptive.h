@@ -45,7 +45,7 @@ public:
         }
     }
 
-    void Union(int u, int v) override {
+    void DoUnion(int u, int v) override {
         auto node = NUMAContext::CurrentThreadNode();
         // TODO try this optimization with node owners
 //        if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
@@ -67,12 +67,17 @@ public:
             int owner = getAnyDataOwnerId(uDat);
             // every root must have exactly one owner
             // assert getDataOwners(uDat) == (1 << owner)
+            if (owner == node) {
+                mThisNodeWrite.inc(1);
+            } else {
+                mCrossNodeWrite.inc(1);
+            }
             if (data[owner][u].compare_exchange_strong(uDat, makeData(v, 1 << owner, true)))
                 break;
         }
     }
 
-    bool SameSet(int u, int v) override {
+    bool DoSameSet(int u, int v) override {
         int node = NUMAContext::CurrentThreadNode();
         // TODO try this optimization with node owners
 //        if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
@@ -108,16 +113,19 @@ private:
                 if (par == grand) {
                     if (par != u && !isDataOwner(parDat, node)) {
                         // copy non-root vertex to local memory
+                        mThisNodeWrite.inc(1);
                         data[node][u].compare_exchange_strong(localDat, mixDataOwner(parDat, node));
                     }
                     return grandDat;
                 } else {
                     if (isDataOwner(localDat, node)) {
                         // compress local
+                        mThisNodeWrite.inc(1);
                         data[node][u].compare_exchange_weak(localDat, mixDataOwner(grandDat, node));
                     } else {
                         // copy non-root vertex to local memory
                         // TODO try without this
+                        mThisNodeWrite.inc(1);
                         data[node][u].compare_exchange_weak(localDat, mixDataOwner(grandDat, node));
                     }
                 }
@@ -146,11 +154,14 @@ private:
 
     inline int readDataChecked(int primaryNode, int u, int& localData) const {
         localData = data[primaryNode][u].load(std::memory_order_acquire);
+        mThisNodeRead.inc(1);
         if (isDataOwner(localData, primaryNode)) {
+            mThisNodeReadSuccess.inc(1);
             return localData;
         }
 
         int node = getAnyDataOwnerId(localData);
+        mCrossNodeRead.inc(1);
         return readDataUnsafe(node, u);
     }
 

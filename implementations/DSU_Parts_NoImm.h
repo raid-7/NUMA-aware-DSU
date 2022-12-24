@@ -106,7 +106,7 @@ public:
         }
     }
 
-    bool SameSet(int u, int v) override {
+    bool DoSameSet(int u, int v) override {
         int node = NUMAContext::CurrentThreadNode();
 
         auto u_p = u;
@@ -149,7 +149,7 @@ public:
         }
     }
 
-    void Union(int u, int v) {
+    void DoUnion(int u, int v) {
         int node = NUMAContext::CurrentThreadNode();
 
         auto u_p = u;

@@ -35,7 +35,7 @@ public:
         }
     }
 
-    void Union(int u, int v) override {
+    void DoUnion(int u, int v) override {
         auto node = u % node_count;//u & 1; // TODO WTF???
         //u = (u >> 1); v = (v >> 1);
         u = u / node_count; v = v / node_count;
@@ -49,7 +49,7 @@ public:
         union_(u_p, v_p, node);
     }
 
-    bool SameSet(int u, int v) override {
+    bool DoSameSet(int u, int v) override {
         int node = u % node_count;//u & 1;
         //u = (u >> 1); v = (v >> 1);
         u = u / node_count; v = v / node_count;
