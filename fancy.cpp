@@ -53,43 +53,48 @@ struct StaticWorkload {
  * For each vertex find a node which most frequently accesses the vertex and sets it as an owner of the vertex.
  */
 template <class DSUType>
-void PrepareDSUForWorkload(DSU* someDsu, const StaticWorkload& workload, auto threadNodeLayout) {
+void PrepareDSUForWorkload(NUMAContext* ctx, DSU* someDsu, const StaticWorkload& workload, auto threadNodeLayout) {
     DSUType* dsu = dynamic_cast<DSUType*>(someDsu);
     if (!dsu)
         return;
 
-    std::unordered_map<int, std::vector<uint32_t>> stats;
-    for (size_t tId = 0; tId < workload.ThreadRequests.size(); ++tId) {
-        int node = threadNodeLayout((int)tId);
-        for (const auto& edge : workload.ThreadRequests[tId]) {
-            for (int u : std::array{edge.u, edge.v}) {
-                auto& uStats = stats[u];
-                if (uStats.size() <= 16)
-                    uStats.resize(16, 0);
-                ++uStats[node];
-            }
-        }
+    // Fast setup
+    for (int u = 0; u < (int)workload.N; ++u) {
+        int expId = u * ctx->NodeCount() / workload.N;
+        dsu->SetOwner(u, expId);
     }
 
-    std::vector<std::pair<int, int>> r;
-    for (const auto& [u, nStats] : stats) {
-        auto maxIt = std::max_element(nStats.begin(), nStats.end());
-        int maxId = maxIt - nStats.begin();
-        dsu->SetOwner(u, maxId);
-
-        if (nStats[maxId] > 0)
-            r.push_back({u, maxId});
-    }
-
-    Shuffle(r);
-    size_t rate = 0;
-    for (size_t i = 0; i < 32; ++i) {
-        auto [u, maxId] = r[i];
-        int expId = u * 4 / workload.N;
-        if (expId != maxId)
-            ++rate;
-    }
-    std::cout << "Bad vertex rate: " << rate << '/' << workload.N << std::endl;
+    // Precise setup (slow)
+//    std::unordered_map<int, std::vector<uint32_t>> stats;
+//    for (size_t tId = 0; tId < workload.ThreadRequests.size(); ++tId) {
+//        int node = threadNodeLayout((int)tId);
+//        for (const auto& edge : workload.ThreadRequests[tId]) {
+//            for (int u : std::array{edge.u, edge.v}) {
+//                auto& uStats = stats[u];
+//                if (uStats.size() <= 16)
+//                    uStats.resize(16, 0);
+//                ++uStats[node];
+//            }
+//        }
+//    }
+//
+//    std::vector<std::pair<int, int>> r;
+//    for (const auto& [u, nStats] : stats) {
+//        auto maxIt = std::max_element(nStats.begin(), nStats.end());
+//        int maxId = maxIt - nStats.begin();
+//        dsu->SetOwner(u, maxId);
+//
+//        if (nStats[maxId] > 0)
+//            r.push_back({u, maxId});
+//    }
+//
+//    size_t rate = 0;
+//    for (size_t i = 0; i < 32; ++i) {
+//        auto [u, maxId] = r[i];
+//        int expId = u * 4 / workload.N;
+//        if (expId != maxId)
+//            ++rate;
+//    }
 }
 
 class Benchmark {
@@ -103,12 +108,12 @@ public:
         dsu->resetMetrics();
 
         // FIXME This is a hack to test the conjecture.
-        PrepareDSUForWorkload<DSU_Adaptive<false, false>>(dsu, workload, [ctx = Ctx_](int tid) { return ctx->NumaNodeForThread(tid); });
-        PrepareDSUForWorkload<DSU_Adaptive<true, false>>(dsu, workload, [ctx = Ctx_](int tid) { return ctx->NumaNodeForThread(tid); });
-        PrepareDSUForWorkload<DSU_Adaptive<false, true>>(dsu, workload, [ctx = Ctx_](int tid) { return ctx->NumaNodeForThread(tid); });
-        PrepareDSUForWorkload<DSU_Adaptive<true, true>>(dsu, workload, [ctx = Ctx_](int tid) { return ctx->NumaNodeForThread(tid); });
-        PrepareDSUForWorkload<DSU_AdaptiveLocks<false>>(dsu, workload, [ctx = Ctx_](int tid) { return ctx->NumaNodeForThread(tid); });
-        PrepareDSUForWorkload<DSU_AdaptiveLocks<true>>(dsu, workload, [ctx = Ctx_](int tid) { return ctx->NumaNodeForThread(tid); });
+        PrepareDSUForWorkload<DSU_Adaptive<false, false>>(Ctx_, dsu, workload, [ctx = Ctx_](int tid) { return ctx->NumaNodeForThread(tid); });
+        PrepareDSUForWorkload<DSU_Adaptive<true, false>>(Ctx_, dsu, workload, [ctx = Ctx_](int tid) { return ctx->NumaNodeForThread(tid); });
+        PrepareDSUForWorkload<DSU_Adaptive<false, true>>(Ctx_, dsu, workload, [ctx = Ctx_](int tid) { return ctx->NumaNodeForThread(tid); });
+        PrepareDSUForWorkload<DSU_Adaptive<true, true>>(Ctx_, dsu, workload, [ctx = Ctx_](int tid) { return ctx->NumaNodeForThread(tid); });
+        PrepareDSUForWorkload<DSU_AdaptiveLocks<false>>(Ctx_, dsu, workload, [ctx = Ctx_](int tid) { return ctx->NumaNodeForThread(tid); });
+        PrepareDSUForWorkload<DSU_AdaptiveLocks<true>>(Ctx_, dsu, workload, [ctx = Ctx_](int tid) { return ctx->NumaNodeForThread(tid); });
 
         size_t numThreads = workload.ThreadRequests.size();
         std::barrier barrier(numThreads);
