@@ -103,8 +103,10 @@ public:
         dsu->resetMetrics();
 
         // FIXME This is a hack to test the conjecture.
-        PrepareDSUForWorkload<DSU_Adaptive<false>>(dsu, workload, [ctx = Ctx_](int tid) { return ctx->NumaNodeForThread(tid); });
-        PrepareDSUForWorkload<DSU_Adaptive<true>>(dsu, workload, [ctx = Ctx_](int tid) { return ctx->NumaNodeForThread(tid); });
+        PrepareDSUForWorkload<DSU_Adaptive<false, false>>(dsu, workload, [ctx = Ctx_](int tid) { return ctx->NumaNodeForThread(tid); });
+        PrepareDSUForWorkload<DSU_Adaptive<true, false>>(dsu, workload, [ctx = Ctx_](int tid) { return ctx->NumaNodeForThread(tid); });
+        PrepareDSUForWorkload<DSU_Adaptive<false, true>>(dsu, workload, [ctx = Ctx_](int tid) { return ctx->NumaNodeForThread(tid); });
+        PrepareDSUForWorkload<DSU_Adaptive<true, true>>(dsu, workload, [ctx = Ctx_](int tid) { return ctx->NumaNodeForThread(tid); });
         PrepareDSUForWorkload<DSU_AdaptiveLocks<false>>(dsu, workload, [ctx = Ctx_](int tid) { return ctx->NumaNodeForThread(tid); });
         PrepareDSUForWorkload<DSU_AdaptiveLocks<true>>(dsu, workload, [ctx = Ctx_](int tid) { return ctx->NumaNodeForThread(tid); });
 
@@ -304,7 +306,8 @@ std::vector<std::unique_ptr<DSU>> GetAvailableDsus(NUMAContext* ctx, size_t N, c
 
     auto construct = [&]<class T> (T) {
         dsus.emplace_back(new DSU_ParallelUnions<T::value>(ctx, N));
-        dsus.emplace_back(new DSU_Adaptive<T::value>(ctx, N));
+        dsus.emplace_back(new DSU_Adaptive<T::value, false>(ctx, N));
+        dsus.emplace_back(new DSU_Adaptive<T::value, true>(ctx, N));
         dsus.emplace_back(new DSU_AdaptiveLocks<T::value>(ctx, N));
         dsus.emplace_back(new DSU_LazyUnions<T::value>(ctx, N));
     };

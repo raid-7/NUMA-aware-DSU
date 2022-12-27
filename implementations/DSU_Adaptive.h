@@ -7,12 +7,13 @@
 #include <sstream>
 
 
-template <bool Halfing>
+template <bool Halfing, bool Stepping>
 class DSU_Adaptive : public DSU {
 public:
     std::string ClassName() override {
         using namespace std::string_literals;
-        return "Adaptive2/"s + (Halfing ? "halfing" : "squashing");
+        int version = Stepping ? 3 : 2;
+        return "Adaptive"s + std::to_string(version) +  "/"s + (Halfing ? "halfing" : "squashing");
     };
 
     DSU_Adaptive(NUMAContext* ctx, int size)
@@ -83,6 +84,68 @@ public:
     }
 
     bool DoSameSet(int u, int v) override {
+        if constexpr(Stepping) {
+            return DoSteppingSameSet(u, v);
+        } else {
+            return DoSimpleSameSet(u, v);
+        }
+    }
+
+    bool DoSteppingSameSet(int u, int v) {
+        int node = NUMAContext::CurrentThreadNode();
+        bool freeze = false;
+        while (true) {
+            if (u == v)
+                return true;
+            if (!freeze && u > v)
+                std::swap(u, v);
+            int localDat;
+            int parDat = readDataChecked(node, u, localDat);
+            int par = getDataParent(parDat);
+            if (par == v)
+                return true;
+            int grandDat = readDataChecked(node, par);
+            int grand = getDataParent(grandDat);
+            if (grand == v)
+                return true;
+            if (par == grand) {
+                if (par != u && !isDataOwner(parDat, node)) {
+                    // copy non-root vertex to local memory
+                    mThisNodeWrite.inc(1);
+                    data[node][u].compare_exchange_strong(localDat, mixDataOwner(parDat, node));
+                }
+                if (freeze) {
+                    int vCur = readDataChecked(node, v);
+                    if (getDataParent(vCur) == v)
+                        return false; // we've already checked par != v
+                    freeze = false;
+                } else {
+                    u = v;
+                    v = par;
+                    freeze = true;
+                    continue;
+                }
+            } else {
+                if (isDataOwner(localDat, node)) {
+                    // compress local
+                    mThisNodeWrite.inc(1);
+                    data[node][u].compare_exchange_weak(localDat, mixDataOwner(grandDat, node));
+                } else {
+                    // copy non-root vertex to local memory
+                    // TODO try without this
+                    mThisNodeWrite.inc(1);
+                    data[node][u].compare_exchange_weak(localDat, mixDataOwner(grandDat, node));
+                }
+            }
+            if constexpr(Halfing) {
+                u = grand;
+            } else {
+                u = par;
+            }
+        }
+    }
+
+    bool DoSimpleSameSet(int u, int v) {
         int node = NUMAContext::CurrentThreadNode();
         // TODO try this optimization with node owners
 //        if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {

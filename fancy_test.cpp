@@ -22,8 +22,8 @@ public:
     }
 };
 
-using Dsus = ::testing::Types<DSU_Adaptive<true>, DSU_AdaptiveLocks<true>, DSU_LazyUnions<true>, DSU_ParallelUnions<true>,
-        DSU_Adaptive<false>, DSU_AdaptiveLocks<false>, DSU_LazyUnions<false>, DSU_ParallelUnions<false>>;
+using Dsus = ::testing::Types<DSU_Adaptive<true, false>, DSU_Adaptive<true, true>, DSU_AdaptiveLocks<true>, DSU_LazyUnions<true>, DSU_ParallelUnions<true>,
+        DSU_Adaptive<false, false>, DSU_Adaptive<false, true>, DSU_AdaptiveLocks<false>, DSU_LazyUnions<false>, DSU_ParallelUnions<false>>;
 TYPED_TEST_SUITE(DSUTest, Dsus);
 
 TYPED_TEST(DSUTest, Simple) {
