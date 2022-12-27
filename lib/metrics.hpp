@@ -9,6 +9,8 @@
 #include "stats.hpp"
 
 
+constexpr size_t METRIC_STRIDE = 4; // to reduce false sharing
+
 class Metrics {
 private:
     std::unordered_map<std::string, size_t> metrics{};
@@ -91,7 +93,7 @@ public:
 
         void inc(const size_t value, int tid = NUMAContext::CurrentThreadId()) const {
             if (tlMetrics)
-                tlMetrics[tid] += value;
+                tlMetrics[tid * METRIC_STRIDE] += value;
         }
     };
 
@@ -107,8 +109,8 @@ public:
             return Accessor(nullptr);
         std::lock_guard lock(mutex);
         std::vector<size_t>& tlMetrics = allMetrics[std::move(metric)];
-        if (tlMetrics.size() < numThreads)
-            tlMetrics.resize(numThreads, 0);
+        if (tlMetrics.size() < numThreads * METRIC_STRIDE)
+            tlMetrics.resize(numThreads * METRIC_STRIDE, 0);
         return Accessor(tlMetrics.data());
     }
 
@@ -124,7 +126,7 @@ public:
     void reset(int tid) {
         std::lock_guard lock(mutex);
         for (auto& [key, tlMetrics] : allMetrics) {
-            tlMetrics[tid] = 0;
+            tlMetrics[tid * METRIC_STRIDE] = 0;
         }
     }
 

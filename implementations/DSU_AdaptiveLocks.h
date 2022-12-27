@@ -63,6 +63,7 @@ public:
                 std::swap(u, v);
                 std::swap(uDat, vDat);
             }
+            mGlobalDataAccess.inc(1);
             auto uUnionData = to_union[u].load(std::memory_order_acquire);
             if (uUnionData != u * 2 + 1) {
 #if defined(__x86_64__)
@@ -70,6 +71,7 @@ public:
 #endif
                 continue;
             } else {
+                mGlobalDataAccess.inc(1);
                 if (to_union[u].compare_exchange_strong(uUnionData, v * 2)) { // lock
                     int newUDat = makeData(v, getDataOwners(uDat), false);
                     for (int i = 0; i < node_count; i++) {
@@ -79,6 +81,7 @@ public:
                         }
                     }
 
+                    mGlobalDataAccess.inc(1);
                     to_union[u].store(v * 2 + 1, std::memory_order_release); // unlock
 
                     for (int i = 0; i < node_count; i++) { // TODO owners (keep them from prev step or read locally)
@@ -192,6 +195,7 @@ private:
         if (getDataFinalized(par)) {
             return par;
         } else {
+            mGlobalDataAccess.inc(1);
             auto lock = to_union[u].load(std::memory_order_acquire);
             if (getDataParent(par) == (lock >> 1)) {
                 if ((lock & 1) == 1) {

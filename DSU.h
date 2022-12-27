@@ -14,7 +14,7 @@
 class DSU : public MetricsAwareBase {
 public:
     explicit DSU(NUMAContext* ctx, [[maybe_unused]] size_t numThreads = 0)
-            : MetricsAwareBase(0)
+            : MetricsAwareBase(std::max(numThreads, (size_t)std::thread::hardware_concurrency()))
             , Ctx_(ctx) {}
 
     DSU()
@@ -49,6 +49,7 @@ protected:
     MetricsCollector::Accessor mThisNodeRead = accessor("this_node_read");
     MetricsCollector::Accessor mThisNodeReadSuccess = accessor("this_node_read_success");
     MetricsCollector::Accessor mThisNodeWrite = accessor("this_node_write");
+    MetricsCollector::Accessor mGlobalDataAccess = accessor("global_data_read_write");
 
 private:
     MetricsCollector::Accessor mSameSetRequestsTrue = accessor("same_set_requests_true");

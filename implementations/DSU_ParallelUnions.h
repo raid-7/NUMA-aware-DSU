@@ -48,9 +48,10 @@ public:
 
     void DoUnion(int u, int v) override {
         auto node = NUMAContext::CurrentThreadNode();
-        if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
-            return;
-        }
+        // commented to match adaptive impls
+//        if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
+//            return;
+//        }
         auto u_p = u;
         auto v_p = v;
         while (true) {
@@ -69,12 +70,16 @@ public:
 #endif
                 continue;
             } else {
+                mGlobalDataAccess.inc(1);
                 if (to_union[u_p].compare_exchange_strong(u_data, v_p * 2)) {
                     for (int i = 0; i < node_count; i++) {
                         union_(u_p, v_p, i, (node == i));
                     }
                     u_data = v_p * 2;
+                    mGlobalDataAccess.inc(1);
                     if (to_union[u_p].compare_exchange_strong(u_data, v_p * 2 + 1)) {
+                        mCrossNodeWrite.inc(node_count - 1);
+                        mThisNodeWrite.inc(1);
                         for (int i = 0; i < node_count; i++) {
                             auto par = data[i][u_p].load(std::memory_order_acquire);
                             data[i][u_p].compare_exchange_strong(par, par | 1);
@@ -115,12 +120,14 @@ private:
         if (is_local) {
             auto cur = u;
             while (true) {
+                mThisNodeRead.inc(2);
                 auto par = getParent(node, cur);
                 auto grand = getParent(node, par);
                 if (par == grand) {
                     return par;
                 } else {
                     auto par_data = (par << 1) | 1;
+                    mThisNodeWrite.inc(1);
                     data[node][cur].compare_exchange_weak(par_data, ((grand << 1) | 1));
                 }
                 if constexpr(Halfing) {
@@ -132,6 +139,7 @@ private:
         } else {
             auto cur = u;
             while (true) {
+                mCrossNodeRead.inc(1);
                 auto par = getParent(node, cur);
                 if (par == cur) {
                     return par;
@@ -153,6 +161,7 @@ private:
             }
 
             //auto u_p_data = u_p*2 + 1;
+            (is_local ? mThisNodeWrite : mCrossNodeWrite).inc(1);
             if (data[node][u_p].compare_exchange_weak(u_p_data, v_p * 2)) {
                 return;
             }
@@ -166,6 +175,7 @@ private:
             return (par >> 1);
         } else {
             par = par >> 1;
+            mGlobalDataAccess.inc(1);
             auto data = to_union[u].load(std::memory_order_acquire);
             if (par == (data >> 1)) {
                 if ((data & 1) == 1) {
