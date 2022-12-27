@@ -4,6 +4,7 @@
 #include "../lib/util.hpp"
 
 #include <array>
+#include <sstream>
 
 
 template <bool Halfing>
@@ -11,7 +12,7 @@ class DSU_Adaptive : public DSU {
 public:
     std::string ClassName() override {
         using namespace std::string_literals;
-        return "Adaptive/"s + (Halfing ? "halfing" : "squashing");
+        return "Adaptive2/"s + (Halfing ? "halfing" : "squashing");
     };
 
     DSU_Adaptive(NUMAContext* ctx, int size)
@@ -51,6 +52,10 @@ public:
 //        if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
 //            return;
 //        }
+        u = findLocalOnly(u, node);
+        v = findLocalOnly(v, node);
+        if (u == v)
+            return;
         while (true) {
             int uDat = find(u, node, true);
             u = getDataParent(uDat);
@@ -83,6 +88,10 @@ public:
 //        if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
 //            return true;
 //        }
+        u = findLocalOnly(u, node);
+        v = findLocalOnly(v, node);
+        if (u == v)
+            return true;
         while (true) {
             int uDat = find(u, node, true);
             u = getDataParent(uDat);
@@ -102,6 +111,34 @@ public:
     }
 
 private:
+    int findLocalOnly(int u, int node) { // returns vertex
+        while (true) {
+            mThisNodeRead.inc(1);
+            int parDat = readDataUnsafe(node, u);
+            if (!isDataOwner(parDat, node))
+                return u;
+            mThisNodeRead.inc(1);
+            int par = getDataParent(parDat);
+            int grandDat = readDataUnsafe(node, par);
+            if (!isDataOwner(grandDat, node))
+                return par;
+            int grand = getDataParent(grandDat);
+            if (par == grand) {
+                // copy non-root vertex to local memory
+                return par;
+            } else {
+                // compress local
+                mThisNodeWrite.inc(1);
+                data[node][u].compare_exchange_weak(parDat, mixDataOwner(grandDat, node));
+            }
+            if constexpr(Halfing) {
+                u = grand;
+            } else {
+                u = par;
+            }
+        }
+    }
+
     int find(int u, int node, bool compressPaths) {
         if (compressPaths) {
             while (true) {
@@ -162,6 +199,9 @@ private:
 
         int node = getAnyDataOwnerId(localData);
         mCrossNodeRead.inc(1);
+//        std::ostringstream s{};
+//        s << "Current node: " << primaryNode << "; owners: " << getDataOwners(localData) << "; anyNode: " << node;
+//        std::cout << s.str() << std::endl;
         return readDataUnsafe(node, u);
     }
 
