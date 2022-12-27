@@ -7,7 +7,7 @@
 #include <sstream>
 
 
-template <bool Halfing, bool Stepping>
+template <bool Halfing, bool Stepping, bool AllowCrossNodeCompression=false>
 class DSU_Adaptive : public DSU {
 public:
     std::string ClassName() override {
@@ -127,9 +127,14 @@ public:
                 }
             } else {
                 if (isDataOwner(localDat, node)) {
-                    // compress local
-                    mThisNodeWrite.inc(1);
-                    data[node][u].compare_exchange_weak(localDat, mixDataOwner(grandDat, node));
+                    if (AllowCrossNodeCompression || isDataOwner(grandDat, node)) {
+                        // compress local if we know `par`
+                        mThisNodeWrite.inc(1);
+                        data[node][u].compare_exchange_weak(localDat, mixDataOwner(grandDat, node));
+                    } else {
+                        u = par;
+                        continue;
+                    }
                 } else {
                     // copy non-root vertex to local memory
                     // TODO try without this
@@ -187,7 +192,6 @@ private:
                 return par;
             int grand = getDataParent(grandDat);
             if (par == grand) {
-                // copy non-root vertex to local memory
                 return par;
             } else {
                 // compress local
@@ -219,9 +223,14 @@ private:
                     return grandDat;
                 } else {
                     if (isDataOwner(localDat, node)) {
-                        // compress local
-                        mThisNodeWrite.inc(1);
-                        data[node][u].compare_exchange_weak(localDat, mixDataOwner(grandDat, node));
+                        if (AllowCrossNodeCompression || isDataOwner(grandDat, node)) {
+                            // compress local if we know about `par`
+                            mThisNodeWrite.inc(1);
+                            data[node][u].compare_exchange_weak(localDat, mixDataOwner(grandDat, node));
+                        } else {
+                            u = par; // else do not compress, but go to par even if Halfing enabled
+                            continue;
+                        }
                     } else {
                         // copy non-root vertex to local memory
                         // TODO try without this
