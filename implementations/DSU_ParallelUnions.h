@@ -104,6 +104,7 @@ public:
             if (u_p == v_p) {
                 return true;
             }
+            mThisNodeRead.inc(1);
             if (getParent(node, u_p) == u_p) {
                 return false;
             }
