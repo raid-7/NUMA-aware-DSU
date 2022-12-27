@@ -65,16 +65,31 @@ void PrepareDSUForWorkload(DSU* someDsu, const StaticWorkload& workload, auto th
             for (int u : std::array{edge.u, edge.v}) {
                 auto& uStats = stats[u];
                 if (uStats.size() <= 16)
-                    uStats.resize(16);
+                    uStats.resize(16, 0);
                 ++uStats[node];
             }
         }
     }
+
+    std::vector<std::pair<int, int>> r;
     for (const auto& [u, nStats] : stats) {
         auto maxIt = std::max_element(nStats.begin(), nStats.end());
         int maxId = maxIt - nStats.begin();
         dsu->SetOwner(u, maxId);
+
+        if (nStats[maxId] > 0)
+            r.push_back({u, maxId});
     }
+
+    Shuffle(r);
+    size_t rate = 0;
+    for (size_t i = 0; i < 32; ++i) {
+        auto [u, maxId] = r[i];
+        int expId = u * 4 / workload.N;
+        if (expId != maxId)
+            ++rate;
+    }
+    std::cout << "Bad vertex rate: " << rate << '/' << workload.N << std::endl;
 }
 
 class Benchmark {

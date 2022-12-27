@@ -56,6 +56,7 @@ public:
         Threads_.emplace_back(
                 [this, runnable](int id) {
                     SetupNewThread(id);
+                    ValidateTopology();
                     runnable();
                 },
                 id
@@ -134,6 +135,16 @@ private:
         pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset);
 
         NumaNodeId = TestingNumaIds_ ? (id * (int)NumNuma_ / (int)NumCpu_) : numa_node_of_cpu(cpuId);
+    }
+
+    void ValidateTopology() const {
+        using namespace std::string_literals;
+        VERIFY(NumaNodeForThread(CurrentThreadId()) == CurrentThreadNode(),
+               "Actual NUMA node ("s
+               + std::to_string(CurrentThreadNode()) +
+               ") does not match the expected one ("s
+               + std::to_string(NumaNodeForThread(CurrentThreadId())) +
+               ")"s);
     }
 
     std::vector<std::thread> Threads_;
