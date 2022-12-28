@@ -64,7 +64,7 @@ public:
                 std::swap(u_p, v_p);
             }
             auto u_data = u_p * 2 + 1;
-            if (u_data % 2 == 0) {
+            if (u_data % 2 == 0) { // FIXME
 #if defined(__x86_64__)
                 __builtin_ia32_pause();
 #endif

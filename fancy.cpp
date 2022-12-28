@@ -30,6 +30,8 @@
 #include <barrier>
 
 
+bool DSU::EnableMetrics = false;
+
 struct Request {
     bool SameSetRequest;
     int u, v;
@@ -417,6 +419,9 @@ int main(int argc, const char* argv[]) {
     bool testing = false;
     app.add_flag("--testing", testing, "Setup NUMA context for testing with 8 CPUs on 4 nodes");
 
+    bool enableMetrics = false;
+    app.add_flag("-m,--metrics", enableMetrics, "Enable metrics (may affect throughput!)");
+
     std::string dsuFilter = ".*";
     app.add_option("-d,--dsu", dsuFilter, "ECMAScript regular expression specifying DSUs to benchmark");
 
@@ -429,8 +434,9 @@ int main(int argc, const char* argv[]) {
 
     CLI11_PARSE(app, argc, argv);
     auto parameters = ParseParameters(rawParameters, &defaultParams);
-
     auto filter = std::regex(dsuFilter, std::regex::ECMAScript | std::regex::icase | std::regex::nosubs);
+
+    DSU::EnableMetrics = enableMetrics;
 
     NUMAContext ctx(4);
     if (testing) {

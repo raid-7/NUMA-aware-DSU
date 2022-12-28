@@ -53,8 +53,9 @@ public:
 //        if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
 //            return;
 //        }
-        u = findLocalOnly(u, node);
-        v = findLocalOnly(v, node);
+        int u_, v_; // unused
+        u = findLocalOnly(u, node, u_);
+        v = findLocalOnly(v, node, v_);
         if (u == v)
             return;
         while (true) {
@@ -156,14 +157,26 @@ public:
 //        if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
 //            return true;
 //        }
-        u = findLocalOnly(u, node);
-        v = findLocalOnly(v, node);
-        if (u == v)
+        int uDat, vDat;
+        u = findLocalOnly(u, node, uDat);
+        v = findLocalOnly(v, node, vDat);
+        if (u == v)  // ancestors in current node match?
             return true;
+        if (isDataOwner(uDat, node) && isDataOwner(vDat, node)) // found real roots?
+            if (getDataParent(readDataChecked(node, u)) == u) // still root?
+                return false;
+        if (!isDataOwner(uDat, node)) {
+            // make one step up outside of loop to save local read
+            mCrossNodeRead.inc(1);
+            uDat = readDataUnsafe(getAnyDataOwnerId(uDat), u);
+        }
+        if (!isDataOwner(vDat, node)) {
+            // make one step up outside of loop to save local read
+            mCrossNodeRead.inc(1);
+            vDat = readDataUnsafe(getAnyDataOwnerId(vDat), v);
+        }
         while (true) {
-            int uDat = find(u, node, true);
             u = getDataParent(uDat);
-            int vDat = find(v, node, true);
             v = getDataParent(vDat);
             if (u == v) {
                 return true;
@@ -171,6 +184,8 @@ public:
             if (getDataParent(readDataChecked(node, u)) == u) {
                 return false;
             }
+            uDat = find(u, node, true);
+            vDat = find(v, node, true);
         }
     }
 
@@ -179,19 +194,24 @@ public:
     }
 
 private:
-    int findLocalOnly(int u, int node) { // returns vertex
+    int findLocalOnly(int u, int node, int& localParDat) { // returns vertex
         while (true) {
             mThisNodeRead.inc(1);
             int parDat = readDataUnsafe(node, u);
-            if (!isDataOwner(parDat, node))
+            if (!isDataOwner(parDat, node)) {
+                localParDat = parDat;
                 return u;
-            mThisNodeRead.inc(1);
+            }
             int par = getDataParent(parDat);
+            mThisNodeRead.inc(1);
             int grandDat = readDataUnsafe(node, par);
-            if (!isDataOwner(grandDat, node))
+            if (!isDataOwner(grandDat, node)) {
+                localParDat = grandDat;
                 return par;
+            }
             int grand = getDataParent(grandDat);
             if (par == grand) {
+                localParDat = parDat;
                 return par;
             } else {
                 // compress local
