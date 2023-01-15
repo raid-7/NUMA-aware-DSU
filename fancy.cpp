@@ -28,6 +28,7 @@
 #include <random>
 #include <span>
 #include <barrier>
+#include <any>
 
 
 bool DSU::EnableMetrics = false;
@@ -49,6 +50,21 @@ struct StaticWorkload {
     std::vector<Request> PreHeatRequests;
     std::vector<std::vector<Request>> ThreadRequests;
     size_t N;
+    std::vector<std::any> Metadata;
+
+    template <class T>
+    const T& GetMeta() const {
+        auto it = std::find_if(Metadata.begin(), Metadata.end(), [](const auto& v) {
+            return static_cast<bool>(std::any_cast<const T*>(v));
+        });
+        if (it == Metadata.end())
+            throw std::runtime_error("No such metadata");
+        return std::any_cast<const T&>(*it);
+    }
+};
+
+struct ComponentMappingMd {
+    std::vector<int> Mapping;
 };
 
 /*
@@ -60,9 +76,11 @@ void PrepareDSUForWorkload(NUMAContext* ctx, DSU* someDsu, const StaticWorkload&
     if (!dsu)
         return;
 
+    const int* cMapping = workload.GetMeta<ComponentMappingMd>().Mapping.data();
+
     // Fast setup
     for (int u = 0; u < (int)workload.N; ++u) {
-        int expId = u * ctx->NodeCount() / workload.N;
+        int expId = cMapping[u];
         dsu->SetOwner(u, expId);
     }
 
@@ -237,7 +255,21 @@ StaticWorkload BuildComponentsRandomWorkload(size_t numComponents, size_t single
 
 StaticWorkload BuildComponentsRandomWorkloadV2(size_t numThreads, size_t numComponents, size_t N, size_t E,
                                              double intercomponentEFraction, double sameSetFraction,
-                                             auto threadNodeLayout) {
+                                             auto threadNodeLayout, bool shuffle) {
+    std::vector<int> vertexPermutation(N);
+    std::generate(vertexPermutation.begin(), vertexPermutation.end(), [i = 0]() mutable {
+        return i++;
+    });
+    if (shuffle) {
+        Shuffle(vertexPermutation);
+    }
+
+    std::vector<int> componentMapping(N);
+    for (int i = 0; i < N; ++i) {
+        int expId = i * numComponents / N;
+        componentMapping[vertexPermutation[i]] = expId;
+    }
+
     // E is the number of union requests
     // so we transform to the number of all requests
     E = static_cast<size_t>(std::round(E / (1. - sameSetFraction)));
@@ -264,7 +296,11 @@ StaticWorkload BuildComponentsRandomWorkloadV2(size_t numThreads, size_t numComp
         for (size_t i = 0; i < internalThreadE; ++i) {
             int u = uvDistribution(TlRandom);
             int v = uvDistribution(TlRandom);
-            threadWork[tid].push_back({sameSetDistribution(TlRandom), u, v});
+            threadWork[tid].push_back({
+                sameSetDistribution(TlRandom),
+                vertexPermutation[u],
+                vertexPermutation[v]
+            });
         }
     }
 
@@ -279,7 +315,11 @@ StaticWorkload BuildComponentsRandomWorkloadV2(size_t numThreads, size_t numComp
             for (size_t i = 0; i < interPairE; ++i) {
                 int u = uDistribution(TlRandom);
                 int v = vDistribution(TlRandom);
-                interpairRequests.push_back({sameSetDistribution(TlRandom), u, v});
+                interpairRequests.push_back({
+                    sameSetDistribution(TlRandom),
+                    vertexPermutation[u],
+                    vertexPermutation[v]
+                });
             }
         }
     }
@@ -301,7 +341,8 @@ StaticWorkload BuildComponentsRandomWorkloadV2(size_t numThreads, size_t numComp
     return StaticWorkload{
             {},
             std::move(threadWork),
-            numComponents * componentN
+            numComponents * componentN,
+            {std::move(componentMapping)}
     };
 }
 
@@ -359,6 +400,7 @@ void RunComponentsBenchmark(NUMAContext* ctx, CsvFile* out, const std::regex& fi
         size_t E = params.Get<size_t>("E");
         double interpairFraction = params.Get<double>("ipf");
         double sameSetFraction = params.Get<double>("ssf");
+        bool shuffleVertices = params.Get<bool>("shuffle");
 
         std::vector<std::unique_ptr<DSU>> dsus = GetAvailableDsus(ctx, N, filter);
         if (dsus.empty())
@@ -367,7 +409,7 @@ void RunComponentsBenchmark(NUMAContext* ctx, CsvFile* out, const std::regex& fi
         for (size_t i = 0; i < numWorkloads; ++i) {
             std::cout << "Preparing workload #" << i << std::endl;
             StaticWorkload workload = BuildComponentsRandomWorkloadV2(ctx->MaxConcurrency(), ctx->NodeCount(), N, E,
-                        interpairFraction, sameSetFraction, [ctx](int tid) { return ctx->NumaNodeForThread(tid); });
+                        interpairFraction, sameSetFraction, [ctx](int tid) { return ctx->NumaNodeForThread(tid); }, shuffleVertices);
             for (auto& ptr: dsus) {
                 DSU* dsu = ptr.get();
 
@@ -429,7 +471,8 @@ int main(int argc, const char* argv[]) {
          "N=4000000",
          "E=64000000",
          "ipf=0.2",
-         "ssf=0.1"
+         "ssf=0.1",
+         "shuffle=true"
     })[0];
 
     CLI11_PARSE(app, argc, argv);
