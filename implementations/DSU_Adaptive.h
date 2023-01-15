@@ -216,7 +216,7 @@ private:
             } else {
                 // compress local
                 mThisNodeWrite.inc(1);
-                data[node][u].compare_exchange_weak(parDat, mixDataOwner(grandDat, node));
+                data[node][u].compare_exchange_weak(parDat, grandDat);
             }
             if constexpr(Halfing) {
                 u = grand;
