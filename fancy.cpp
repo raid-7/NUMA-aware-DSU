@@ -55,11 +55,11 @@ struct StaticWorkload {
     template <class T>
     const T& GetMeta() const {
         auto it = std::find_if(Metadata.begin(), Metadata.end(), [](const auto& v) {
-            return static_cast<bool>(std::any_cast<const T*>(v));
+            return static_cast<bool>(std::any_cast<T>(&v));
         });
         if (it == Metadata.end())
             throw std::runtime_error("No such metadata");
-        return std::any_cast<const T&>(*it);
+        return *std::any_cast<T>(&*it);
     }
 };
 
@@ -71,7 +71,7 @@ struct ComponentMappingMd {
  * For each vertex find a node which most frequently accesses the vertex and sets it as an owner of the vertex.
  */
 template <class DSUType>
-void PrepareDSUForWorkload(NUMAContext* ctx, DSU* someDsu, const StaticWorkload& workload, auto threadNodeLayout) {
+void PrepareDSUForWorkload(NUMAContext* ctx, DSU* someDsu, const StaticWorkload& workload) {
     DSUType* dsu = dynamic_cast<DSUType*>(someDsu);
     if (!dsu)
         return;
@@ -128,12 +128,12 @@ public:
         dsu->resetMetrics();
 
         // FIXME This is a hack to test the conjecture.
-        PrepareDSUForWorkload<DSU_Adaptive<false, false>>(Ctx_, dsu, workload, [ctx = Ctx_](int tid) { return ctx->NumaNodeForThread(tid); });
-        PrepareDSUForWorkload<DSU_Adaptive<true, false>>(Ctx_, dsu, workload, [ctx = Ctx_](int tid) { return ctx->NumaNodeForThread(tid); });
-        PrepareDSUForWorkload<DSU_Adaptive<false, true>>(Ctx_, dsu, workload, [ctx = Ctx_](int tid) { return ctx->NumaNodeForThread(tid); });
-        PrepareDSUForWorkload<DSU_Adaptive<true, true>>(Ctx_, dsu, workload, [ctx = Ctx_](int tid) { return ctx->NumaNodeForThread(tid); });
-        PrepareDSUForWorkload<DSU_AdaptiveLocks<false>>(Ctx_, dsu, workload, [ctx = Ctx_](int tid) { return ctx->NumaNodeForThread(tid); });
-        PrepareDSUForWorkload<DSU_AdaptiveLocks<true>>(Ctx_, dsu, workload, [ctx = Ctx_](int tid) { return ctx->NumaNodeForThread(tid); });
+        PrepareDSUForWorkload<DSU_Adaptive<false, false>>(Ctx_, dsu, workload);
+        PrepareDSUForWorkload<DSU_Adaptive<true, false>>(Ctx_, dsu, workload);
+        PrepareDSUForWorkload<DSU_Adaptive<false, true>>(Ctx_, dsu, workload);
+        PrepareDSUForWorkload<DSU_Adaptive<true, true>>(Ctx_, dsu, workload);
+        PrepareDSUForWorkload<DSU_AdaptiveLocks<false>>(Ctx_, dsu, workload);
+        PrepareDSUForWorkload<DSU_AdaptiveLocks<true>>(Ctx_, dsu, workload);
 
         size_t numThreads = workload.ThreadRequests.size();
         std::barrier barrier(numThreads);
@@ -256,20 +256,6 @@ StaticWorkload BuildComponentsRandomWorkload(size_t numComponents, size_t single
 StaticWorkload BuildComponentsRandomWorkloadV2(size_t numThreads, size_t numComponents, size_t N, size_t E,
                                              double intercomponentEFraction, double sameSetFraction,
                                              auto threadNodeLayout, bool shuffle) {
-    std::vector<int> vertexPermutation(N);
-    std::generate(vertexPermutation.begin(), vertexPermutation.end(), [i = 0]() mutable {
-        return i++;
-    });
-    if (shuffle) {
-        Shuffle(vertexPermutation);
-    }
-
-    std::vector<int> componentMapping(N);
-    for (int i = 0; i < N; ++i) {
-        int expId = i * numComponents / N;
-        componentMapping[vertexPermutation[i]] = expId;
-    }
-
     // E is the number of union requests
     // so we transform to the number of all requests
     E = static_cast<size_t>(std::round(E / (1. - sameSetFraction)));
@@ -285,6 +271,20 @@ StaticWorkload BuildComponentsRandomWorkloadV2(size_t numThreads, size_t numComp
     size_t intercomponentE = std::round(intercomponentEFraction * E);
     size_t internalE = E - intercomponentE;
     size_t internalThreadE = internalE / numThreads;
+
+    std::vector<int> vertexPermutation(numComponents * componentN);
+    std::generate(vertexPermutation.begin(), vertexPermutation.end(), [i = 0]() mutable {
+        return i++;
+    });
+    if (shuffle) {
+        Shuffle(vertexPermutation);
+    }
+
+    std::vector<int> componentMapping(numComponents * componentN);
+    for (size_t i = 0; i < vertexPermutation.size(); ++i) {
+        size_t expId = i * numComponents / N;
+        componentMapping[vertexPermutation[i]] = (int)expId;
+    }
 
     std::bernoulli_distribution sameSetDistribution(sameSetFraction);
     std::vector<std::vector<Request>> threadWork(numThreads);
@@ -342,7 +342,7 @@ StaticWorkload BuildComponentsRandomWorkloadV2(size_t numThreads, size_t numComp
             {},
             std::move(threadWork),
             numComponents * componentN,
-            {std::move(componentMapping)}
+            {ComponentMappingMd{std::move(componentMapping)}}
     };
 }
 
