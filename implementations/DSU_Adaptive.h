@@ -211,7 +211,7 @@ private:
             }
             int grand = getDataParent(grandDat);
             if (par == grand) {
-                localParDat = parDat;
+                localParDat = grandDat;
                 return par;
             } else {
                 // compress local
