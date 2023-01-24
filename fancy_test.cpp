@@ -2,6 +2,7 @@
 
 #include "implementations/DSU_Usual.h"
 #include "implementations/DSU_Adaptive.h"
+#include "implementations/DSU_AdaptiveSmart.h"
 #include "implementations/DSU_AdaptiveLocks.h"
 #include "implementations/DSU_LazyUnion.h"
 #include "implementations/DSU_ParallelUnions.h"
@@ -25,7 +26,8 @@ public:
 };
 
 using Dsus = ::testing::Types<DSU_Adaptive<true, false>, DSU_Adaptive<true, true>, DSU_AdaptiveLocks<true>, DSU_LazyUnions<true>, DSU_ParallelUnions<true>,
-        DSU_Adaptive<false, false>, DSU_Adaptive<false, true>, DSU_AdaptiveLocks<false>, DSU_LazyUnions<false>, DSU_ParallelUnions<false>>;
+        DSU_Adaptive<false, false>, DSU_Adaptive<false, true>, DSU_AdaptiveLocks<false>, DSU_LazyUnions<false>, DSU_ParallelUnions<false>,
+        DSU_AdaptiveSmart<false>, DSU_AdaptiveSmart<true>>;
 TYPED_TEST_SUITE(DSUTest, Dsus);
 
 TYPED_TEST(DSUTest, Simple) {

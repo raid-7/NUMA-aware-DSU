@@ -7,13 +7,12 @@
 #include <sstream>
 
 
-template <bool Halfing, bool Stepping, bool AllowCrossNodeCompression=false>
+template <bool Halfing, bool AllowCrossNodeCompression=false>
 class DSU_AdaptiveSmart : public DSU {
 public:
     std::string ClassName() override {
         using namespace std::string_literals;
-        int version = Stepping ? 3 : 2;
-        return "AdaptiveSmart"s + std::to_string(version) +  "++/"s + (Halfing ? "halfing" : "squashing");
+        return "AdaptiveSmart/"s + (Halfing ? "halfing" : "squashing");
     };
 
     DSU_AdaptiveSmart(NUMAContext* ctx, int size)
@@ -63,13 +62,7 @@ public:
         size_t it = 0;
         while (true) {
             ++it;
-            if (uRoot || vRoot) { // use local root
-                if (!uRoot) {
-                    std::swap(uRoot, vRoot);
-                    std::swap(u, v);
-                    std::swap(uDat, vDat);
-                }
-            } else { // find real roots
+            if (!((uRoot && u > v) || (vRoot && v > u))) { // find real roots
                 uDat = find(u, node, true);
                 vDat = find(v, node, true);
                 u = getDataParent(uDat);
@@ -78,9 +71,10 @@ public:
                     return;
                 uRoot = vRoot = true;
             }
-            if ((uRoot && vRoot) && u < v) { // TODO try implicit pseudorandom priorities
+            if (u < v) { // TODO try implicit pseudorandom priorities
                 std::swap(u, v);
                 std::swap(uDat, vDat);
+                std::swap(uRoot, vRoot);
             }
 
             // u is root now
@@ -101,74 +95,7 @@ public:
         }
     }
 
-    bool DoSameSet(int u, int v) override {
-        if constexpr(Stepping) {
-            return DoSteppingSameSet(u, v);
-        } else {
-            return DoSimpleSameSet(u, v);
-        }
-    }
-
-    bool DoSteppingSameSet(int u, int v) {
-        int node = NUMAContext::CurrentThreadNode();
-        bool freeze = false;
-        while (true) {
-            if (u == v)
-                return true;
-            if (!freeze && u > v)
-                std::swap(u, v);
-            int localDat;
-            int parDat = readDataChecked(node, u, localDat);
-            int par = getDataParent(parDat);
-            if (par == v)
-                return true;
-            int grandDat = readDataChecked(node, par);
-            int grand = getDataParent(grandDat);
-            if (grand == v)
-                return true;
-            if (par == grand) {
-                if (par != u && !isDataOwner(parDat, node)) {
-                    // copy non-root vertex to local memory
-                    mThisNodeWrite.inc(1);
-                    data[node][u].compare_exchange_strong(localDat, mixDataOwner(parDat, node));
-                }
-                if (freeze) {
-                    int vCur = readDataChecked(node, v);
-                    if (getDataParent(vCur) == v)
-                        return false; // we've already checked par != v
-                    freeze = false;
-                } else {
-                    u = v;
-                    v = par;
-                    freeze = true;
-                    continue;
-                }
-            } else {
-                if (isDataOwner(localDat, node)) {
-                    if (AllowCrossNodeCompression || isDataOwner(grandDat, node)) {
-                        // compress local if we know `par`
-                        mThisNodeWrite.inc(1);
-                        data[node][u].compare_exchange_weak(localDat, mixDataOwner(grandDat, node));
-                    } else {
-                        u = par;
-                        continue;
-                    }
-                } else {
-                    // copy non-root vertex to local memory
-                    // TODO try without this
-                    mThisNodeWrite.inc(1);
-                    data[node][u].compare_exchange_weak(localDat, mixDataOwner(grandDat, node));
-                }
-            }
-            if constexpr(Halfing) {
-                u = grand;
-            } else {
-                u = par;
-            }
-        }
-    }
-
-    bool DoSimpleSameSet(int u, int v) {
+    bool DoSameSet(int u, int v) {
         int node = NUMAContext::CurrentThreadNode();
         // TODO try this optimization with node owners
 //        if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {

@@ -12,6 +12,7 @@
 #include "implementations/DSU_Usual.h"
 #include "implementations/DSU_Usual_noimm.h"
 #include "implementations/DSU_Adaptive.h"
+#include "implementations/DSU_AdaptiveSmart.h"
 #include "implementations/DSU_AdaptiveLocks.h"
 #include "implementations/DSU_LazyUnion.h"
 #include "implementations/SeveralDSU.h"
@@ -134,6 +135,8 @@ public:
         PrepareDSUForWorkload<DSU_Adaptive<true, true>>(Ctx_, dsu, workload);
         PrepareDSUForWorkload<DSU_AdaptiveLocks<false>>(Ctx_, dsu, workload);
         PrepareDSUForWorkload<DSU_AdaptiveLocks<true>>(Ctx_, dsu, workload);
+        PrepareDSUForWorkload<DSU_AdaptiveSmart<false>>(Ctx_, dsu, workload);
+        PrepareDSUForWorkload<DSU_AdaptiveSmart<true>>(Ctx_, dsu, workload);
 
         size_t numThreads = workload.ThreadRequests.size();
         std::barrier barrier(numThreads);
@@ -357,6 +360,7 @@ std::vector<std::unique_ptr<DSU>> GetAvailableDsus(NUMAContext* ctx, size_t N, c
         dsus.emplace_back(new DSU_Adaptive<T::value, false>(ctx, N));
         dsus.emplace_back(new DSU_Adaptive<T::value, true>(ctx, N));
         dsus.emplace_back(new DSU_AdaptiveLocks<T::value>(ctx, N));
+        dsus.emplace_back(new DSU_AdaptiveSmart<T::value>(ctx, N));
         dsus.emplace_back(new DSU_LazyUnions<T::value>(ctx, N));
     };
 
@@ -391,7 +395,7 @@ void RunComponentsBenchmark(NUMAContext* ctx, CsvFile* out, const std::regex& fi
                   size_t numWorkloads, size_t numIterationsPerWorkload,
                   const std::vector<ParameterSet>& parameters) {
     if (out) {
-        *out << "DSU" << "N" << "E" << "interpairFraction" << "sameSetFraction" << "Score" << "Score Error";
+        *out << "DSU" << "N" << "E" << "interpairFraction" << "sameSetFraction" << "shuffleVertices" << "Score" << "Score Error";
     }
 
     Benchmark benchmark(ctx); // TODO pass additional work
@@ -439,11 +443,11 @@ void RunComponentsBenchmark(NUMAContext* ctx, CsvFile* out, const std::regex& fi
             }
             if (out) {
                 *out << dsu->ClassName()
-                     << N << E << interpairFraction << sameSetFraction
+                     << N << E << interpairFraction << sameSetFraction << shuffleVertices
                      << result.mean << result.stddev;
                 for (const auto& [metric, value] : metrics) {
                     *out << (dsu->ClassName() + ":" + metric)
-                         << N << E << interpairFraction << sameSetFraction
+                         << N << E << interpairFraction << sameSetFraction << shuffleVertices
                          << value.mean << value.stddev;
                 }
             }
