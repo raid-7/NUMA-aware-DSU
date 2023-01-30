@@ -30,10 +30,10 @@ enable_testing()
 #add_executable(benchmark_mst benchmark_mst.cpp lib/util.cpp)
 #target_link_libraries(benchmark_mst PRIVATE -latomic -lnuma)
 
-add_library(dsuenv lib/util.cpp)
+add_library(dsuenv lib/metrics.cpp lib/util.cpp DSU.cpp)
 target_link_libraries(dsuenv PUBLIC -lnuma CLI11::CLI11 Threads::Threads)
 
-add_executable(fancy_bench fancy.cpp lib/util.cpp)
+add_executable(fancy_bench fancy.cpp)
 target_link_libraries(fancy_bench PRIVATE dsuenv)
 
 add_executable(fancy_test fancy_test.cpp)

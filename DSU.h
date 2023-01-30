@@ -14,6 +14,7 @@
 class DSU : public MetricsAwareBase {
 public:
     static bool EnableMetrics;
+    static bool EnableCompaction;
 
     explicit DSU(NUMAContext* ctx, [[maybe_unused]] size_t numThreads = 0)
             : MetricsAwareBase(EnableMetrics ? std::max(numThreads, (size_t)std::thread::hardware_concurrency()) : 0)

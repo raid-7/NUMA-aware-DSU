@@ -59,9 +59,9 @@ public:
         if (u == v)
             return;
         while (true) {
-            int uDat = find(u, node, true);
+            int uDat = find(u, node, EnableCompaction);
             u = getDataParent(uDat);
-            int vDat = find(v, node, true);
+            int vDat = find(v, node, EnableCompaction);
             v = getDataParent(vDat);
             if (u == v) {
                 return;
@@ -184,13 +184,13 @@ public:
             if (getDataParent(readDataChecked(node, u)) == u) {
                 return false;
             }
-            uDat = find(u, node, true);
-            vDat = find(v, node, true);
+            uDat = find(u, node, EnableCompaction);
+            vDat = find(v, node, EnableCompaction);
         }
     }
 
     int Find(int u) override {
-        return getDataParent(find(u, NUMAContext::CurrentThreadNode(), true));
+        return getDataParent(find(u, NUMAContext::CurrentThreadNode(), EnableCompaction));
     }
 
 private:
@@ -203,6 +203,14 @@ private:
                 return u;
             }
             int par = getDataParent(parDat);
+
+            if (!DSU::EnableCompaction) {
+                if (par == u)
+                    return u;
+                u = par;
+                continue;
+            }
+
             mThisNodeRead.inc(1);
             int grandDat = readDataUnsafe(node, par);
             if (!isDataOwner(grandDat, node)) {

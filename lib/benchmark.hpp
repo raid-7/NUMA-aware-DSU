@@ -74,6 +74,9 @@ public:
         size_t resultsOffset = ThroughputResults_[dsu].size();
         if (!ignoreMeasurements)
             ThroughputResults_[dsu].resize(resultsOffset + numThreads, 0.0);
+
+        dsu->resetMetrics();
+
         Ctx_->StartNThreads(
                 [this, &barrier, &workload, dsu, resultsOffset, ignoreMeasurements]() {
                     barrier.arrive_and_wait();
@@ -105,6 +108,14 @@ public:
         auto res = metricStats(Metrics_[dsu].begin(), Metrics_[dsu].end());
         Metrics_[dsu].clear();
         return res;
+    }
+
+    std::vector<double> CollectRawThroughputStats(DSU* dsu) {
+        return std::exchange(ThroughputResults_[dsu], {});
+    }
+
+    std::vector<Metrics> CollectRawMetricStats(DSU* dsu) {
+        return std::exchange(Metrics_[dsu], {});
     }
 
 private:

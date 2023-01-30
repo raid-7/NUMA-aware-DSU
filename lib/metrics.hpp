@@ -1,12 +1,14 @@
 #pragma once
 
+#include "stats.hpp"
+#include "numa.hpp"
+
 #include <unordered_map>
 #include <string>
 #include <numeric>
 #include <vector>
 #include <ostream>
 #include <mutex>
-#include "stats.hpp"
 
 
 constexpr size_t METRIC_STRIDE = 4; // to reduce false sharing
@@ -45,19 +47,9 @@ public:
     friend std::ostream& operator <<(std::ostream& stream, const Metrics& metrics);
 };
 
-Metrics operator +(const Metrics& a, const Metrics& b) {
-    Metrics res;
-    res += a;
-    res += b;
-    return res;
-}
+Metrics operator +(const Metrics& a, const Metrics& b);
 
-std::ostream& operator <<(std::ostream& stream, const Metrics& metrics) {
-    for (auto [key, value] : metrics.metrics) {
-        stream << key << ": " << value << '\n';
-    }
-    return stream;
-}
+std::ostream& operator <<(std::ostream& stream, const Metrics& metrics);
 
 template <class It>
 std::unordered_map<std::string, Stats<long double>> metricStats(const It begin, const It end) {
