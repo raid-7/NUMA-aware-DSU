@@ -62,8 +62,14 @@ class ParameterSet {
 public:
     explicit ParameterSet(std::unordered_map<std::string, std::string> params,
                           const ParameterSet* defaults = nullptr)
-        : params_(std::move(params))
-        , defaults_(defaults)
+            : params_(std::move(params))
+            , defaults_(defaults)
+    {}
+
+    explicit ParameterSet(ParameterSet oth,
+                          const ParameterSet* defaults)
+            : params_(std::move(oth.params_))
+            , defaults_(defaults)
     {}
 
     template<class T>
@@ -119,8 +125,12 @@ std::vector<ParameterSet> ParseParameters(const std::vector<std::string>& raw,
     for (auto& kv : parsed)
         parsedVec.push_back(std::move(kv.second));
 
-    if (parsedVec.empty())
+    if (parsedVec.empty()) {
+        if (defaults) {
+            return {ParameterSet({}, defaults)};
+        }
         return {};
+    }
 
     std::vector<ParameterSet> result;
     std::unordered_map<std::string, std::string> params;
@@ -155,6 +165,40 @@ std::vector<ParameterSet> ParseParameters(const std::vector<std::string>& raw,
 
         params[pair.key] = pair.values[pair.pos];
         ++r;
+    }
+
+    return result;
+}
+
+std::vector<ParameterSet> ParseStageParameters(const std::vector<std::string>& raw,
+                                               const ParameterSet* defaults = nullptr) {
+    std::vector<std::vector<std::string>> stageRaw;
+    for (const std::string& rawField : raw) {
+        std::string::size_type colonPos = rawField.find(":");
+        std::string stage, kv;
+        if (colonPos != std::string::npos) {
+            stage = rawField.substr(0, colonPos);
+            kv = rawField.substr(colonPos + 1);
+        } else {
+            using namespace std::string_literals;
+            throw std::runtime_error("Invalid stage parameter: "s + rawField);
+        }
+        size_t stageId = std::strtoull(stage.data(), nullptr, 10);
+        while (stageRaw.size() <= stageId) {
+            stageRaw.emplace_back();
+        }
+        stageRaw[stageId].push_back(kv);
+    }
+
+    std::vector<ParameterSet> result;
+    for (size_t i = 0; i < stageRaw.size(); ++i) {
+        const auto& stageFields = stageRaw[i];
+        auto stageParams = ParseParameters(stageFields, defaults);
+        if (stageParams.size() != 1) {
+            using namespace std::string_literals;
+            throw std::runtime_error("Two many parameter sets for stage: "s + std::to_string(i));
+        }
+        result.push_back(std::move(stageParams[0]));
     }
 
     return result;

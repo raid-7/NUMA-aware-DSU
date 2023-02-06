@@ -110,6 +110,7 @@ void RunBenchmark(NUMAContext* ctx, CsvFile& out, const std::regex& filter,
 
                 if (i == 0) {
                     PrepareDSUForWorkload(ctx, dsu, workload);
+                    DSU::EnableCompaction = params.Get<bool>("compact");
 
                     // warmup for the given parameter set
                     std::cout << "Warmup iteration for workload #" << i << "; DSU " << dsu->ClassName() << std::endl;
@@ -118,6 +119,7 @@ void RunBenchmark(NUMAContext* ctx, CsvFile& out, const std::regex& filter,
 
                 for (size_t j = 0; j < numIterationsPerWorkload; ++j) {
                     PrepareDSUForWorkload(ctx, dsu, workload);
+                    DSU::EnableCompaction = params.Get<bool>("compact");
 
                     std::cout << "Benchmark iteration #" << j << " for workload #" << i << "; DSU " << dsu->ClassName()
                               << std::endl;
@@ -156,26 +158,6 @@ void RunBenchmark(NUMAContext* ctx, CsvFile& out, const std::regex& filter,
     }
 }
 
-std::vector<StaticWorkload> CutWorkloadIntoEqualSizeStages(const StaticWorkload& workload, size_t numStages) {
-    std::vector<StaticWorkload> res;
-    for (size_t i = 0; i < numStages; ++i) {
-        std::vector<Request> preheat = i == 0 ? workload.PreHeatRequests : std::vector<Request>{};
-        std::vector<std::vector<Request>> threadRequests;
-        for (const std::vector<Request>& requests : workload.ThreadRequests) {
-            size_t start = requests.size() / numStages * i;
-            size_t end = i == numStages - 1 ? requests.size() : requests.size() / numStages * (i + 1);
-            threadRequests.emplace_back(requests.begin() + start, requests.begin() + end);
-        }
-        res.push_back(StaticWorkload{
-           std::move(preheat),
-           std::move(threadRequests),
-           workload.N,
-           workload.Metadata
-        });
-    }
-    return res;
-}
-
 namespace std {
 template<class X, class Y>
 struct hash<std::pair<X, Y>> {
@@ -189,8 +171,8 @@ struct hash<std::pair<X, Y>> {
 }
 
 void RunStagedBenchmark(NUMAContext* ctx, CsvFile& out, const std::regex& filter,
-                  size_t numWorkloads, size_t numIterationsPerWorkload, size_t numStages,
-                  WorkloadProvider* wlProvider, const std::vector<ParameterSet>& parameters) {
+                  size_t numWorkloads, size_t numIterationsPerWorkload,
+                  WorkloadProvider* wlProvider, const std::vector<std::vector<ParameterSet>>& parameterSets) {
     { // write CSV header
         auto writer = out << "DSU" << "Stage";
         for (const std::string& param : wlProvider->GetParameterNames()) {
@@ -200,75 +182,94 @@ void RunStagedBenchmark(NUMAContext* ctx, CsvFile& out, const std::regex& filter
     }
 
     Benchmark benchmark(ctx); // TODO pass additional work
-    for (const auto& params : parameters) {
-        std::vector<std::unique_ptr<DSU>> dsus = GetAvailableDsus(ctx, params.Get<size_t>("N"), filter);
-        if (dsus.empty())
-            continue;
 
-        std::unordered_map<std::pair<DSU*, size_t>, std::vector<double>> throughputRes;
-        std::unordered_map<std::pair<DSU*, size_t>, std::vector<Metrics>> metricRes;
+    for (const std::vector<ParameterSet>& parameters : parameterSets) {
+        size_t n = parameters[0].Get<size_t>("N");
+        REQUIRE(std::all_of(parameters.begin(), parameters.end(), [n](const ParameterSet& params) {
+            return params.Get<size_t>("N") == n;
+        }), "All stage parameter sets must have equal N");
 
-        for (size_t i = 0; i < numWorkloads; ++i) {
-            std::cout << "Preparing workload #" << i << std::endl;
-            StaticWorkload workload = wlProvider->MakeWorkload(ctx, params);
-            auto stages = CutWorkloadIntoEqualSizeStages(workload, numStages);
-            for (auto& ptr: dsus) {
-                DSU* dsu = ptr.get();
+        std::vector<std::unique_ptr<DSU>> dsus = GetAvailableDsus(ctx, n, filter);
+        if (!dsus.empty()) {
+            std::unordered_map<std::pair<DSU*, size_t>, std::vector<double>> throughputRes;
+            std::unordered_map<std::pair<DSU*, size_t>, std::vector<Metrics>> metricRes;
 
-                if (i == 0) {
-                    PrepareDSUForWorkload(ctx, dsu, workload);
-
-                    // warmup for the given parameter set
-                    std::cout << "Warmup iteration for workload #" << i << "; DSU " << dsu->ClassName() << std::endl;
-                    benchmark.Run(dsu, workload, true);
+            for (size_t i = 0; i < numWorkloads; ++i) {
+                std::cout << "Preparing workload #" << i << std::endl;
+                std::vector<StaticWorkload> stages;
+                wlProvider->PrepareSeries(); // initialize mappings for shuffle if used
+                for (const auto& params: parameters) {
+                    stages.push_back(wlProvider->MakeWorkload(ctx, params));
                 }
+                wlProvider->EndSeries();
+                for (auto& ptr: dsus) {
+                    DSU* dsu = ptr.get();
 
-                for (size_t j = 0; j < numIterationsPerWorkload; ++j) {
-                    for (size_t stageIndex = 0; stageIndex < numStages; ++stageIndex) {
-                        DSU::EnableCompaction = stageIndex == numStages - 1;
+                    if (i == 0) {
+                        PrepareDSUForWorkload(ctx, dsu, stages[0]);
 
-                        std::cout << "Benchmark iteration #" << j << " for workload #" << i << ", stage #" << stageIndex
-                                  << "; DSU "
-                                  << dsu->ClassName()
-                                  << std::endl;
-                        benchmark.Run(dsu, stages[stageIndex]);
-                        std::pair<DSU*, size_t> key = {dsu, stageIndex};
-                        auto throughput = benchmark.CollectRawThroughputStats(dsu);
-                        auto metrics = benchmark.CollectRawMetricStats(dsu);
-                        throughputRes[key].insert(throughputRes[key].begin(), throughput.begin(), throughput.end());
-                        metricRes[key].insert(metricRes[key].begin(), metrics.begin(), metrics.end());
+                        for (size_t stageIndex = 0; stageIndex < stages.size(); ++stageIndex) {
+                            DSU::EnableCompaction = parameters[stageIndex].Get<bool>("compact");
+
+                            // warmup for the given parameter set
+                            std::cout << "Warmup iteration for workload #" << i << "; DSU " << dsu->ClassName()
+                                      << std::endl;
+
+                            benchmark.Run(dsu, stages[stageIndex], true);
+                        }
+                    }
+
+                    for (size_t j = 0; j < numIterationsPerWorkload; ++j) {
+                        PrepareDSUForWorkload(ctx, dsu, stages[0]);
+
+                        for (size_t stageIndex = 0; stageIndex < stages.size(); ++stageIndex) {
+                            DSU::EnableCompaction = parameters[stageIndex].Get<bool>("compact");
+
+                            std::cout << "Benchmark iteration #" << j << " for workload #" << i << ", stage #"
+                                      << stageIndex
+                                      << "; DSU "
+                                      << dsu->ClassName()
+                                      << std::endl;
+                            benchmark.Run(dsu, stages[stageIndex]);
+                            std::pair<DSU*, size_t> key = {dsu, stageIndex};
+                            auto throughput = benchmark.CollectRawThroughputStats(dsu);
+                            auto metrics = benchmark.CollectRawMetricStats(dsu);
+                            throughputRes[key].insert(throughputRes[key].begin(), throughput.begin(), throughput.end());
+                            metricRes[key].insert(metricRes[key].begin(), metrics.begin(), metrics.end());
+                        }
                     }
                 }
             }
-        }
-        for (auto& ptr: dsus) {
-            for (size_t stageIndex = 0; stageIndex < numStages; ++stageIndex) {
-                DSU* dsu = ptr.get();
-                std::pair<DSU*, size_t> key = {dsu, stageIndex};
-                Stats<double> result = stats(throughputRes[key].begin(), throughputRes[key].end());
-                auto metrics = metricStats(metricRes[key].begin(), metricRes[key].end());
-                std::cout << std::fixed << std::setprecision(3)
-                          << dsu->ClassName() << "/" << stageIndex << ": " << result.mean << "+-" << result.stddev << std::endl;
-                for (const auto&[metric, value]: metrics) {
+            for (auto& ptr: dsus) {
+                for (size_t stageIndex = 0; stageIndex < parameters.size(); ++stageIndex) {
+                    DSU* dsu = ptr.get();
+                    std::pair<DSU*, size_t> key = {dsu, stageIndex};
+                    Stats<double> result = stats(throughputRes[key].begin(), throughputRes[key].end());
+                    auto metrics = metricStats(metricRes[key].begin(), metricRes[key].end());
                     std::cout << std::fixed << std::setprecision(3)
-                              << "  :" << metric << ": "
-                              << value.mean << "+-" << value.stddev << std::endl;
-                }
-
-                { // write results in CSV
-                    auto writer = out << dsu->ClassName() << stageIndex;
-                    for (const std::string& param: wlProvider->GetParameterNames()) {
-                        writer << params.Get<std::string>(param);
+                              << dsu->ClassName() << "/" << stageIndex << ": " << result.mean << "+-" << result.stddev
+                              << std::endl;
+                    for (const auto& [metric, value]: metrics) {
+                        std::cout << std::fixed << std::setprecision(3)
+                                  << "  :" << metric << ": "
+                                  << value.mean << "+-" << value.stddev << std::endl;
                     }
-                    writer << result.mean << result.stddev;
-                }
 
-                for (const auto&[metric, value]: metrics) { // write metrics in CSV
-                    auto writer = out << (dsu->ClassName() + ":" + metric) << stageIndex;
-                    for (const std::string& param: wlProvider->GetParameterNames()) {
-                        writer << params.Get<std::string>(param);
+                    { // write results in CSV
+                        auto writer = out << dsu->ClassName() << stageIndex;
+                        for (const std::string& param: wlProvider->GetParameterNames()) {
+                            writer << parameters[stageIndex].Get<std::string>(param);
+                        }
+                        writer << result.mean << result.stddev;
                     }
-                    writer << value.mean << value.stddev;
+
+                    for (const auto& [metric, value]: metrics) { // write metrics in CSV
+                        auto writer = out << (dsu->ClassName() + ":" + metric) << stageIndex;
+                        for (const std::string& param: wlProvider->GetParameterNames()) {
+                            writer << parameters[stageIndex].Get<std::string>(param);
+                        }
+                        writer << value.mean << value.stddev;
+                    }
                 }
             }
         }
@@ -307,8 +308,8 @@ int main(int argc, const char* argv[]) {
     size_t numIterationsPerWorkload = 3;
     app.add_option("-i,--num-iterations", numIterationsPerWorkload, "Number of iterations per workloads");
 
-    size_t numStages = 0;
-    app.add_option("--num-stages", numStages, "Number of stages");
+    std::vector<std::string> rawStageParameters;
+    app.add_option("--sp,--stage-param", rawStageParameters, "For staged benchmark: stage parameter in the form stageId:param=value");
 
     CLI11_PARSE(app, argc, argv);
 
@@ -318,9 +319,19 @@ int main(int argc, const char* argv[]) {
     REQUIRE(wlProviderIt != wlProviders.end(), "Invalid workload");
     WorkloadProvider* wlProvider = wlProviderIt->get();
 
-    ParameterSet defaultParams = wlProvider->GetDefaultParameters();
+    ParameterSet commonDefaults = ParseParameters({
+        "N=4000000",
+        "compact=true"
+    })[0];
+    ParameterSet defaultParams = wlProvider->GetDefaultParameters(&commonDefaults);
 
     auto parameters = ParseParameters(rawParameters, &defaultParams);
+    std::vector<std::vector<ParameterSet>> stageParameters;
+    for (const ParameterSet& baseParameters : parameters) {
+        auto stageParams = ParseStageParameters(rawStageParameters, &baseParameters);
+        if (!stageParams.empty())
+            stageParameters.push_back(std::move(stageParams));
+    }
     auto filter = std::regex(dsuFilter, std::regex::ECMAScript | std::regex::icase | std::regex::nosubs);
 
     DSU::EnableMetrics = enableMetrics;
@@ -331,8 +342,9 @@ int main(int argc, const char* argv[]) {
     }
     CsvFile out(outFileName);
 
-    if (numStages > 0) {
-        RunStagedBenchmark(&ctx, out, filter, numWorkloads, numIterationsPerWorkload, numStages, wlProvider, parameters);
+    if (!stageParameters.empty()) {
+        REQUIRE(parameters.size() == 1, "Too many free parameter sets for staged benchmark")
+        RunStagedBenchmark(&ctx, out, filter, numWorkloads, numIterationsPerWorkload, wlProvider, stageParameters);
     } else {
         RunBenchmark(&ctx, out, filter, numWorkloads, numIterationsPerWorkload, wlProvider, parameters);
     }

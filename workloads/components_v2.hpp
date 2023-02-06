@@ -19,24 +19,34 @@ public:
                                                [ctx](int tid) { return ctx->NumaNodeForThread(tid); }, shuffleVertices);
     }
 
+    void PrepareSeries() override {
+        useSeries_ = true;
+        seriesVertexPermutation_ = {};
+    }
+
+    void EndSeries() override {
+        seriesVertexPermutation_ = {};
+        useSeries_ = false;
+    }
+
     std::string_view Name() const override {
         return "components";
     }
 
     std::vector<std::string> GetParameterNames() const override {
         return {
-                "N", "E", "ipf", "ssf", "shuffle"
+            "N", "E", "ipf", "ssf", "shuffle"
         };
     }
 
-    ParameterSet GetDefaultParameters() const override {
+    ParameterSet GetDefaultParameters(const ParameterSet* commonDefaults) const override {
         return ParseParameters({
-                                       "N=4000000",
-                                       "E=64000000",
-                                       "ipf=0.2",
-                                       "ssf=0.1",
-                                       "shuffle=true"
-                               })[0];
+               "N=4000000",
+               "E=64000000",
+               "ipf=0.2",
+               "ssf=0.1",
+               "shuffle=true"
+       }, commonDefaults)[0];
     }
 
 private:
@@ -59,12 +69,20 @@ private:
         size_t internalE = E - intercomponentE;
         size_t internalThreadE = internalE / numThreads;
 
-        std::vector<int> vertexPermutation(numComponents * componentN);
-        std::generate(vertexPermutation.begin(), vertexPermutation.end(), [i = 0]() mutable {
-            return i++;
-        });
-        if (shuffle) {
-            Shuffle(vertexPermutation);
+        std::vector<int> vertexPermutation;
+        if (useSeries_ && seriesVertexPermutation_.size() == numComponents * componentN) {
+            vertexPermutation = seriesVertexPermutation_;
+        } else {
+            vertexPermutation.resize(numComponents * componentN);
+            std::generate(vertexPermutation.begin(), vertexPermutation.end(), [i = 0]() mutable {
+                return i++;
+            });
+            if (shuffle) {
+                Shuffle(vertexPermutation);
+            }
+            if (useSeries_) {
+                seriesVertexPermutation_ = vertexPermutation;
+            }
         }
 
         std::vector<int> componentMapping(numComponents * componentN);
@@ -84,10 +102,10 @@ private:
                 int u = uvDistribution(TlRandom);
                 int v = uvDistribution(TlRandom);
                 threadWork[tid].push_back({
-                                                  sameSetDistribution(TlRandom),
-                                                  vertexPermutation[u],
-                                                  vertexPermutation[v]
-                                          });
+                      sameSetDistribution(TlRandom),
+                      vertexPermutation[u],
+                      vertexPermutation[v]
+                });
             }
         }
 
@@ -103,10 +121,10 @@ private:
                     int u = uDistribution(TlRandom);
                     int v = vDistribution(TlRandom);
                     interpairRequests.push_back({
-                                                        sameSetDistribution(TlRandom),
-                                                        vertexPermutation[u],
-                                                        vertexPermutation[v]
-                                                });
+                            sameSetDistribution(TlRandom),
+                            vertexPermutation[u],
+                            vertexPermutation[v]
+                    });
                 }
             }
         }
@@ -132,4 +150,8 @@ private:
                 {ComponentMappingMd{std::move(componentMapping)}}
         };
     }
+
+private:
+    std::vector<int> seriesVertexPermutation_{};
+    bool useSeries_ = false;
 };
