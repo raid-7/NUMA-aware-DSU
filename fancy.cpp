@@ -343,7 +343,6 @@ int main(int argc, const char* argv[]) {
     CsvFile out(outFileName);
 
     if (!stageParameters.empty()) {
-        REQUIRE(parameters.size() == 1, "Too many free parameter sets for staged benchmark")
         RunStagedBenchmark(&ctx, out, filter, numWorkloads, numIterationsPerWorkload, wlProvider, stageParameters);
     } else {
         RunBenchmark(&ctx, out, filter, numWorkloads, numIterationsPerWorkload, wlProvider, parameters);
