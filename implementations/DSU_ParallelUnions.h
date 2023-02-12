@@ -49,9 +49,9 @@ public:
     void DoUnion(int u, int v) override {
         auto node = NUMAContext::CurrentThreadNode();
         // commented to match adaptive impls
-//        if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
-//            return;
-//        }
+        if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
+            return;
+        }
         auto u_p = u;
         auto v_p = v;
         while (true) {
@@ -118,7 +118,7 @@ public:
 private:
 
     int find(int u, int node, bool is_local) {
-        if (is_local) {
+        if (is_local && DSU::EnableCompaction) {
             auto cur = u;
             while (true) {
                 mThisNodeRead.inc(2);
