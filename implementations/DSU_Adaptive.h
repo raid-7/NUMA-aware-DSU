@@ -165,16 +165,19 @@ public:
         if (isDataOwner(uDat, node) && isDataOwner(vDat, node)) // found real roots?
             if (getDataParent(readDataChecked(node, u)) == u) // still root?
                 return false;
+
+        // make one step up outside of loop to save local read
         if (!isDataOwner(uDat, node)) {
-            // make one step up outside of loop to save local read
             mCrossNodeRead.inc(1);
             uDat = readDataUnsafe(getAnyDataOwnerId(uDat), u);
         }
-        if (!isDataOwner(vDat, node)) {
-            // make one step up outside of loop to save local read
+        if (isDataOwner(vDat, node)) {
+            mThisNodeRead.inc(1);
+        } else {
             mCrossNodeRead.inc(1);
-            vDat = readDataUnsafe(getAnyDataOwnerId(vDat), v);
         }
+        // v read must be performed unconditionally for consistency of the check before `return false` in the loop
+        vDat = readDataUnsafe(getAnyDataOwnerId(vDat), v);
         while (true) {
             u = getDataParent(uDat);
             v = getDataParent(vDat);
@@ -205,8 +208,10 @@ private:
             int par = getDataParent(parDat);
 
             if (!DSU::EnableCompaction) {
-                if (par == u)
+                if (par == u) {
+                    localParDat = parDat;
                     return u;
+                }
                 u = par;
                 continue;
             }
