@@ -140,7 +140,11 @@ private:
         } else {
             auto cur = u;
             while (true) {
-                mCrossNodeRead.inc(1);
+                if (is_local) {
+                    mThisNodeRead.inc(1);
+                } else {
+                    mCrossNodeRead.inc(1);
+                }
                 auto par = getParent(node, cur);
                 if (par == cur) {
                     return par;
