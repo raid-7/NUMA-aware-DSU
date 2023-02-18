@@ -1,0 +1,2460 @@
+Preparing workload #0
+Warmup iteration for workload #0; DSU Usual
+Benchmark iteration #0 for workload #0; DSU Usual
+Benchmark iteration #1 for workload #0; DSU Usual
+Benchmark iteration #2 for workload #0; DSU Usual
+Warmup iteration for workload #0; DSU SeveralDSU
+Benchmark iteration #0 for workload #0; DSU SeveralDSU
+Benchmark iteration #1 for workload #0; DSU SeveralDSU
+Benchmark iteration #2 for workload #0; DSU SeveralDSU
+Warmup iteration for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/halfing
+Warmup iteration for workload #0; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #0; DSU Adaptive/halfing
+Warmup iteration for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/halfing
+Warmup iteration for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/halfing
+Warmup iteration for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/squashing
+Warmup iteration for workload #0; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #0; DSU Adaptive/squashing
+Warmup iteration for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/squashing
+Warmup iteration for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/squashing
+Preparing workload #1
+Benchmark iteration #0 for workload #1; DSU Usual
+Benchmark iteration #1 for workload #1; DSU Usual
+Benchmark iteration #2 for workload #1; DSU Usual
+Benchmark iteration #0 for workload #1; DSU SeveralDSU
+Benchmark iteration #1 for workload #1; DSU SeveralDSU
+Benchmark iteration #2 for workload #1; DSU SeveralDSU
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/squashing
+Usual: 3162392.772+-47762.209
+SeveralDSU: 3325421.491+-108382.586
+ParallelUnions/halfing: 3494820.793+-128505.023
+Adaptive/halfing: 3755896.964+-85821.891
+AdaptiveLocks/halfing: 3682266.005+-75496.269
+LazyUnions/halfing: 3794576.908+-51789.854
+ParallelUnions/squashing: 3209439.320+-204468.311
+Adaptive/squashing: 3702415.099+-94507.162
+AdaptiveLocks/squashing: 3590317.638+-77824.940
+LazyUnions/squashing: 3748414.832+-59287.694
+Preparing workload #0
+Warmup iteration for workload #0; DSU Usual
+Benchmark iteration #0 for workload #0; DSU Usual
+Benchmark iteration #1 for workload #0; DSU Usual
+Benchmark iteration #2 for workload #0; DSU Usual
+Warmup iteration for workload #0; DSU SeveralDSU
+Benchmark iteration #0 for workload #0; DSU SeveralDSU
+Benchmark iteration #1 for workload #0; DSU SeveralDSU
+Benchmark iteration #2 for workload #0; DSU SeveralDSU
+Warmup iteration for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/halfing
+Warmup iteration for workload #0; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #0; DSU Adaptive/halfing
+Warmup iteration for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/halfing
+Warmup iteration for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/halfing
+Warmup iteration for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/squashing
+Warmup iteration for workload #0; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #0; DSU Adaptive/squashing
+Warmup iteration for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/squashing
+Warmup iteration for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/squashing
+Preparing workload #1
+Benchmark iteration #0 for workload #1; DSU Usual
+Benchmark iteration #1 for workload #1; DSU Usual
+Benchmark iteration #2 for workload #1; DSU Usual
+Benchmark iteration #0 for workload #1; DSU SeveralDSU
+Benchmark iteration #1 for workload #1; DSU SeveralDSU
+Benchmark iteration #2 for workload #1; DSU SeveralDSU
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/squashing
+Usual: 4152200.180+-95412.413
+SeveralDSU: 4421102.604+-110781.729
+ParallelUnions/halfing: 4577412.293+-39374.343
+Adaptive/halfing: 4360944.043+-47581.486
+AdaptiveLocks/halfing: 4284741.151+-55850.584
+LazyUnions/halfing: 4390322.143+-27877.974
+ParallelUnions/squashing: 4391949.432+-64600.359
+Adaptive/squashing: 4304432.911+-75738.888
+AdaptiveLocks/squashing: 4259216.993+-61877.676
+LazyUnions/squashing: 4367637.997+-22464.334
+Preparing workload #0
+Warmup iteration for workload #0; DSU Usual
+Benchmark iteration #0 for workload #0; DSU Usual
+Benchmark iteration #1 for workload #0; DSU Usual
+Benchmark iteration #2 for workload #0; DSU Usual
+Warmup iteration for workload #0; DSU SeveralDSU
+Benchmark iteration #0 for workload #0; DSU SeveralDSU
+Benchmark iteration #1 for workload #0; DSU SeveralDSU
+Benchmark iteration #2 for workload #0; DSU SeveralDSU
+Warmup iteration for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/halfing
+Warmup iteration for workload #0; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #0; DSU Adaptive/halfing
+Warmup iteration for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/halfing
+Warmup iteration for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/halfing
+Warmup iteration for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/squashing
+Warmup iteration for workload #0; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #0; DSU Adaptive/squashing
+Warmup iteration for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/squashing
+Warmup iteration for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/squashing
+Preparing workload #1
+Benchmark iteration #0 for workload #1; DSU Usual
+Benchmark iteration #1 for workload #1; DSU Usual
+Benchmark iteration #2 for workload #1; DSU Usual
+Benchmark iteration #0 for workload #1; DSU SeveralDSU
+Benchmark iteration #1 for workload #1; DSU SeveralDSU
+Benchmark iteration #2 for workload #1; DSU SeveralDSU
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/squashing
+Usual: 4794521.855+-47470.046
+SeveralDSU: 4883810.533+-27625.325
+ParallelUnions/halfing: 4935120.409+-30213.287
+Adaptive/halfing: 4538756.717+-40566.216
+AdaptiveLocks/halfing: 4493803.359+-46656.081
+LazyUnions/halfing: 4591628.844+-25546.210
+ParallelUnions/squashing: 4920013.014+-29980.694
+Adaptive/squashing: 4522700.245+-45514.544
+AdaptiveLocks/squashing: 4485358.674+-43697.504
+LazyUnions/squashing: 4559915.932+-24681.307
+Preparing workload #0
+Warmup iteration for workload #0; DSU Usual
+Benchmark iteration #0 for workload #0; DSU Usual
+Benchmark iteration #1 for workload #0; DSU Usual
+Benchmark iteration #2 for workload #0; DSU Usual
+Warmup iteration for workload #0; DSU SeveralDSU
+Benchmark iteration #0 for workload #0; DSU SeveralDSU
+Benchmark iteration #1 for workload #0; DSU SeveralDSU
+Benchmark iteration #2 for workload #0; DSU SeveralDSU
+Warmup iteration for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/halfing
+Warmup iteration for workload #0; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #0; DSU Adaptive/halfing
+Warmup iteration for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/halfing
+Warmup iteration for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/halfing
+Warmup iteration for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/squashing
+Warmup iteration for workload #0; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #0; DSU Adaptive/squashing
+Warmup iteration for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/squashing
+Warmup iteration for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/squashing
+Preparing workload #1
+Benchmark iteration #0 for workload #1; DSU Usual
+Benchmark iteration #1 for workload #1; DSU Usual
+Benchmark iteration #2 for workload #1; DSU Usual
+Benchmark iteration #0 for workload #1; DSU SeveralDSU
+Benchmark iteration #1 for workload #1; DSU SeveralDSU
+Benchmark iteration #2 for workload #1; DSU SeveralDSU
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/squashing
+Usual: 2830642.997+-334323.359
+SeveralDSU: 2969842.148+-51457.758
+ParallelUnions/halfing: 3579715.926+-151768.800
+Adaptive/halfing: 3539288.661+-87158.656
+AdaptiveLocks/halfing: 3424068.382+-75694.632
+LazyUnions/halfing: 3582381.540+-72433.054
+ParallelUnions/squashing: 3239771.820+-269140.201
+Adaptive/squashing: 3481995.760+-116847.052
+AdaptiveLocks/squashing: 3405945.286+-95642.081
+LazyUnions/squashing: 3578162.480+-83467.951
+Preparing workload #0
+Warmup iteration for workload #0; DSU Usual
+Benchmark iteration #0 for workload #0; DSU Usual
+Benchmark iteration #1 for workload #0; DSU Usual
+Benchmark iteration #2 for workload #0; DSU Usual
+Warmup iteration for workload #0; DSU SeveralDSU
+Benchmark iteration #0 for workload #0; DSU SeveralDSU
+Benchmark iteration #1 for workload #0; DSU SeveralDSU
+Benchmark iteration #2 for workload #0; DSU SeveralDSU
+Warmup iteration for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/halfing
+Warmup iteration for workload #0; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #0; DSU Adaptive/halfing
+Warmup iteration for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/halfing
+Warmup iteration for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/halfing
+Warmup iteration for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/squashing
+Warmup iteration for workload #0; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #0; DSU Adaptive/squashing
+Warmup iteration for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/squashing
+Warmup iteration for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/squashing
+Preparing workload #1
+Benchmark iteration #0 for workload #1; DSU Usual
+Benchmark iteration #1 for workload #1; DSU Usual
+Benchmark iteration #2 for workload #1; DSU Usual
+Benchmark iteration #0 for workload #1; DSU SeveralDSU
+Benchmark iteration #1 for workload #1; DSU SeveralDSU
+Benchmark iteration #2 for workload #1; DSU SeveralDSU
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/squashing
+Usual: 3990744.418+-69331.811
+SeveralDSU: 4419789.195+-32520.459
+ParallelUnions/halfing: 4550156.056+-44442.483
+Adaptive/halfing: 4220745.781+-40725.355
+AdaptiveLocks/halfing: 4144631.974+-52912.181
+LazyUnions/halfing: 4295236.983+-34658.908
+ParallelUnions/squashing: 4462111.449+-119291.548
+Adaptive/squashing: 4211219.496+-51909.160
+AdaptiveLocks/squashing: 4098233.185+-143082.751
+LazyUnions/squashing: 4267247.941+-39783.993
+Preparing workload #0
+Warmup iteration for workload #0; DSU Usual
+Benchmark iteration #0 for workload #0; DSU Usual
+Benchmark iteration #1 for workload #0; DSU Usual
+Benchmark iteration #2 for workload #0; DSU Usual
+Warmup iteration for workload #0; DSU SeveralDSU
+Benchmark iteration #0 for workload #0; DSU SeveralDSU
+Benchmark iteration #1 for workload #0; DSU SeveralDSU
+Benchmark iteration #2 for workload #0; DSU SeveralDSU
+Warmup iteration for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/halfing
+Warmup iteration for workload #0; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #0; DSU Adaptive/halfing
+Warmup iteration for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/halfing
+Warmup iteration for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/halfing
+Warmup iteration for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/squashing
+Warmup iteration for workload #0; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #0; DSU Adaptive/squashing
+Warmup iteration for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/squashing
+Warmup iteration for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/squashing
+Preparing workload #1
+Benchmark iteration #0 for workload #1; DSU Usual
+Benchmark iteration #1 for workload #1; DSU Usual
+Benchmark iteration #2 for workload #1; DSU Usual
+Benchmark iteration #0 for workload #1; DSU SeveralDSU
+Benchmark iteration #1 for workload #1; DSU SeveralDSU
+Benchmark iteration #2 for workload #1; DSU SeveralDSU
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/squashing
+Usual: 4696024.599+-58611.974
+SeveralDSU: 4744288.379+-26376.074
+ParallelUnions/halfing: 4932182.194+-28792.525
+Adaptive/halfing: 4462921.690+-28824.019
+AdaptiveLocks/halfing: 4406983.862+-30898.492
+LazyUnions/halfing: 4529223.508+-45353.255
+ParallelUnions/squashing: 4857784.923+-44206.526
+Adaptive/squashing: 4457191.227+-29096.593
+AdaptiveLocks/squashing: 4414558.582+-26732.591
+LazyUnions/squashing: 4531637.555+-41141.847
+Preparing workload #0
+Warmup iteration for workload #0; DSU Usual
+Benchmark iteration #0 for workload #0; DSU Usual
+Benchmark iteration #1 for workload #0; DSU Usual
+Benchmark iteration #2 for workload #0; DSU Usual
+Warmup iteration for workload #0; DSU SeveralDSU
+Benchmark iteration #0 for workload #0; DSU SeveralDSU
+Benchmark iteration #1 for workload #0; DSU SeveralDSU
+Benchmark iteration #2 for workload #0; DSU SeveralDSU
+Warmup iteration for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/halfing
+Warmup iteration for workload #0; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #0; DSU Adaptive/halfing
+Warmup iteration for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/halfing
+Warmup iteration for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/halfing
+Warmup iteration for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/squashing
+Warmup iteration for workload #0; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #0; DSU Adaptive/squashing
+Warmup iteration for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/squashing
+Warmup iteration for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/squashing
+Preparing workload #1
+Benchmark iteration #0 for workload #1; DSU Usual
+Benchmark iteration #1 for workload #1; DSU Usual
+Benchmark iteration #2 for workload #1; DSU Usual
+Benchmark iteration #0 for workload #1; DSU SeveralDSU
+Benchmark iteration #1 for workload #1; DSU SeveralDSU
+Benchmark iteration #2 for workload #1; DSU SeveralDSU
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/squashing
+Usual: 2934187.943+-143654.705
+SeveralDSU: 3599140.832+-70385.851
+ParallelUnions/halfing: 3971261.302+-214056.722
+Adaptive/halfing: 3858716.318+-257909.747
+AdaptiveLocks/halfing: 3853260.336+-113320.824
+LazyUnions/halfing: 3968346.076+-43508.988
+ParallelUnions/squashing: 3913954.655+-304469.338
+Adaptive/squashing: 3890057.682+-128268.187
+AdaptiveLocks/squashing: 3837892.647+-93494.443
+LazyUnions/squashing: 3929394.484+-68573.338
+Preparing workload #0
+Warmup iteration for workload #0; DSU Usual
+Benchmark iteration #0 for workload #0; DSU Usual
+Benchmark iteration #1 for workload #0; DSU Usual
+Benchmark iteration #2 for workload #0; DSU Usual
+Warmup iteration for workload #0; DSU SeveralDSU
+Benchmark iteration #0 for workload #0; DSU SeveralDSU
+Benchmark iteration #1 for workload #0; DSU SeveralDSU
+Benchmark iteration #2 for workload #0; DSU SeveralDSU
+Warmup iteration for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/halfing
+Warmup iteration for workload #0; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #0; DSU Adaptive/halfing
+Warmup iteration for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/halfing
+Warmup iteration for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/halfing
+Warmup iteration for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/squashing
+Warmup iteration for workload #0; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #0; DSU Adaptive/squashing
+Warmup iteration for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/squashing
+Warmup iteration for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/squashing
+Preparing workload #1
+Benchmark iteration #0 for workload #1; DSU Usual
+Benchmark iteration #1 for workload #1; DSU Usual
+Benchmark iteration #2 for workload #1; DSU Usual
+Benchmark iteration #0 for workload #1; DSU SeveralDSU
+Benchmark iteration #1 for workload #1; DSU SeveralDSU
+Benchmark iteration #2 for workload #1; DSU SeveralDSU
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/squashing
+Usual: 4300205.941+-258326.505
+SeveralDSU: 4512383.938+-58225.151
+ParallelUnions/halfing: 4715049.618+-46219.666
+Adaptive/halfing: 4399522.520+-32668.335
+AdaptiveLocks/halfing: 4334044.836+-37196.219
+LazyUnions/halfing: 4450990.211+-30939.689
+ParallelUnions/squashing: 4622036.128+-102627.822
+Adaptive/squashing: 4369842.133+-55352.580
+AdaptiveLocks/squashing: 4332286.720+-41260.055
+LazyUnions/squashing: 4459266.884+-31609.195
+Preparing workload #0
+Warmup iteration for workload #0; DSU Usual
+Benchmark iteration #0 for workload #0; DSU Usual
+Benchmark iteration #1 for workload #0; DSU Usual
+Benchmark iteration #2 for workload #0; DSU Usual
+Warmup iteration for workload #0; DSU SeveralDSU
+Benchmark iteration #0 for workload #0; DSU SeveralDSU
+Benchmark iteration #1 for workload #0; DSU SeveralDSU
+Benchmark iteration #2 for workload #0; DSU SeveralDSU
+Warmup iteration for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/halfing
+Warmup iteration for workload #0; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #0; DSU Adaptive/halfing
+Warmup iteration for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/halfing
+Warmup iteration for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/halfing
+Warmup iteration for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/squashing
+Warmup iteration for workload #0; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #0; DSU Adaptive/squashing
+Warmup iteration for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/squashing
+Warmup iteration for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/squashing
+Preparing workload #1
+Benchmark iteration #0 for workload #1; DSU Usual
+Benchmark iteration #1 for workload #1; DSU Usual
+Benchmark iteration #2 for workload #1; DSU Usual
+Benchmark iteration #0 for workload #1; DSU SeveralDSU
+Benchmark iteration #1 for workload #1; DSU SeveralDSU
+Benchmark iteration #2 for workload #1; DSU SeveralDSU
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/squashing
+Usual: 4903338.357+-27810.539
+SeveralDSU: 4915460.952+-23294.487
+ParallelUnions/halfing: 5073708.151+-19660.178
+Adaptive/halfing: 4573523.134+-32800.164
+AdaptiveLocks/halfing: 4545798.678+-36636.048
+LazyUnions/halfing: 4643836.186+-18485.704
+ParallelUnions/squashing: 5072914.964+-19431.432
+Adaptive/squashing: 4589570.542+-39197.800
+AdaptiveLocks/squashing: 4548925.609+-34550.226
+LazyUnions/squashing: 4628585.639+-22335.034
+Preparing workload #0
+Warmup iteration for workload #0; DSU Usual
+Benchmark iteration #0 for workload #0; DSU Usual
+Benchmark iteration #1 for workload #0; DSU Usual
+Benchmark iteration #2 for workload #0; DSU Usual
+Warmup iteration for workload #0; DSU SeveralDSU
+Benchmark iteration #0 for workload #0; DSU SeveralDSU
+Benchmark iteration #1 for workload #0; DSU SeveralDSU
+Benchmark iteration #2 for workload #0; DSU SeveralDSU
+Warmup iteration for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/halfing
+Warmup iteration for workload #0; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #0; DSU Adaptive/halfing
+Warmup iteration for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/halfing
+Warmup iteration for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/halfing
+Warmup iteration for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/squashing
+Warmup iteration for workload #0; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #0; DSU Adaptive/squashing
+Warmup iteration for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/squashing
+Warmup iteration for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/squashing
+Preparing workload #1
+Benchmark iteration #0 for workload #1; DSU Usual
+Benchmark iteration #1 for workload #1; DSU Usual
+Benchmark iteration #2 for workload #1; DSU Usual
+Benchmark iteration #0 for workload #1; DSU SeveralDSU
+Benchmark iteration #1 for workload #1; DSU SeveralDSU
+Benchmark iteration #2 for workload #1; DSU SeveralDSU
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/squashing
+Usual: 3301245.665+-108321.594
+SeveralDSU: 3448716.128+-43663.725
+ParallelUnions/halfing: 3803987.428+-185599.571
+Adaptive/halfing: 3608848.879+-127181.644
+AdaptiveLocks/halfing: 3509817.648+-130817.039
+LazyUnions/halfing: 3681667.408+-97421.443
+ParallelUnions/squashing: 3500344.143+-166785.399
+Adaptive/squashing: 3567546.641+-119041.217
+AdaptiveLocks/squashing: 3465967.561+-155450.489
+LazyUnions/squashing: 3703107.223+-99479.811
+Preparing workload #0
+Warmup iteration for workload #0; DSU Usual
+Benchmark iteration #0 for workload #0; DSU Usual
+Benchmark iteration #1 for workload #0; DSU Usual
+Benchmark iteration #2 for workload #0; DSU Usual
+Warmup iteration for workload #0; DSU SeveralDSU
+Benchmark iteration #0 for workload #0; DSU SeveralDSU
+Benchmark iteration #1 for workload #0; DSU SeveralDSU
+Benchmark iteration #2 for workload #0; DSU SeveralDSU
+Warmup iteration for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/halfing
+Warmup iteration for workload #0; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #0; DSU Adaptive/halfing
+Warmup iteration for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/halfing
+Warmup iteration for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/halfing
+Warmup iteration for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/squashing
+Warmup iteration for workload #0; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #0; DSU Adaptive/squashing
+Warmup iteration for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/squashing
+Warmup iteration for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/squashing
+Preparing workload #1
+Benchmark iteration #0 for workload #1; DSU Usual
+Benchmark iteration #1 for workload #1; DSU Usual
+Benchmark iteration #2 for workload #1; DSU Usual
+Benchmark iteration #0 for workload #1; DSU SeveralDSU
+Benchmark iteration #1 for workload #1; DSU SeveralDSU
+Benchmark iteration #2 for workload #1; DSU SeveralDSU
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/squashing
+Usual: 4394809.863+-145560.613
+SeveralDSU: 4512503.139+-52720.551
+ParallelUnions/halfing: 4692527.260+-65086.055
+Adaptive/halfing: 4317064.389+-43385.519
+AdaptiveLocks/halfing: 4269387.421+-38576.334
+LazyUnions/halfing: 4391810.957+-31258.216
+ParallelUnions/squashing: 4622912.253+-110291.907
+Adaptive/squashing: 4304418.966+-49804.870
+AdaptiveLocks/squashing: 4256464.707+-33738.470
+LazyUnions/squashing: 4376442.496+-34639.286
+Preparing workload #0
+Warmup iteration for workload #0; DSU Usual
+Benchmark iteration #0 for workload #0; DSU Usual
+Benchmark iteration #1 for workload #0; DSU Usual
+Benchmark iteration #2 for workload #0; DSU Usual
+Warmup iteration for workload #0; DSU SeveralDSU
+Benchmark iteration #0 for workload #0; DSU SeveralDSU
+Benchmark iteration #1 for workload #0; DSU SeveralDSU
+Benchmark iteration #2 for workload #0; DSU SeveralDSU
+Warmup iteration for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/halfing
+Warmup iteration for workload #0; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #0; DSU Adaptive/halfing
+Warmup iteration for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/halfing
+Warmup iteration for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/halfing
+Warmup iteration for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/squashing
+Warmup iteration for workload #0; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #0; DSU Adaptive/squashing
+Warmup iteration for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/squashing
+Warmup iteration for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/squashing
+Preparing workload #1
+Benchmark iteration #0 for workload #1; DSU Usual
+Benchmark iteration #1 for workload #1; DSU Usual
+Benchmark iteration #2 for workload #1; DSU Usual
+Benchmark iteration #0 for workload #1; DSU SeveralDSU
+Benchmark iteration #1 for workload #1; DSU SeveralDSU
+Benchmark iteration #2 for workload #1; DSU SeveralDSU
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/squashing
+Usual: 4864961.991+-43883.904
+SeveralDSU: 4868665.977+-31716.794
+ParallelUnions/halfing: 4949311.417+-28477.713
+Adaptive/halfing: 4483269.970+-23932.295
+AdaptiveLocks/halfing: 4415811.633+-27977.222
+LazyUnions/halfing: 4564291.102+-38467.745
+ParallelUnions/squashing: 4895644.611+-31793.976
+Adaptive/squashing: 4468174.436+-32752.275
+AdaptiveLocks/squashing: 4447806.078+-24592.505
+LazyUnions/squashing: 4564413.169+-40107.808
+Preparing workload #0
+Warmup iteration for workload #0; DSU Usual
+Benchmark iteration #0 for workload #0; DSU Usual
+Benchmark iteration #1 for workload #0; DSU Usual
+Benchmark iteration #2 for workload #0; DSU Usual
+Warmup iteration for workload #0; DSU SeveralDSU
+Benchmark iteration #0 for workload #0; DSU SeveralDSU
+Benchmark iteration #1 for workload #0; DSU SeveralDSU
+Benchmark iteration #2 for workload #0; DSU SeveralDSU
+Warmup iteration for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/halfing
+Warmup iteration for workload #0; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #0; DSU Adaptive/halfing
+Warmup iteration for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/halfing
+Warmup iteration for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/halfing
+Warmup iteration for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/squashing
+Warmup iteration for workload #0; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #0; DSU Adaptive/squashing
+Warmup iteration for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/squashing
+Warmup iteration for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/squashing
+Preparing workload #1
+Benchmark iteration #0 for workload #1; DSU Usual
+Benchmark iteration #1 for workload #1; DSU Usual
+Benchmark iteration #2 for workload #1; DSU Usual
+Benchmark iteration #0 for workload #1; DSU SeveralDSU
+Benchmark iteration #1 for workload #1; DSU SeveralDSU
+Benchmark iteration #2 for workload #1; DSU SeveralDSU
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/squashing
+Usual: 3564316.689+-325582.669
+SeveralDSU: 3869986.997+-44476.410
+ParallelUnions/halfing: 4196820.617+-189380.754
+Adaptive/halfing: 4068004.172+-85764.156
+AdaptiveLocks/halfing: 4012160.598+-81769.552
+LazyUnions/halfing: 4130756.743+-58082.189
+ParallelUnions/squashing: 4165567.044+-260140.199
+Adaptive/squashing: 4063271.087+-100835.056
+AdaptiveLocks/squashing: 4000388.184+-95932.603
+LazyUnions/squashing: 4103169.655+-61669.327
+Preparing workload #0
+Warmup iteration for workload #0; DSU Usual
+Benchmark iteration #0 for workload #0; DSU Usual
+Benchmark iteration #1 for workload #0; DSU Usual
+Benchmark iteration #2 for workload #0; DSU Usual
+Warmup iteration for workload #0; DSU SeveralDSU
+Benchmark iteration #0 for workload #0; DSU SeveralDSU
+Benchmark iteration #1 for workload #0; DSU SeveralDSU
+Benchmark iteration #2 for workload #0; DSU SeveralDSU
+Warmup iteration for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/halfing
+Warmup iteration for workload #0; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #0; DSU Adaptive/halfing
+Warmup iteration for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/halfing
+Warmup iteration for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/halfing
+Warmup iteration for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/squashing
+Warmup iteration for workload #0; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #0; DSU Adaptive/squashing
+Warmup iteration for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/squashing
+Warmup iteration for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/squashing
+Preparing workload #1
+Benchmark iteration #0 for workload #1; DSU Usual
+Benchmark iteration #1 for workload #1; DSU Usual
+Benchmark iteration #2 for workload #1; DSU Usual
+Benchmark iteration #0 for workload #1; DSU SeveralDSU
+Benchmark iteration #1 for workload #1; DSU SeveralDSU
+Benchmark iteration #2 for workload #1; DSU SeveralDSU
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/squashing
+Usual: 4608119.702+-138520.241
+SeveralDSU: 4656557.198+-62103.729
+ParallelUnions/halfing: 4859304.810+-79236.114
+Adaptive/halfing: 4458021.053+-56616.210
+AdaptiveLocks/halfing: 4416915.275+-58700.788
+LazyUnions/halfing: 4525767.368+-26263.436
+ParallelUnions/squashing: 4828906.799+-120199.886
+Adaptive/squashing: 4459250.952+-64404.444
+AdaptiveLocks/squashing: 4429052.059+-57834.367
+LazyUnions/squashing: 4527749.336+-29821.967
+Preparing workload #0
+Warmup iteration for workload #0; DSU Usual
+Benchmark iteration #0 for workload #0; DSU Usual
+Benchmark iteration #1 for workload #0; DSU Usual
+Benchmark iteration #2 for workload #0; DSU Usual
+Warmup iteration for workload #0; DSU SeveralDSU
+Benchmark iteration #0 for workload #0; DSU SeveralDSU
+Benchmark iteration #1 for workload #0; DSU SeveralDSU
+Benchmark iteration #2 for workload #0; DSU SeveralDSU
+Warmup iteration for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/halfing
+Warmup iteration for workload #0; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #0; DSU Adaptive/halfing
+Warmup iteration for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/halfing
+Warmup iteration for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/halfing
+Warmup iteration for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/squashing
+Warmup iteration for workload #0; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #0; DSU Adaptive/squashing
+Warmup iteration for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/squashing
+Warmup iteration for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/squashing
+Preparing workload #1
+Benchmark iteration #0 for workload #1; DSU Usual
+Benchmark iteration #1 for workload #1; DSU Usual
+Benchmark iteration #2 for workload #1; DSU Usual
+Benchmark iteration #0 for workload #1; DSU SeveralDSU
+Benchmark iteration #1 for workload #1; DSU SeveralDSU
+Benchmark iteration #2 for workload #1; DSU SeveralDSU
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/squashing
+Usual: 4982718.934+-43785.601
+SeveralDSU: 4979081.365+-34412.218
+ParallelUnions/halfing: 5054694.656+-37271.677
+Adaptive/halfing: 4594733.637+-50044.582
+AdaptiveLocks/halfing: 4563302.298+-48490.533
+LazyUnions/halfing: 4664522.991+-30252.142
+ParallelUnions/squashing: 5047872.708+-37221.116
+Adaptive/squashing: 4599946.288+-53323.726
+AdaptiveLocks/squashing: 4561254.503+-43645.233
+LazyUnions/squashing: 4647176.440+-31976.982
+Preparing workload #0
+Warmup iteration for workload #0; DSU Usual
+Benchmark iteration #0 for workload #0; DSU Usual
+Benchmark iteration #1 for workload #0; DSU Usual
+Benchmark iteration #2 for workload #0; DSU Usual
+Warmup iteration for workload #0; DSU SeveralDSU
+Benchmark iteration #0 for workload #0; DSU SeveralDSU
+Benchmark iteration #1 for workload #0; DSU SeveralDSU
+Benchmark iteration #2 for workload #0; DSU SeveralDSU
+Warmup iteration for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/halfing
+Warmup iteration for workload #0; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #0; DSU Adaptive/halfing
+Warmup iteration for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/halfing
+Warmup iteration for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/halfing
+Warmup iteration for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/squashing
+Warmup iteration for workload #0; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #0; DSU Adaptive/squashing
+Warmup iteration for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/squashing
+Warmup iteration for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/squashing
+Preparing workload #1
+Benchmark iteration #0 for workload #1; DSU Usual
+Benchmark iteration #1 for workload #1; DSU Usual
+Benchmark iteration #2 for workload #1; DSU Usual
+Benchmark iteration #0 for workload #1; DSU SeveralDSU
+Benchmark iteration #1 for workload #1; DSU SeveralDSU
+Benchmark iteration #2 for workload #1; DSU SeveralDSU
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/squashing
+Usual: 3395427.259+-179697.810
+SeveralDSU: 3761223.629+-141211.288
+ParallelUnions/halfing: 4238973.273+-87135.939
+Adaptive/halfing: 3913142.637+-63655.763
+AdaptiveLocks/halfing: 3848114.552+-58119.072
+LazyUnions/halfing: 4007446.052+-39416.294
+ParallelUnions/squashing: 4187905.411+-161452.552
+Adaptive/squashing: 3909371.458+-72856.426
+AdaptiveLocks/squashing: 3847926.698+-75379.004
+LazyUnions/squashing: 4018543.151+-40627.712
+Preparing workload #0
+Warmup iteration for workload #0; DSU Usual
+Benchmark iteration #0 for workload #0; DSU Usual
+Benchmark iteration #1 for workload #0; DSU Usual
+Benchmark iteration #2 for workload #0; DSU Usual
+Warmup iteration for workload #0; DSU SeveralDSU
+Benchmark iteration #0 for workload #0; DSU SeveralDSU
+Benchmark iteration #1 for workload #0; DSU SeveralDSU
+Benchmark iteration #2 for workload #0; DSU SeveralDSU
+Warmup iteration for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/halfing
+Warmup iteration for workload #0; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #0; DSU Adaptive/halfing
+Warmup iteration for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/halfing
+Warmup iteration for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/halfing
+Warmup iteration for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/squashing
+Warmup iteration for workload #0; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #0; DSU Adaptive/squashing
+Warmup iteration for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/squashing
+Warmup iteration for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/squashing
+Preparing workload #1
+Benchmark iteration #0 for workload #1; DSU Usual
+Benchmark iteration #1 for workload #1; DSU Usual
+Benchmark iteration #2 for workload #1; DSU Usual
+Benchmark iteration #0 for workload #1; DSU SeveralDSU
+Benchmark iteration #1 for workload #1; DSU SeveralDSU
+Benchmark iteration #2 for workload #1; DSU SeveralDSU
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/squashing
+Usual: 4545749.237+-87469.183
+SeveralDSU: 4716353.055+-39122.561
+ParallelUnions/halfing: 4877097.492+-29337.634
+Adaptive/halfing: 4408718.635+-34189.082
+AdaptiveLocks/halfing: 4363073.447+-35323.882
+LazyUnions/halfing: 4490010.704+-20680.569
+ParallelUnions/squashing: 4865328.680+-31272.230
+Adaptive/squashing: 4394011.880+-47862.686
+AdaptiveLocks/squashing: 4356694.073+-32545.217
+LazyUnions/squashing: 4478535.216+-20864.929
+Preparing workload #0
+Warmup iteration for workload #0; DSU Usual
+Benchmark iteration #0 for workload #0; DSU Usual
+Benchmark iteration #1 for workload #0; DSU Usual
+Benchmark iteration #2 for workload #0; DSU Usual
+Warmup iteration for workload #0; DSU SeveralDSU
+Benchmark iteration #0 for workload #0; DSU SeveralDSU
+Benchmark iteration #1 for workload #0; DSU SeveralDSU
+Benchmark iteration #2 for workload #0; DSU SeveralDSU
+Warmup iteration for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/halfing
+Warmup iteration for workload #0; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #0; DSU Adaptive/halfing
+Warmup iteration for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/halfing
+Warmup iteration for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/halfing
+Warmup iteration for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/squashing
+Warmup iteration for workload #0; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #0; DSU Adaptive/squashing
+Warmup iteration for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/squashing
+Warmup iteration for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/squashing
+Preparing workload #1
+Benchmark iteration #0 for workload #1; DSU Usual
+Benchmark iteration #1 for workload #1; DSU Usual
+Benchmark iteration #2 for workload #1; DSU Usual
+Benchmark iteration #0 for workload #1; DSU SeveralDSU
+Benchmark iteration #1 for workload #1; DSU SeveralDSU
+Benchmark iteration #2 for workload #1; DSU SeveralDSU
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/squashing
+Usual: 4885024.628+-37588.284
+SeveralDSU: 4897615.734+-32095.336
+ParallelUnions/halfing: 5047263.135+-37765.924
+Adaptive/halfing: 4521545.070+-32802.481
+AdaptiveLocks/halfing: 4493006.091+-37353.493
+LazyUnions/halfing: 4603684.810+-33950.244
+ParallelUnions/squashing: 5041910.040+-39974.702
+Adaptive/squashing: 4545454.840+-38467.804
+AdaptiveLocks/squashing: 4504602.984+-31547.874
+LazyUnions/squashing: 4619807.393+-33493.671
+Preparing workload #0
+Warmup iteration for workload #0; DSU Usual
+Benchmark iteration #0 for workload #0; DSU Usual
+Benchmark iteration #1 for workload #0; DSU Usual
+Benchmark iteration #2 for workload #0; DSU Usual
+Warmup iteration for workload #0; DSU SeveralDSU
+Benchmark iteration #0 for workload #0; DSU SeveralDSU
+Benchmark iteration #1 for workload #0; DSU SeveralDSU
+Benchmark iteration #2 for workload #0; DSU SeveralDSU
+Warmup iteration for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/halfing
+Warmup iteration for workload #0; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #0; DSU Adaptive/halfing
+Warmup iteration for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/halfing
+Warmup iteration for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/halfing
+Warmup iteration for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/squashing
+Warmup iteration for workload #0; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #0; DSU Adaptive/squashing
+Warmup iteration for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/squashing
+Warmup iteration for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/squashing
+Preparing workload #1
+Benchmark iteration #0 for workload #1; DSU Usual
+Benchmark iteration #1 for workload #1; DSU Usual
+Benchmark iteration #2 for workload #1; DSU Usual
+Benchmark iteration #0 for workload #1; DSU SeveralDSU
+Benchmark iteration #1 for workload #1; DSU SeveralDSU
+Benchmark iteration #2 for workload #1; DSU SeveralDSU
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/squashing
+Usual: 4162245.051+-105839.663
+SeveralDSU: 4285720.276+-69972.543
+ParallelUnions/halfing: 4698946.975+-43633.467
+Adaptive/halfing: 4288250.419+-72139.200
+AdaptiveLocks/halfing: 4242335.339+-71524.488
+LazyUnions/halfing: 4374702.919+-31899.949
+ParallelUnions/squashing: 4717191.280+-44572.500
+Adaptive/squashing: 4312837.266+-71785.104
+AdaptiveLocks/squashing: 4239581.908+-60391.821
+LazyUnions/squashing: 4360338.952+-28805.541
+Preparing workload #0
+Warmup iteration for workload #0; DSU Usual
+Benchmark iteration #0 for workload #0; DSU Usual
+Benchmark iteration #1 for workload #0; DSU Usual
+Benchmark iteration #2 for workload #0; DSU Usual
+Warmup iteration for workload #0; DSU SeveralDSU
+Benchmark iteration #0 for workload #0; DSU SeveralDSU
+Benchmark iteration #1 for workload #0; DSU SeveralDSU
+Benchmark iteration #2 for workload #0; DSU SeveralDSU
+Warmup iteration for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/halfing
+Warmup iteration for workload #0; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #0; DSU Adaptive/halfing
+Warmup iteration for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/halfing
+Warmup iteration for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/halfing
+Warmup iteration for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/squashing
+Warmup iteration for workload #0; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #0; DSU Adaptive/squashing
+Warmup iteration for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/squashing
+Warmup iteration for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/squashing
+Preparing workload #1
+Benchmark iteration #0 for workload #1; DSU Usual
+Benchmark iteration #1 for workload #1; DSU Usual
+Benchmark iteration #2 for workload #1; DSU Usual
+Benchmark iteration #0 for workload #1; DSU SeveralDSU
+Benchmark iteration #1 for workload #1; DSU SeveralDSU
+Benchmark iteration #2 for workload #1; DSU SeveralDSU
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/squashing
+Usual: 4917358.332+-27223.860
+SeveralDSU: 4817238.353+-31960.409
+ParallelUnions/halfing: 5000577.866+-31950.499
+Adaptive/halfing: 4547407.751+-50197.861
+AdaptiveLocks/halfing: 4489649.579+-61877.930
+LazyUnions/halfing: 4618205.456+-30024.370
+ParallelUnions/squashing: 5013276.219+-31226.613
+Adaptive/squashing: 4559593.585+-55865.763
+AdaptiveLocks/squashing: 4511501.322+-47732.160
+LazyUnions/squashing: 4631511.794+-21633.010
+Preparing workload #0
+Warmup iteration for workload #0; DSU Usual
+Benchmark iteration #0 for workload #0; DSU Usual
+Benchmark iteration #1 for workload #0; DSU Usual
+Benchmark iteration #2 for workload #0; DSU Usual
+Warmup iteration for workload #0; DSU SeveralDSU
+Benchmark iteration #0 for workload #0; DSU SeveralDSU
+Benchmark iteration #1 for workload #0; DSU SeveralDSU
+Benchmark iteration #2 for workload #0; DSU SeveralDSU
+Warmup iteration for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/halfing
+Warmup iteration for workload #0; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #0; DSU Adaptive/halfing
+Warmup iteration for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/halfing
+Warmup iteration for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/halfing
+Warmup iteration for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/squashing
+Warmup iteration for workload #0; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #0; DSU Adaptive/squashing
+Warmup iteration for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/squashing
+Warmup iteration for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/squashing
+Preparing workload #1
+Benchmark iteration #0 for workload #1; DSU Usual
+Benchmark iteration #1 for workload #1; DSU Usual
+Benchmark iteration #2 for workload #1; DSU Usual
+Benchmark iteration #0 for workload #1; DSU SeveralDSU
+Benchmark iteration #1 for workload #1; DSU SeveralDSU
+Benchmark iteration #2 for workload #1; DSU SeveralDSU
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/squashing
+Usual: 5083171.406+-24698.785
+SeveralDSU: 5005046.734+-36356.245
+ParallelUnions/halfing: 5134920.658+-37127.410
+Adaptive/halfing: 4631734.508+-49655.646
+AdaptiveLocks/halfing: 4603008.754+-43251.703
+LazyUnions/halfing: 4684063.663+-25784.122
+ParallelUnions/squashing: 5130170.984+-26248.028
+Adaptive/squashing: 4644636.621+-48583.665
+AdaptiveLocks/squashing: 4606194.974+-38467.703
+LazyUnions/squashing: 4669076.352+-33168.825
+Preparing workload #0
+Warmup iteration for workload #0; DSU Usual
+Benchmark iteration #0 for workload #0; DSU Usual
+Benchmark iteration #1 for workload #0; DSU Usual
+Benchmark iteration #2 for workload #0; DSU Usual
+Warmup iteration for workload #0; DSU SeveralDSU
+Benchmark iteration #0 for workload #0; DSU SeveralDSU
+Benchmark iteration #1 for workload #0; DSU SeveralDSU
+Benchmark iteration #2 for workload #0; DSU SeveralDSU
+Warmup iteration for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/halfing
+Warmup iteration for workload #0; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #0; DSU Adaptive/halfing
+Warmup iteration for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/halfing
+Warmup iteration for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/halfing
+Warmup iteration for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/squashing
+Warmup iteration for workload #0; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #0; DSU Adaptive/squashing
+Warmup iteration for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/squashing
+Warmup iteration for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/squashing
+Preparing workload #1
+Benchmark iteration #0 for workload #1; DSU Usual
+Benchmark iteration #1 for workload #1; DSU Usual
+Benchmark iteration #2 for workload #1; DSU Usual
+Benchmark iteration #0 for workload #1; DSU SeveralDSU
+Benchmark iteration #1 for workload #1; DSU SeveralDSU
+Benchmark iteration #2 for workload #1; DSU SeveralDSU
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/squashing
+Usual: 3918721.493+-189364.675
+SeveralDSU: 4309198.688+-100833.892
+ParallelUnions/halfing: 4559843.634+-52732.217
+Adaptive/halfing: 4118507.214+-59760.558
+AdaptiveLocks/halfing: 4056782.456+-59962.365
+LazyUnions/halfing: 4254874.372+-29920.618
+ParallelUnions/squashing: 4526246.008+-61689.955
+Adaptive/squashing: 4127971.150+-66259.135
+AdaptiveLocks/squashing: 4073058.432+-61971.841
+LazyUnions/squashing: 4267633.159+-25606.354
+Preparing workload #0
+Warmup iteration for workload #0; DSU Usual
+Benchmark iteration #0 for workload #0; DSU Usual
+Benchmark iteration #1 for workload #0; DSU Usual
+Benchmark iteration #2 for workload #0; DSU Usual
+Warmup iteration for workload #0; DSU SeveralDSU
+Benchmark iteration #0 for workload #0; DSU SeveralDSU
+Benchmark iteration #1 for workload #0; DSU SeveralDSU
+Benchmark iteration #2 for workload #0; DSU SeveralDSU
+Warmup iteration for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/halfing
+Warmup iteration for workload #0; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #0; DSU Adaptive/halfing
+Warmup iteration for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/halfing
+Warmup iteration for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/halfing
+Warmup iteration for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/squashing
+Warmup iteration for workload #0; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #0; DSU Adaptive/squashing
+Warmup iteration for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/squashing
+Warmup iteration for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/squashing
+Preparing workload #1
+Benchmark iteration #0 for workload #1; DSU Usual
+Benchmark iteration #1 for workload #1; DSU Usual
+Benchmark iteration #2 for workload #1; DSU Usual
+Benchmark iteration #0 for workload #1; DSU SeveralDSU
+Benchmark iteration #1 for workload #1; DSU SeveralDSU
+Benchmark iteration #2 for workload #1; DSU SeveralDSU
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/squashing
+Usual: 4824865.079+-63094.075
+SeveralDSU: 4810732.333+-48744.081
+ParallelUnions/halfing: 4972248.251+-34378.762
+Adaptive/halfing: 4504608.695+-38847.019
+AdaptiveLocks/halfing: 4455963.750+-41436.370
+LazyUnions/halfing: 4583053.423+-23350.455
+ParallelUnions/squashing: 4993472.062+-41729.607
+Adaptive/squashing: 4500713.909+-49669.258
+AdaptiveLocks/squashing: 4460739.289+-38821.236
+LazyUnions/squashing: 4557096.061+-21685.282
+Preparing workload #0
+Warmup iteration for workload #0; DSU Usual
+Benchmark iteration #0 for workload #0; DSU Usual
+Benchmark iteration #1 for workload #0; DSU Usual
+Benchmark iteration #2 for workload #0; DSU Usual
+Warmup iteration for workload #0; DSU SeveralDSU
+Benchmark iteration #0 for workload #0; DSU SeveralDSU
+Benchmark iteration #1 for workload #0; DSU SeveralDSU
+Benchmark iteration #2 for workload #0; DSU SeveralDSU
+Warmup iteration for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/halfing
+Warmup iteration for workload #0; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #0; DSU Adaptive/halfing
+Warmup iteration for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/halfing
+Warmup iteration for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/halfing
+Warmup iteration for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/squashing
+Warmup iteration for workload #0; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #0; DSU Adaptive/squashing
+Warmup iteration for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/squashing
+Warmup iteration for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/squashing
+Preparing workload #1
+Benchmark iteration #0 for workload #1; DSU Usual
+Benchmark iteration #1 for workload #1; DSU Usual
+Benchmark iteration #2 for workload #1; DSU Usual
+Benchmark iteration #0 for workload #1; DSU SeveralDSU
+Benchmark iteration #1 for workload #1; DSU SeveralDSU
+Benchmark iteration #2 for workload #1; DSU SeveralDSU
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/squashing
+Usual: 5022898.960+-32552.282
+SeveralDSU: 4970472.392+-42431.717
+ParallelUnions/halfing: 5039849.439+-30731.502
+Adaptive/halfing: 4581921.018+-48913.715
+AdaptiveLocks/halfing: 4554151.128+-32493.602
+LazyUnions/halfing: 4635208.555+-29050.590
+ParallelUnions/squashing: 5071727.160+-33887.018
+Adaptive/squashing: 4604080.341+-33049.686
+AdaptiveLocks/squashing: 4560928.384+-27294.279
+LazyUnions/squashing: 4653397.165+-31130.438
+Preparing workload #0
+Warmup iteration for workload #0; DSU Usual
+Benchmark iteration #0 for workload #0; DSU Usual
+Benchmark iteration #1 for workload #0; DSU Usual
+Benchmark iteration #2 for workload #0; DSU Usual
+Warmup iteration for workload #0; DSU SeveralDSU
+Benchmark iteration #0 for workload #0; DSU SeveralDSU
+Benchmark iteration #1 for workload #0; DSU SeveralDSU
+Benchmark iteration #2 for workload #0; DSU SeveralDSU
+Warmup iteration for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/halfing
+Warmup iteration for workload #0; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #0; DSU Adaptive/halfing
+Warmup iteration for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/halfing
+Warmup iteration for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/halfing
+Warmup iteration for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/squashing
+Warmup iteration for workload #0; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #0; DSU Adaptive/squashing
+Warmup iteration for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/squashing
+Warmup iteration for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/squashing
+Preparing workload #1
+Benchmark iteration #0 for workload #1; DSU Usual
+Benchmark iteration #1 for workload #1; DSU Usual
+Benchmark iteration #2 for workload #1; DSU Usual
+Benchmark iteration #0 for workload #1; DSU SeveralDSU
+Benchmark iteration #1 for workload #1; DSU SeveralDSU
+Benchmark iteration #2 for workload #1; DSU SeveralDSU
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/squashing
+Usual: 4554574.033+-66681.642
+SeveralDSU: 4678736.413+-24342.288
+ParallelUnions/halfing: 4805950.432+-22358.502
+Adaptive/halfing: 4362767.639+-74049.204
+AdaptiveLocks/halfing: 4331110.768+-73253.246
+LazyUnions/halfing: 4468921.997+-20702.344
+ParallelUnions/squashing: 4799594.177+-25805.559
+Adaptive/squashing: 4376995.370+-72680.364
+AdaptiveLocks/squashing: 4335616.105+-60953.081
+LazyUnions/squashing: 4456211.637+-20652.115
+Preparing workload #0
+Warmup iteration for workload #0; DSU Usual
+Benchmark iteration #0 for workload #0; DSU Usual
+Benchmark iteration #1 for workload #0; DSU Usual
+Benchmark iteration #2 for workload #0; DSU Usual
+Warmup iteration for workload #0; DSU SeveralDSU
+Benchmark iteration #0 for workload #0; DSU SeveralDSU
+Benchmark iteration #1 for workload #0; DSU SeveralDSU
+Benchmark iteration #2 for workload #0; DSU SeveralDSU
+Warmup iteration for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/halfing
+Warmup iteration for workload #0; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #0; DSU Adaptive/halfing
+Warmup iteration for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/halfing
+Warmup iteration for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/halfing
+Warmup iteration for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/squashing
+Warmup iteration for workload #0; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #0; DSU Adaptive/squashing
+Warmup iteration for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/squashing
+Warmup iteration for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/squashing
+Preparing workload #1
+Benchmark iteration #0 for workload #1; DSU Usual
+Benchmark iteration #1 for workload #1; DSU Usual
+Benchmark iteration #2 for workload #1; DSU Usual
+Benchmark iteration #0 for workload #1; DSU SeveralDSU
+Benchmark iteration #1 for workload #1; DSU SeveralDSU
+Benchmark iteration #2 for workload #1; DSU SeveralDSU
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/squashing
+Usual: 4947601.958+-60420.713
+SeveralDSU: 4951287.642+-37710.679
+ParallelUnions/halfing: 5020732.186+-33452.112
+Adaptive/halfing: 4588966.104+-58503.441
+AdaptiveLocks/halfing: 4524121.387+-59185.621
+LazyUnions/halfing: 4667227.863+-28370.288
+ParallelUnions/squashing: 5056667.151+-37416.746
+Adaptive/squashing: 4598804.716+-61744.750
+AdaptiveLocks/squashing: 4555732.467+-53284.997
+LazyUnions/squashing: 4672305.971+-26128.687
+Preparing workload #0
+Warmup iteration for workload #0; DSU Usual
+Benchmark iteration #0 for workload #0; DSU Usual
+Benchmark iteration #1 for workload #0; DSU Usual
+Benchmark iteration #2 for workload #0; DSU Usual
+Warmup iteration for workload #0; DSU SeveralDSU
+Benchmark iteration #0 for workload #0; DSU SeveralDSU
+Benchmark iteration #1 for workload #0; DSU SeveralDSU
+Benchmark iteration #2 for workload #0; DSU SeveralDSU
+Warmup iteration for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/halfing
+Warmup iteration for workload #0; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #0; DSU Adaptive/halfing
+Warmup iteration for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/halfing
+Warmup iteration for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/halfing
+Warmup iteration for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/squashing
+Warmup iteration for workload #0; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #0; DSU Adaptive/squashing
+Warmup iteration for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/squashing
+Warmup iteration for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/squashing
+Preparing workload #1
+Benchmark iteration #0 for workload #1; DSU Usual
+Benchmark iteration #1 for workload #1; DSU Usual
+Benchmark iteration #2 for workload #1; DSU Usual
+Benchmark iteration #0 for workload #1; DSU SeveralDSU
+Benchmark iteration #1 for workload #1; DSU SeveralDSU
+Benchmark iteration #2 for workload #1; DSU SeveralDSU
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/squashing
+Usual: 5082344.474+-28422.122
+SeveralDSU: 5021366.188+-39294.724
+ParallelUnions/halfing: 5141945.846+-35447.699
+Adaptive/halfing: 4643340.197+-80600.240
+AdaptiveLocks/halfing: 4631188.069+-46236.823
+LazyUnions/halfing: 4692320.833+-23030.742
+ParallelUnions/squashing: 5151507.909+-29710.579
+Adaptive/squashing: 4659008.607+-51241.212
+AdaptiveLocks/squashing: 4634003.522+-41309.308
+LazyUnions/squashing: 4670934.074+-21198.361
+Preparing workload #0
+Warmup iteration for workload #0; DSU Usual
+Benchmark iteration #0 for workload #0; DSU Usual
+Benchmark iteration #1 for workload #0; DSU Usual
+Benchmark iteration #2 for workload #0; DSU Usual
+Warmup iteration for workload #0; DSU SeveralDSU
+Benchmark iteration #0 for workload #0; DSU SeveralDSU
+Benchmark iteration #1 for workload #0; DSU SeveralDSU
+Benchmark iteration #2 for workload #0; DSU SeveralDSU
+Warmup iteration for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/halfing
+Warmup iteration for workload #0; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #0; DSU Adaptive/halfing
+Warmup iteration for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/halfing
+Warmup iteration for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/halfing
+Warmup iteration for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/squashing
+Warmup iteration for workload #0; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #0; DSU Adaptive/squashing
+Warmup iteration for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/squashing
+Warmup iteration for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/squashing
+Preparing workload #1
+Benchmark iteration #0 for workload #1; DSU Usual
+Benchmark iteration #1 for workload #1; DSU Usual
+Benchmark iteration #2 for workload #1; DSU Usual
+Benchmark iteration #0 for workload #1; DSU SeveralDSU
+Benchmark iteration #1 for workload #1; DSU SeveralDSU
+Benchmark iteration #2 for workload #1; DSU SeveralDSU
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/squashing
+Usual: 4621583.725+-22149.231
+SeveralDSU: 4633288.585+-34762.905
+ParallelUnions/halfing: 4785802.766+-64528.979
+Adaptive/halfing: 4298497.529+-72181.907
+AdaptiveLocks/halfing: 4239774.076+-75467.941
+LazyUnions/halfing: 4419331.207+-41996.905
+ParallelUnions/squashing: 4812321.379+-72873.344
+Adaptive/squashing: 4286695.492+-79684.336
+AdaptiveLocks/squashing: 4265161.867+-68602.609
+LazyUnions/squashing: 4445877.495+-37177.960
+Preparing workload #0
+Warmup iteration for workload #0; DSU Usual
+Benchmark iteration #0 for workload #0; DSU Usual
+Benchmark iteration #1 for workload #0; DSU Usual
+Benchmark iteration #2 for workload #0; DSU Usual
+Warmup iteration for workload #0; DSU SeveralDSU
+Benchmark iteration #0 for workload #0; DSU SeveralDSU
+Benchmark iteration #1 for workload #0; DSU SeveralDSU
+Benchmark iteration #2 for workload #0; DSU SeveralDSU
+Warmup iteration for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/halfing
+Warmup iteration for workload #0; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #0; DSU Adaptive/halfing
+Warmup iteration for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/halfing
+Warmup iteration for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/halfing
+Warmup iteration for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/squashing
+Warmup iteration for workload #0; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #0; DSU Adaptive/squashing
+Warmup iteration for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/squashing
+Warmup iteration for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/squashing
+Preparing workload #1
+Benchmark iteration #0 for workload #1; DSU Usual
+Benchmark iteration #1 for workload #1; DSU Usual
+Benchmark iteration #2 for workload #1; DSU Usual
+Benchmark iteration #0 for workload #1; DSU SeveralDSU
+Benchmark iteration #1 for workload #1; DSU SeveralDSU
+Benchmark iteration #2 for workload #1; DSU SeveralDSU
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/squashing
+Usual: 4967933.417+-27608.464
+SeveralDSU: 4918061.652+-44187.332
+ParallelUnions/halfing: 5059984.126+-36251.926
+Adaptive/halfing: 4558511.534+-54879.236
+AdaptiveLocks/halfing: 4525383.971+-53521.413
+LazyUnions/halfing: 4648943.783+-26666.111
+ParallelUnions/squashing: 5070567.275+-37678.738
+Adaptive/squashing: 4567886.632+-58990.197
+AdaptiveLocks/squashing: 4514304.061+-53502.359
+LazyUnions/squashing: 4637930.195+-26138.746
+Preparing workload #0
+Warmup iteration for workload #0; DSU Usual
+Benchmark iteration #0 for workload #0; DSU Usual
+Benchmark iteration #1 for workload #0; DSU Usual
+Benchmark iteration #2 for workload #0; DSU Usual
+Warmup iteration for workload #0; DSU SeveralDSU
+Benchmark iteration #0 for workload #0; DSU SeveralDSU
+Benchmark iteration #1 for workload #0; DSU SeveralDSU
+Benchmark iteration #2 for workload #0; DSU SeveralDSU
+Warmup iteration for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/halfing
+Warmup iteration for workload #0; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #0; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #0; DSU Adaptive/halfing
+Warmup iteration for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/halfing
+Warmup iteration for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/halfing
+Warmup iteration for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #0; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #0; DSU ParallelUnions/squashing
+Warmup iteration for workload #0; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #0; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #0; DSU Adaptive/squashing
+Warmup iteration for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #0; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #0; DSU AdaptiveLocks/squashing
+Warmup iteration for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #0 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #0; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #0; DSU LazyUnions/squashing
+Preparing workload #1
+Benchmark iteration #0 for workload #1; DSU Usual
+Benchmark iteration #1 for workload #1; DSU Usual
+Benchmark iteration #2 for workload #1; DSU Usual
+Benchmark iteration #0 for workload #1; DSU SeveralDSU
+Benchmark iteration #1 for workload #1; DSU SeveralDSU
+Benchmark iteration #2 for workload #1; DSU SeveralDSU
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/halfing
+Benchmark iteration #0 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #1 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #2 for workload #1; DSU Adaptive/halfing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/halfing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/halfing
+Benchmark iteration #0 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #1 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #2 for workload #1; DSU ParallelUnions/squashing
+Benchmark iteration #0 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #1 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #2 for workload #1; DSU Adaptive/squashing
+Benchmark iteration #0 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #1 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #2 for workload #1; DSU AdaptiveLocks/squashing
+Benchmark iteration #0 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #1 for workload #1; DSU LazyUnions/squashing
+Benchmark iteration #2 for workload #1; DSU LazyUnions/squashing
+Usual: 5068267.203+-34204.101
+SeveralDSU: 5009620.970+-31602.191
+ParallelUnions/halfing: 5131350.599+-30338.677
+Adaptive/halfing: 4599510.984+-63186.160
+AdaptiveLocks/halfing: 4559271.201+-40605.531
+LazyUnions/halfing: 4647947.191+-25052.556
+ParallelUnions/squashing: 5123730.428+-27410.775
+Adaptive/squashing: 4640789.589+-41353.760
+AdaptiveLocks/squashing: 4585512.374+-35673.566
+LazyUnions/squashing: 4667358.510+-23262.020
