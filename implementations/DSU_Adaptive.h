@@ -178,17 +178,19 @@ public:
         }
         // v read must be performed unconditionally for consistency of the check before `return false` in the loop
         vDat = readDataUnsafe(getAnyDataOwnerId(vDat), v);
+        bool firstIter = true;
         while (true) {
             u = getDataParent(uDat);
             v = getDataParent(vDat);
             if (u == v) {
                 return true;
             }
-            if (getDataParent(readDataChecked(node, u)) == u) {
+            if (!firstIter && getDataParent(readDataChecked(node, u)) == u) {
                 return false;
             }
             uDat = find(u, node, EnableCompaction);
             vDat = find(v, node, EnableCompaction);
+            firstIter = false;
         }
     }
 
