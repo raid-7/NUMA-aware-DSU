@@ -18,7 +18,6 @@
 #include "implementations/SeveralDSU.h"
 
 #include "workloads/components_v2.hpp"
-#include "workloads/external.hpp"
 
 #include <CLI/App.hpp>
 #include <CLI/Formatter.hpp>
@@ -280,8 +279,7 @@ void RunStagedBenchmark(NUMAContext* ctx, CsvFile& out, const std::regex& filter
 
 int main(int argc, const char* argv[]) {
     std::vector<std::shared_ptr<WorkloadProvider>> wlProviders = {
-            std::make_shared<ComponentsRandomWorkloadV2>(),
-            std::make_shared<ExternalGraphWorkload>()
+            std::make_shared<ComponentsRandomWorkloadV2>()
     };
 
     CLI::App app("NUMA DSU Benchmark");

@@ -14,3 +14,18 @@ std::ostream& operator <<(std::ostream& stream, const Metrics& metrics) {
     }
     return stream;
 }
+
+
+Histogram operator +(const Histogram& a, const Histogram& b) {
+    Histogram res;
+    res += a;
+    res += b;
+    return res;
+}
+
+std::ostream& operator <<(std::ostream& stream, const Histogram& hist) {
+    for (auto value : hist.hist()) {
+        stream << value << " ";
+    }
+    return stream;
+}

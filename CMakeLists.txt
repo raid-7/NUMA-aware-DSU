@@ -35,6 +35,8 @@ target_link_libraries(dsuenv PUBLIC -lnuma CLI11::CLI11 Threads::Threads)
 
 add_executable(fancy_bench fancy.cpp)
 target_link_libraries(fancy_bench PRIVATE dsuenv)
+add_executable(fancy_bench_rg fancy_real_graph.cpp)
+target_link_libraries(fancy_bench PRIVATE dsuenv)
 
 add_executable(fancy_test fancy_test.cpp)
 target_link_libraries(fancy_test PRIVATE dsuenv gtest_main)

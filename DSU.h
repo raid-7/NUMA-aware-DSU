@@ -31,12 +31,20 @@ public:
     virtual ~DSU() = default;
 
     void Union(int u, int v) {
-        mUnionRequests.inc(1);
+        size_t beforeOpCNRead = mCrossNodeRead.get();
+        size_t beforeOpCNWrite = mCrossNodeWrite.get();
         DoUnion(u, v);
+        mHistCrossNodeRead.inc(mCrossNodeRead.get() - beforeOpCNRead);
+        mHistCrossNodeWrite.inc(mCrossNodeWrite.get() - beforeOpCNWrite);
+        mUnionRequests.inc(1);
     }
 
     bool SameSet(int u, int v) {
+        size_t beforeOpCNRead = mCrossNodeRead.get();
+        size_t beforeOpCNWrite = mCrossNodeWrite.get();
         bool r = DoSameSet(u, v);
+        mHistCrossNodeRead.inc(mCrossNodeRead.get() - beforeOpCNRead);
+        mHistCrossNodeWrite.inc(mCrossNodeWrite.get() - beforeOpCNWrite);
         if (r) {
             mSameSetRequestsTrue.inc(1);
         } else {
@@ -53,6 +61,9 @@ protected:
     MetricsCollector::Accessor mThisNodeReadSuccess = accessor("this_node_read_success");
     MetricsCollector::Accessor mThisNodeWrite = accessor("this_node_write");
     MetricsCollector::Accessor mGlobalDataAccess = accessor("global_data_read_write");
+
+    MetricsCollector::HistAccessor mHistCrossNodeRead = histogram("hist_cross_node_read", 1000);
+    MetricsCollector::HistAccessor mHistCrossNodeWrite = histogram("hist_cross_node_write", 1000);
 
 private:
     MetricsCollector::Accessor mSameSetRequestsTrue = accessor("same_set_requests_true");

@@ -13,8 +13,6 @@
 #include <memory>
 
 
-bool DSU::EnableMetrics = false;
-
 template <class DSU>
 class DSUTest : public ::testing::Test {
 public:
