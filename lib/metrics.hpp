@@ -140,6 +140,8 @@ public:
         }
 
         size_t get(int tid = NUMAContext::CurrentThreadId()) const {
+            if (!tlMetrics)
+                return 0;
             return tlMetrics[tid * METRIC_STRIDE];
         }
     };
