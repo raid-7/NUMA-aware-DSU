@@ -87,8 +87,10 @@ public:
                 numThreads
         );
         Ctx_->Join();
-        if (!ignoreMeasurements)
+        if (!ignoreMeasurements) {
             Metrics_[dsu].emplace_back(dsu->collectMetrics());
+            HistMetrics_[dsu].emplace_back(dsu->collectHistMetrics());
+        }
     }
 
     double ThreadWork(DSU* dsu, std::span<const Request> requests) {
@@ -118,6 +120,10 @@ public:
         return std::exchange(Metrics_[dsu], {});
     }
 
+    std::vector<HistMetrics> CollectRawHistMetricStats(DSU* dsu) {
+        return std::exchange(HistMetrics_[dsu], {});
+    }
+
 private:
     void ApplyRequests(DSU* dsu, std::span<const Request> requests, bool useAdditionalWork) const {
         for (const auto& request : requests) {
@@ -131,5 +137,6 @@ private:
     NUMAContext* Ctx_;
     std::map<DSU*, std::vector<double>> ThroughputResults_;
     std::map<DSU*, std::vector<Metrics>> Metrics_;
+    std::map<DSU*, std::vector<HistMetrics>> HistMetrics_;
     double AdditionalWork_ = 2.0;
 };

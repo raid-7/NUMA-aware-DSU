@@ -50,18 +50,24 @@ public:
         auto node = NUMAContext::CurrentThreadNode();
         // commented to match adaptive impls
         if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
+            mHistFindDepth.inc(1);
+            mHistFindDepth.inc(1);
             return;
         }
+
+        size_t uDepth = 0, vDepth = 0;
+
         auto u_p = u;
         auto v_p = v;
         while (true) {
-            u_p = find(u, node, true);
-            v_p = find(v, node, true);
+            u_p = find(u, node, true, uDepth);
+            v_p = find(v, node, true, vDepth);
             if (u_p == v_p) {
-                return;
+                break;
             }
             if (u_p < v_p) {
                 std::swap(u_p, v_p);
+                std::swap(uDepth, vDepth);
             }
             auto u_data = u_p * 2 + 1;
             if (u_data % 2 == 0) { // FIXME
@@ -89,38 +95,58 @@ public:
                 }
             }
         }
+
+        mHistFindDepth.inc(uDepth);
+        mHistFindDepth.inc(vDepth);
     }
 
     bool DoSameSet(int u, int v) override {
         int node = NUMAContext::CurrentThreadNode();
         if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
+            mHistFindDepth.inc(1);
+            mHistFindDepth.inc(1);
             return true;
         }
+
+        size_t uDepth = 0, vDepth = 0;
+        bool r;
+
         auto u_p = u;
         auto v_p = v;
         while (true) {
-            u_p = find(u_p, node, true);
-            v_p = find(v_p, node, true);
+            u_p = find(u_p, node, true, uDepth);
+            v_p = find(v_p, node, true, vDepth);
             if (u_p == v_p) {
-                return true;
+                r = true;
+                break;
             }
             mThisNodeRead.inc(1);
             if (getParent(node, u_p) == u_p) {
-                return false;
+                r = false;
+                break;
             }
         }
+
+        mHistFindDepth.inc(uDepth);
+        mHistFindDepth.inc(vDepth);
+        return r;
     }
 
     int Find(int u) override {
-        return find(u, NUMAContext::CurrentThreadNode(), true);
+        size_t depth = 0;
+        int r = find(u, NUMAContext::CurrentThreadNode(), true, depth);
+        mHistFindDepth.inc(depth);
+        return r;
     }
 
 private:
 
-    int find(int u, int node, bool is_local) {
+    int find(int u, int node, bool is_local, size_t& depth) {
         if (is_local && DSU::EnableCompaction) {
             auto cur = u;
             while (true) {
+                ++depth;
+
                 mThisNodeRead.inc(2);
                 auto par = getParent(node, cur);
                 auto grand = getParent(node, par);
@@ -132,6 +158,7 @@ private:
                     data[node][cur].compare_exchange_weak(par_data, ((grand << 1) | 1));
                 }
                 if constexpr(Halfing) {
+                    ++depth;
                     cur = grand;
                 } else {
                     cur = par;
@@ -140,6 +167,8 @@ private:
         } else {
             auto cur = u;
             while (true) {
+                ++depth;
+
                 if (is_local) {
                     mThisNodeRead.inc(1);
                 } else {
@@ -160,7 +189,8 @@ private:
         auto u_p_data = u_p * 2 + 1;
         while (true) {
             //u_p = find(u_p, node, is_local);
-            v_p = find(v_p, node, is_local);
+            size_t depth;
+            v_p = find(v_p, node, is_local, depth);
             if (u_p == v_p) {
                 return;
             }

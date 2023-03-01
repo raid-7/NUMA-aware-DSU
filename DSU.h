@@ -62,13 +62,17 @@ protected:
     MetricsCollector::Accessor mThisNodeWrite = accessor("this_node_write");
     MetricsCollector::Accessor mGlobalDataAccess = accessor("global_data_read_write");
 
-    MetricsCollector::HistAccessor mHistCrossNodeRead = histogram("hist_cross_node_read", 1000);
-    MetricsCollector::HistAccessor mHistCrossNodeWrite = histogram("hist_cross_node_write", 1000);
+    MetricsCollector::HistAccessor mHistCrossNodeFindDepth = histogram("hist_cross_node_find_depth", 1000);
+    MetricsCollector::HistAccessor mHistLocalFindDepth = histogram("hist_local_find_depth", 1000);
+    MetricsCollector::HistAccessor mHistFindDepth = histogram("hist_find_depth", 1000);
 
 private:
     MetricsCollector::Accessor mSameSetRequestsTrue = accessor("same_set_requests_true");
     MetricsCollector::Accessor mSameSetRequestsFalse = accessor("same_set_requests_false");
     MetricsCollector::Accessor mUnionRequests = accessor("union_requests");
+
+    MetricsCollector::HistAccessor mHistCrossNodeRead = histogram("hist_cross_node_read", 1000);
+    MetricsCollector::HistAccessor mHistCrossNodeWrite = histogram("hist_cross_node_write", 1000);
 };
 
 

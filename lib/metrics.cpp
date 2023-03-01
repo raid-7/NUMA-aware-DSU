@@ -1,15 +1,9 @@
 #include "metrics.hpp"
 
 
-Metrics operator +(const Metrics& a, const Metrics& b) {
-    Metrics res;
-    res += a;
-    res += b;
-    return res;
-}
 
 std::ostream& operator <<(std::ostream& stream, const Metrics& metrics) {
-    for (auto [key, value] : metrics.metrics) {
+    for (auto [key, value] : metrics.data()) {
         stream << key << ": " << value << '\n';
     }
     return stream;
@@ -24,7 +18,7 @@ Histogram operator +(const Histogram& a, const Histogram& b) {
 }
 
 std::ostream& operator <<(std::ostream& stream, const Histogram& hist) {
-    for (auto value : hist.hist()) {
+    for (auto value : hist.data()) {
         stream << value << " ";
     }
     return stream;

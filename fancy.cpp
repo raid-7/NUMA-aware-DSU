@@ -2,6 +2,7 @@
 #include "lib/timer.hpp"
 #include "lib/graphs.h"
 #include "lib/csv.hpp"
+#include "lib/hist_csv.hpp"
 #include "lib/parameters.hpp"
 #include "lib/benchmark.hpp"
 #include "lib/workload_provider.hpp"
@@ -18,7 +19,6 @@
 #include "implementations/SeveralDSU.h"
 
 #include "workloads/components_v2.hpp"
-#include "workloads/external.hpp"
 
 #include <CLI/App.hpp>
 #include <CLI/Formatter.hpp>
@@ -86,7 +86,7 @@ void PrepareDSUForWorkload(NUMAContext* ctx, DSU* dsu, const StaticWorkload& wor
 }
 
 
-void RunBenchmark(NUMAContext* ctx, CsvFile& out, const std::regex& filter,
+void RunBenchmark(NUMAContext* ctx, CsvFile& out, HistCsvFile& outH, const std::regex& filter,
                   size_t numWorkloads, size_t numIterationsPerWorkload,
                   WorkloadProvider* wlProvider, const std::vector<ParameterSet>& parameters) {
     { // write CSV header
@@ -132,6 +132,7 @@ void RunBenchmark(NUMAContext* ctx, CsvFile& out, const std::regex& filter,
             DSU* dsu = ptr.get();
             Stats<double> result = benchmark.CollectThroughputStats(dsu);
             auto metrics = benchmark.CollectMetricStats(dsu);
+            auto histMetrics = benchmark.CollectRawHistMetricStats(dsu);
             std::cout << std::fixed << std::setprecision(3)
                       << dsu->ClassName() << ": " << result.mean << "+-" << result.stddev << std::endl;
             for (const auto& [metric, value] : metrics) {
@@ -154,6 +155,20 @@ void RunBenchmark(NUMAContext* ctx, CsvFile& out, const std::regex& filter,
                     writer << params.Get<std::string>(param);
                 }
                 writer << value.mean << value.stddev;
+            }
+
+            size_t firstHistIndex = outH.GetNextIndex();
+            for (const auto &hists: histMetrics) {
+                outH << hists;
+            }
+            size_t lastHistIndex = outH.GetNextIndex();
+
+            for (auto [index, name] : std::array{std::pair{firstHistIndex, "hist_begin"}, std::pair{lastHistIndex, "hist_end"}}) {
+                auto writer = out << (dsu->ClassName() + ":" + name);
+                for (const std::string& param : wlProvider->GetParameterNames()) {
+                    writer << params.Get<std::string>(param);
+                }
+                writer << index << 0;
             }
         }
     }
@@ -281,7 +296,7 @@ void RunStagedBenchmark(NUMAContext* ctx, CsvFile& out, const std::regex& filter
 int main(int argc, const char* argv[]) {
     std::vector<std::shared_ptr<WorkloadProvider>> wlProviders = {
             std::make_shared<ComponentsRandomWorkloadV2>(),
-            std::make_shared<ExternalGraphWorkload>()
+//            std::make_shared<ExternalGraphWorkload>()
     };
 
     CLI::App app("NUMA DSU Benchmark");
@@ -347,7 +362,8 @@ int main(int argc, const char* argv[]) {
     if (!stageParameters.empty()) {
         RunStagedBenchmark(&ctx, out, filter, numWorkloads, numIterationsPerWorkload, wlProvider, stageParameters);
     } else {
-        RunBenchmark(&ctx, out, filter, numWorkloads, numIterationsPerWorkload, wlProvider, parameters);
+        HistCsvFile outHists(CsvFile("hists-" + outFileName));
+        RunBenchmark(&ctx, out, outHists, filter, numWorkloads, numIterationsPerWorkload, wlProvider, parameters);
     }
     return 0;
 }

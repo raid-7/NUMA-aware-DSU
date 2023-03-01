@@ -47,21 +47,45 @@ public:
         }
     }
 
+private:
+    struct DepthStats {
+        size_t local = 0;
+        size_t crossNode = 0;
+
+        size_t total() const {
+            return local + crossNode;
+        }
+    };
+
+protected:
     void DoUnion(int u, int v) override {
+        DepthStats uStats, vStats;
+
+        DoUnionWithStats(u, v, uStats, vStats);
+
+        mHistLocalFindDepth.inc(uStats.local);
+        mHistLocalFindDepth.inc(vStats.local);
+        mHistCrossNodeFindDepth.inc(uStats.crossNode);
+        mHistCrossNodeFindDepth.inc(vStats.crossNode);
+        mHistFindDepth.inc(uStats.total());
+        mHistFindDepth.inc(vStats.total());
+    }
+
+    void DoUnionWithStats(int u, int v, DepthStats& uStats, DepthStats& vStats) {
         auto node = NUMAContext::CurrentThreadNode();
         // TODO try this optimization with node owners
 //        if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
 //            return;
 //        }
         int u_, v_; // unused
-        u = findLocalOnly(u, node, u_);
-        v = findLocalOnly(v, node, v_);
+        u = findLocalOnly(u, node, u_, uStats.local);
+        v = findLocalOnly(v, node, v_, vStats.local);
         if (u == v)
             return;
         while (true) {
-            int uDat = find(u, node, EnableCompaction);
+            int uDat = find(u, node, EnableCompaction, uStats.crossNode);
             u = getDataParent(uDat);
-            int vDat = find(v, node, EnableCompaction);
+            int vDat = find(v, node, EnableCompaction, vStats.crossNode);
             v = getDataParent(vDat);
             if (u == v) {
                 return;
@@ -69,6 +93,9 @@ public:
             if (u < v) { // TODO try implicit pseudorandom priorities
                 std::swap(u, v);
                 std::swap(uDat, vDat);
+                if (DSU::EnableMetrics) {
+                    std::swap(uStats, vStats);
+                }
             }
 
             int owner = getAnyDataOwnerId(uDat);
@@ -85,14 +112,32 @@ public:
     }
 
     bool DoSameSet(int u, int v) override {
+        DepthStats uStats, vStats;
+        bool r;
         if constexpr(Stepping) {
-            return DoSteppingSameSet(u, v);
+            DepthStats stats;
+
+            r = DoSteppingSameSet(u, v, stats);
+
+            uStats.local = stats.local / 2;
+            uStats.crossNode = stats.crossNode / 2;
+            vStats.local = stats.local - uStats.local;
+            vStats.crossNode = stats.crossNode - uStats.crossNode;
         } else {
-            return DoSimpleSameSet(u, v);
+            r = DoSimpleSameSet(u, v, uStats, vStats);
         }
+
+        mHistLocalFindDepth.inc(uStats.local);
+        mHistLocalFindDepth.inc(vStats.local);
+        mHistCrossNodeFindDepth.inc(uStats.crossNode);
+        mHistCrossNodeFindDepth.inc(vStats.crossNode);
+        mHistFindDepth.inc(uStats.total());
+        mHistFindDepth.inc(vStats.total());
+
+        return r;
     }
 
-    bool DoSteppingSameSet(int u, int v) {
+    bool DoSteppingSameSet(int u, int v, DepthStats& stats) { // TODO stats
         int node = NUMAContext::CurrentThreadNode();
         bool freeze = false;
         while (true) {
@@ -151,30 +196,36 @@ public:
         }
     }
 
-    bool DoSimpleSameSet(int u, int v) {
+    bool DoSimpleSameSet(int u, int v, DepthStats& uStats, DepthStats& vStats) {
         int node = NUMAContext::CurrentThreadNode();
         // TODO try this optimization with node owners
 //        if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
 //            return true;
 //        }
+
         int uDat, vDat;
-        u = findLocalOnly(u, node, uDat);
-        v = findLocalOnly(v, node, vDat);
+        u = findLocalOnly(u, node, uDat, uStats.local);
+        v = findLocalOnly(v, node, vDat, vStats.local);
         if (u == v)  // ancestors in current node match?
             return true;
-        if (isDataOwner(uDat, node) && isDataOwner(vDat, node)) // found real roots?
+        if (isDataOwner(uDat, node) && isDataOwner(vDat, node)) {// found real roots?
+            mThisNodeRead.inc(1);
             if (getDataParent(readDataChecked(node, u)) == u) // still root?
                 return false;
+        }
 
         // make one step up outside of loop to save local read
         if (!isDataOwner(uDat, node)) {
             mCrossNodeRead.inc(1);
             uDat = readDataUnsafe(getAnyDataOwnerId(uDat), u);
+            ++uStats.crossNode;
         }
         if (isDataOwner(vDat, node)) {
             mThisNodeRead.inc(1);
+            ++vStats.local;
         } else {
             mCrossNodeRead.inc(1);
+            ++vStats.crossNode;
         }
         // v read must be performed unconditionally for consistency of the check before `return false` in the loop
         vDat = readDataUnsafe(getAnyDataOwnerId(vDat), v);
@@ -188,19 +239,22 @@ public:
             if (!firstIter && getDataParent(readDataChecked(node, u)) == u) {
                 return false;
             }
-            uDat = find(u, node, EnableCompaction);
-            vDat = find(v, node, EnableCompaction);
+            uDat = find(u, node, EnableCompaction, uStats.crossNode);
+            vDat = find(v, node, EnableCompaction, vStats.crossNode);
             firstIter = false;
         }
     }
 
     int Find(int u) override {
-        return getDataParent(find(u, NUMAContext::CurrentThreadNode(), EnableCompaction));
+        size_t depth = 0;
+        return getDataParent(find(u, NUMAContext::CurrentThreadNode(), EnableCompaction, depth));
     }
 
 private:
-    int findLocalOnly(int u, int node, int& localParDat) { // returns vertex
+    int findLocalOnly(int u, int node, int& localParDat, size_t& depth) { // returns vertex
         while (true) {
+            ++depth;
+
             mThisNodeRead.inc(1);
             int parDat = readDataUnsafe(node, u);
             if (!isDataOwner(parDat, node)) {
@@ -222,6 +276,7 @@ private:
             int grandDat = readDataUnsafe(node, par);
             if (!isDataOwner(grandDat, node)) {
                 localParDat = grandDat;
+                ++depth;
                 return par;
             }
             int grand = getDataParent(grandDat);
@@ -235,15 +290,18 @@ private:
             }
             if constexpr(Halfing) {
                 u = grand;
+                ++depth;
             } else {
                 u = par;
             }
         }
     }
 
-    int find(int u, int node, bool compressPaths) {
+    int find(int u, int node, bool compressPaths, size_t& depth) {
         if (compressPaths) {
             while (true) {
+                ++depth;
+
                 int localDat;
                 int parDat = readDataChecked(node, u, localDat);
                 int par = getDataParent(parDat);
@@ -275,12 +333,15 @@ private:
                 }
                 if constexpr(Halfing) {
                     u = grand;
+                    ++depth;
                 } else {
                     u = par;
                 }
             }
         } else {
             while (true) {
+                ++depth;
+
                 int dat = readDataChecked(node, u);
                 int par = getDataParent(dat);
                 if (par == u) {

@@ -19,6 +19,8 @@ private:
     std::unordered_map<std::string, V> metrics{};
 
 public:
+    using Value = V;
+
     V& operator [](const std::string& metric) {
         return metrics[metric];
     }
@@ -44,11 +46,17 @@ public:
         }
         return *this;
     }
-
-    friend std::ostream& operator <<(std::ostream& stream, const BaseMetrics<V>& metrics);
 };
 
-Metrics operator +(const Metrics& a, const Metrics& b);
+template <class V>
+BaseMetrics<V> operator +(const BaseMetrics<V>& a, const BaseMetrics<V>& b) {
+    BaseMetrics<V> res;
+    res += a;
+    res += b;
+    return res;
+}
+
+using Metrics = BaseMetrics<size_t>;
 
 std::ostream& operator <<(std::ostream& stream, const Metrics& metrics);
 
@@ -71,7 +79,16 @@ std::unordered_map<std::string, Stats<long double>> metricStats(const It begin, 
 class Histogram {
 public:
     explicit Histogram(std::vector<size_t> data = {})
-        : hist(std::move(data)) {}
+        : hist(std::move(data)) {
+        auto lastNonZero = std::find_if(hist.rbegin(), hist.rend(), [](size_t x) {
+            return x > 0;
+        });
+
+        hist.erase(lastNonZero.base(), hist.end());
+
+        if (hist.empty())
+            hist.resize(1, 0);
+    }
 
     size_t operator[](size_t value) const {
         return hist.empty() ? 0 : value >= hist.size() ? hist.back() : hist[value];
@@ -84,6 +101,7 @@ public:
         for (size_t i = 0; i < oth.hist.size(); ++i) {
             hist[i] += oth.hist[i];
         }
+        return *this;
     }
 
     const std::vector<size_t>& data() const {
@@ -97,6 +115,8 @@ private:
 Histogram operator +(const Histogram& a, const Histogram& b);
 
 std::ostream& operator <<(std::ostream& stream, const Histogram& metrics);
+
+using HistMetrics = BaseMetrics<Histogram>;
 
 class MetricsCollector {
 private:
@@ -178,15 +198,15 @@ public:
         return res;
     }
 
-    std::unordered_map<std::string, Histogram> combineHist() {
-        std::unordered_map<std::string, Histogram> res;
+    HistMetrics combineHist() {
+        HistMetrics res;
         std::lock_guard lock(mutex);
         for (const auto& [key, tlMetrics] : allHistMetrics) {
             for (const auto& vec : tlMetrics) {
                 res[key] += Histogram(vec);
             }
         }
-        return res;
+        return HistMetrics{res};
     }
 
     void reset(int tid) {
@@ -231,6 +251,10 @@ public:
 
     Metrics collectMetrics() {
         return collector.combine();
+    }
+
+    HistMetrics collectHistMetrics() {
+        return collector.combineHist();
     }
 
     void resetMetrics(int tid) {

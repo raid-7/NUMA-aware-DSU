@@ -35,46 +35,69 @@ public:
         if (get(u)->load(std::memory_order_relaxed) == get(v)->load(std::memory_order_relaxed)) {
             return;
         }
+
+        size_t uDepth = 0, vDepth = 0;
+
         int u_p = u;
         int v_p = v;
         while (true) {
-            u_p = Find(u_p);
-            v_p = Find(v_p);
+            u_p = DoFind(u_p, uDepth);
+            v_p = DoFind(v_p, vDepth);
             if (u_p == v_p) {
-                return;
+                break;
             }
             if (u_p < v_p) {
                 if (get(u_p)->compare_exchange_weak(u_p, v_p)) {
-                    return;
+                    break;
                 }
             } else {
                 if (get(v_p)->compare_exchange_weak(v_p, u_p)) {
-                    return;
+                    break;
                 }
             }
         }
+
+        mHistFindDepth.inc(uDepth);
+        mHistFindDepth.inc(vDepth);
     }
 
     bool DoSameSet(int u, int v) override {
         if (get(u)->load(std::memory_order_relaxed) == get(v)->load(std::memory_order_relaxed)) {
+            mHistFindDepth.inc(1);
+            mHistFindDepth.inc(1);
             return true;
         }
+
+        size_t uDepth = 0, vDepth = 0;
+        bool r;
 
         auto u_p = u;
         auto v_p = v;
         while (true) {
-            u_p = Find(u_p);
-            v_p = Find(v_p);
+            u_p = DoFind(u_p, uDepth);
+            v_p = DoFind(v_p, vDepth);
             if (u_p == v_p) {
-                return true;
+                r = true;
+                break;
             }
             if (get(u_p)->load(std::memory_order_acquire) == u_p) {
-                return false;
+                r = false;
+                break;
             }
         }
+        mHistFindDepth.inc(uDepth);
+        mHistFindDepth.inc(vDepth);
+        return r;
     }
 
     int Find(int u) override {
+        size_t depth = 0;
+        int r = DoFind(u, depth);
+        mHistFindDepth.inc(r);
+        return r;
+    }
+
+    int DoFind(int u, size_t& depth) {
         auto cur = u;
         while (true) {
             auto par = get(cur)->load(std::memory_order_relaxed);
@@ -85,6 +108,7 @@ public:
                 get(cur)->compare_exchange_weak(par, grand);
             }
             cur = par;
+            ++depth;
         }
     }
 
