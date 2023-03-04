@@ -148,9 +148,11 @@ protected:
             int localDat;
             int parDat = readDataChecked(node, u, localDat);
             int par = getDataParent(parDat);
+            ++(isDataOwner(parDat, node) ? stats.local : stats.crossNode);
             if (par == v)
                 return true;
             int grandDat = readDataChecked(node, par);
+            ++(isDataOwner(grandDat, node) ? stats.local : stats.crossNode);
             int grand = getDataParent(grandDat);
             if (grand == v)
                 return true;
