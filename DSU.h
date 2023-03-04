@@ -33,22 +33,40 @@ public:
     void Union(int u, int v) {
         size_t beforeOpCNRead = mCrossNodeRead.get();
         size_t beforeOpCNWrite = mCrossNodeWrite.get();
+        size_t beforeOpCNAll = beforeOpCNRead + beforeOpCNWrite + mGlobalDataAccess.get();
+
         DoUnion(u, v);
-        mHistCrossNodeRead.inc(mCrossNodeRead.get() - beforeOpCNRead);
-        mHistCrossNodeWrite.inc(mCrossNodeWrite.get() - beforeOpCNWrite);
-        mUnionRequests.inc(1);
+
+        if (EnableMetrics) {
+            size_t afterOpCNRead = mCrossNodeRead.get();
+            size_t afterOpCNWrite = mCrossNodeWrite.get();
+            size_t afterOpCNAll = afterOpCNRead + afterOpCNWrite + mGlobalDataAccess.get();
+            mHistCrossNodeRead.inc(afterOpCNRead - beforeOpCNRead);
+            mHistCrossNodeWrite.inc(afterOpCNWrite - beforeOpCNWrite);
+            mHistAllCrossNodeAccess.inc(beforeOpCNAll - afterOpCNAll);
+            mUnionRequests.inc(1);
+        }
     }
 
     bool SameSet(int u, int v) {
         size_t beforeOpCNRead = mCrossNodeRead.get();
         size_t beforeOpCNWrite = mCrossNodeWrite.get();
+        size_t beforeOpCNAll = beforeOpCNRead + beforeOpCNWrite + mGlobalDataAccess.get();
         bool r = DoSameSet(u, v);
-        mHistCrossNodeRead.inc(mCrossNodeRead.get() - beforeOpCNRead);
-        mHistCrossNodeWrite.inc(mCrossNodeWrite.get() - beforeOpCNWrite);
-        if (r) {
-            mSameSetRequestsTrue.inc(1);
-        } else {
-            mSameSetRequestsFalse.inc(1);
+
+        if (EnableMetrics) {
+            size_t afterOpCNRead = mCrossNodeRead.get();
+            size_t afterOpCNWrite = mCrossNodeWrite.get();
+            size_t afterOpCNAll = afterOpCNRead + afterOpCNWrite + mGlobalDataAccess.get();
+            mHistCrossNodeRead.inc(afterOpCNRead - beforeOpCNRead);
+            mHistCrossNodeWrite.inc(afterOpCNWrite - beforeOpCNWrite);
+            mHistAllCrossNodeAccess.inc(beforeOpCNAll - afterOpCNAll);
+            mUnionRequests.inc(1);
+            if (r) {
+                mSameSetRequestsTrue.inc(1);
+            } else {
+                mSameSetRequestsFalse.inc(1);
+            }
         }
         return r;
     }
@@ -62,17 +80,18 @@ protected:
     MetricsCollector::Accessor mThisNodeWrite = accessor("this_node_write");
     MetricsCollector::Accessor mGlobalDataAccess = accessor("global_data_read_write");
 
-    MetricsCollector::HistAccessor mHistCrossNodeFindDepth = histogram("hist_cross_node_find_depth", 1000);
-    MetricsCollector::HistAccessor mHistLocalFindDepth = histogram("hist_local_find_depth", 1000);
-    MetricsCollector::HistAccessor mHistFindDepth = histogram("hist_find_depth", 1000);
+    MetricsCollector::HistAccessor mHistCrossNodeFindDepth = histogram("hist_cross_node_find_depth", 500);
+    MetricsCollector::HistAccessor mHistLocalFindDepth = histogram("hist_local_find_depth", 500);
+    MetricsCollector::HistAccessor mHistFindDepth = histogram("hist_find_depth", 500);
 
 private:
     MetricsCollector::Accessor mSameSetRequestsTrue = accessor("same_set_requests_true");
     MetricsCollector::Accessor mSameSetRequestsFalse = accessor("same_set_requests_false");
     MetricsCollector::Accessor mUnionRequests = accessor("union_requests");
 
-    MetricsCollector::HistAccessor mHistCrossNodeRead = histogram("hist_cross_node_read", 1000);
-    MetricsCollector::HistAccessor mHistCrossNodeWrite = histogram("hist_cross_node_write", 1000);
+    MetricsCollector::HistAccessor mHistCrossNodeRead = histogram("hist_cross_node_read", 500);
+    MetricsCollector::HistAccessor mHistCrossNodeWrite = histogram("hist_cross_node_write", 500);
+    MetricsCollector::HistAccessor mHistAllCrossNodeAccess = histogram("hist_all_cross_node_access", 500);
 };
 
 

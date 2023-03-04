@@ -186,11 +186,11 @@ struct hash<std::pair<X, Y>> {
 };
 }
 
-void RunStagedBenchmark(NUMAContext* ctx, CsvFile& out, const std::regex& filter,
+void RunStagedBenchmark(NUMAContext* ctx, CsvFile& out, HistCsvFile& histOut, const std::regex& filter,
                   size_t numWorkloads, size_t numIterationsPerWorkload,
                   WorkloadProvider* wlProvider, const std::vector<std::vector<ParameterSet>>& parameterSets) {
     { // write CSV header
-        auto writer = out << "DSU" << "Stage";
+        auto writer = out << "DSU" << "Parameter Set" << "Stage";
         for (const std::string& param : wlProvider->GetParameterNames()) {
             writer << param;
         }
@@ -199,93 +199,114 @@ void RunStagedBenchmark(NUMAContext* ctx, CsvFile& out, const std::regex& filter
 
     Benchmark benchmark(ctx); // TODO pass additional work
 
+    size_t pSetCounter = 0;
     for (const std::vector<ParameterSet>& parameters : parameterSets) {
+        size_t setId = pSetCounter++;
         size_t n = parameters[0].Get<size_t>("N");
         REQUIRE(std::all_of(parameters.begin(), parameters.end(), [n](const ParameterSet& params) {
             return params.Get<size_t>("N") == n;
         }), "All stage parameter sets must have equal N");
 
         std::vector<std::unique_ptr<DSU>> dsus = GetAvailableDsus(ctx, n, filter);
-        if (!dsus.empty()) {
-            std::unordered_map<std::pair<DSU*, size_t>, std::vector<double>> throughputRes;
-            std::unordered_map<std::pair<DSU*, size_t>, std::vector<Metrics>> metricRes;
+        if (dsus.empty())
+            continue;
 
-            for (size_t i = 0; i < numWorkloads; ++i) {
-                std::cout << "Preparing workload #" << i << std::endl;
-                std::vector<StaticWorkload> stages;
-                wlProvider->PrepareSeries(); // initialize mappings for shuffle if used
-                for (const auto& params: parameters) {
-                    stages.push_back(wlProvider->MakeWorkload(ctx, params));
-                }
-                wlProvider->EndSeries();
-                for (auto& ptr: dsus) {
-                    DSU* dsu = ptr.get();
+        std::unordered_map<std::pair<DSU*, size_t>, std::vector<double>> throughputRes;
+        std::unordered_map<std::pair<DSU*, size_t>, std::vector<Metrics>> metricRes;
+        std::unordered_map<std::pair<DSU*, size_t>, std::vector<HistMetrics>> histRes;
 
-                    if (i == 0) {
-                        PrepareDSUForWorkload(ctx, dsu, stages[0]);
+        for (size_t i = 0; i < numWorkloads; ++i) {
+            std::cout << "Preparing workload #" << i << std::endl;
+            std::vector<StaticWorkload> stages;
+            wlProvider->PrepareSeries(); // initialize mappings for shuffle if used
+            for (const auto& params: parameters) {
+                stages.push_back(wlProvider->MakeWorkload(ctx, params));
+            }
+            wlProvider->EndSeries();
+            for (auto& ptr: dsus) {
+                DSU* dsu = ptr.get();
 
-                        for (size_t stageIndex = 0; stageIndex < stages.size(); ++stageIndex) {
-                            DSU::EnableCompaction = parameters[stageIndex].Get<bool>("compact");
+                if (i == 0) {
+                    PrepareDSUForWorkload(ctx, dsu, stages[0]);
 
-                            // warmup for the given parameter set
-                            std::cout << "Warmup iteration for workload #" << i << "; DSU " << dsu->ClassName()
-                                      << std::endl;
+                    for (size_t stageIndex = 0; stageIndex < stages.size(); ++stageIndex) {
+                        DSU::EnableCompaction = parameters[stageIndex].Get<bool>("compact");
 
-                            benchmark.Run(dsu, stages[stageIndex], true);
-                        }
+                        // warmup for the given parameter set
+                        std::cout << "Warmup iteration for workload #" << i << "; DSU " << dsu->ClassName()
+                                  << std::endl;
+
+                        benchmark.Run(dsu, stages[stageIndex], true);
                     }
+                }
 
-                    for (size_t j = 0; j < numIterationsPerWorkload; ++j) {
-                        PrepareDSUForWorkload(ctx, dsu, stages[0]);
+                for (size_t j = 0; j < numIterationsPerWorkload; ++j) {
+                    PrepareDSUForWorkload(ctx, dsu, stages[0]);
 
-                        for (size_t stageIndex = 0; stageIndex < stages.size(); ++stageIndex) {
-                            DSU::EnableCompaction = parameters[stageIndex].Get<bool>("compact");
+                    for (size_t stageIndex = 0; stageIndex < stages.size(); ++stageIndex) {
+                        DSU::EnableCompaction = parameters[stageIndex].Get<bool>("compact");
 
-                            std::cout << "Benchmark iteration #" << j << " for workload #" << i << ", stage #"
-                                      << stageIndex
-                                      << "; DSU "
-                                      << dsu->ClassName()
-                                      << std::endl;
-                            benchmark.Run(dsu, stages[stageIndex]);
-                            std::pair<DSU*, size_t> key = {dsu, stageIndex};
-                            auto throughput = benchmark.CollectRawThroughputStats(dsu);
-                            auto metrics = benchmark.CollectRawMetricStats(dsu);
-                            throughputRes[key].insert(throughputRes[key].begin(), throughput.begin(), throughput.end());
-                            metricRes[key].insert(metricRes[key].begin(), metrics.begin(), metrics.end());
-                        }
+                        std::cout << "Benchmark iteration #" << j << " for workload #" << i << ", stage #"
+                                  << stageIndex
+                                  << "; DSU "
+                                  << dsu->ClassName()
+                                  << std::endl;
+                        benchmark.Run(dsu, stages[stageIndex]);
+                        std::pair<DSU*, size_t> key = {dsu, stageIndex};
+                        auto throughput = benchmark.CollectRawThroughputStats(dsu);
+                        auto metrics = benchmark.CollectRawMetricStats(dsu);
+                        auto hists = benchmark.CollectRawHistMetricStats(dsu);
+                        throughputRes[key].insert(throughputRes[key].end(), throughput.begin(), throughput.end());
+                        metricRes[key].insert(metricRes[key].end(), metrics.begin(), metrics.end());
+                        histRes[key].insert(histRes[key].end(), hists.begin(), hists.end());
                     }
                 }
             }
-            for (auto& ptr: dsus) {
-                for (size_t stageIndex = 0; stageIndex < parameters.size(); ++stageIndex) {
-                    DSU* dsu = ptr.get();
-                    std::pair<DSU*, size_t> key = {dsu, stageIndex};
-                    Stats<double> result = stats(throughputRes[key].begin(), throughputRes[key].end());
-                    auto metrics = metricStats(metricRes[key].begin(), metricRes[key].end());
+        }
+        for (auto& ptr: dsus) {
+            for (size_t stageIndex = 0; stageIndex < parameters.size(); ++stageIndex) {
+                DSU* dsu = ptr.get();
+                std::pair<DSU*, size_t> key = {dsu, stageIndex};
+                Stats<double> result = stats(throughputRes[key].begin(), throughputRes[key].end());
+                auto metrics = metricStats(metricRes[key].begin(), metricRes[key].end());
+                std::cout << std::fixed << std::setprecision(3)
+                          << dsu->ClassName() << "/" << stageIndex << ": " << result.mean << "+-" << result.stddev
+                          << std::endl;
+                for (const auto& [metric, value]: metrics) {
                     std::cout << std::fixed << std::setprecision(3)
-                              << dsu->ClassName() << "/" << stageIndex << ": " << result.mean << "+-" << result.stddev
-                              << std::endl;
-                    for (const auto& [metric, value]: metrics) {
-                        std::cout << std::fixed << std::setprecision(3)
-                                  << "  :" << metric << ": "
-                                  << value.mean << "+-" << value.stddev << std::endl;
-                    }
+                              << "  :" << metric << ": "
+                              << value.mean << "+-" << value.stddev << std::endl;
+                }
 
-                    { // write results in CSV
-                        auto writer = out << dsu->ClassName() << stageIndex;
-                        for (const std::string& param: wlProvider->GetParameterNames()) {
-                            writer << parameters[stageIndex].Get<std::string>(param);
-                        }
-                        writer << result.mean << result.stddev;
+                { // write results in CSV
+                    auto writer = out << dsu->ClassName() << setId << stageIndex;
+                    for (const std::string& param: wlProvider->GetParameterNames()) {
+                        writer << parameters[stageIndex].Get<std::string>(param);
                     }
+                    writer << result.mean << result.stddev;
+                }
 
-                    for (const auto& [metric, value]: metrics) { // write metrics in CSV
-                        auto writer = out << (dsu->ClassName() + ":" + metric) << stageIndex;
-                        for (const std::string& param: wlProvider->GetParameterNames()) {
-                            writer << parameters[stageIndex].Get<std::string>(param);
-                        }
-                        writer << value.mean << value.stddev;
+                for (const auto& [metric, value]: metrics) { // write metrics in CSV
+                    auto writer = out << (dsu->ClassName() + ":" + metric) << setId << stageIndex;
+                    for (const std::string& param: wlProvider->GetParameterNames()) {
+                        writer << parameters[stageIndex].Get<std::string>(param);
                     }
+                    writer << value.mean << value.stddev;
+                }
+
+                // write histograms in CSV
+                size_t firstHistIndex = histOut.GetNextIndex();
+                for (const HistMetrics& hm : histRes[key]) {
+                    histOut << hm;
+                }
+                size_t lastHistIndex = histOut.GetNextIndex();
+
+                for (auto [index, name] : std::array{std::pair{firstHistIndex, "hist_begin"}, std::pair{lastHistIndex, "hist_end"}}) {
+                    auto writer = out << (dsu->ClassName() + ":" + name) << setId << stageIndex;
+                    for (const std::string& param : wlProvider->GetParameterNames()) {
+                        writer << parameters[stageIndex].Get<std::string>(param);
+                    }
+                    writer << index << 0;
                 }
             }
         }
@@ -357,12 +378,13 @@ int main(int argc, const char* argv[]) {
     if (testing) {
         ctx.SetupForTests(8, 4);
     }
+
     CsvFile out(outFileName);
+    HistCsvFile outHists(CsvFile("hists-" + outFileName));
 
     if (!stageParameters.empty()) {
-        RunStagedBenchmark(&ctx, out, filter, numWorkloads, numIterationsPerWorkload, wlProvider, stageParameters);
+        RunStagedBenchmark(&ctx, out, outHists, filter, numWorkloads, numIterationsPerWorkload, wlProvider, stageParameters);
     } else {
-        HistCsvFile outHists(CsvFile("hists-" + outFileName));
         RunBenchmark(&ctx, out, outHists, filter, numWorkloads, numIterationsPerWorkload, wlProvider, parameters);
     }
     return 0;
