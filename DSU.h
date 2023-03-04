@@ -43,7 +43,7 @@ public:
             size_t afterOpCNAll = afterOpCNRead + afterOpCNWrite + mGlobalDataAccess.get();
             mHistCrossNodeRead.inc(afterOpCNRead - beforeOpCNRead);
             mHistCrossNodeWrite.inc(afterOpCNWrite - beforeOpCNWrite);
-            mHistAllCrossNodeAccess.inc(beforeOpCNAll - afterOpCNAll);
+            mHistAllCrossNodeAccess.inc(afterOpCNAll - beforeOpCNAll);
             mUnionRequests.inc(1);
         }
     }
