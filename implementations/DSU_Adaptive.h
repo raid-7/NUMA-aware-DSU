@@ -174,6 +174,16 @@ protected:
                     continue;
                 }
             } else {
+                if (!EnableCompaction) {
+                    if (!isDataOwner(localDat, node)) {
+                        // copy non-root vertex to local memory
+                        mThisNodeWrite.inc(1);
+                        data[node][u].compare_exchange_weak(localDat, mixDataOwner(grandDat, node));
+                    }
+                    u = grand;
+                    continue;
+                }
+
                 if (isDataOwner(localDat, node)) {
                     if (AllowCrossNodeCompression || isDataOwner(grandDat, node)) {
                         // compress local if we know `par`
