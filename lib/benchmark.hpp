@@ -15,7 +15,7 @@
  * For each vertex find a node which most frequently accesses the vertex and sets it as an owner of the vertex.
  */
 template <class DSUType>
-void PrepareDSUForWorkload(NUMAContext* ctx, DSU* someDsu, const StaticWorkload& workload) {
+void PrepareDSUForWorkload(DSU* someDsu, const StaticWorkload& workload) {
     DSUType* dsu = dynamic_cast<DSUType*>(someDsu);
     if (!dsu)
         return;
@@ -89,6 +89,8 @@ public:
         Ctx_->Join();
         if (!ignoreMeasurements) {
             Metrics_[dsu].emplace_back(dsu->collectMetrics());
+            if (DSU::EnableMetrics)
+                ProduceSecondaryMetrics(Metrics_[dsu].back());
             HistMetrics_[dsu].emplace_back(dsu->collectHistMetrics());
         }
     }
@@ -97,7 +99,9 @@ public:
         constexpr size_t NS = 1'000'000'000ull;
         Timer timer;
         ApplyRequests(dsu, requests, true);
-        return requests.size() * NS / timer.Get<std::chrono::nanoseconds>().count();
+        auto duration = timer.Get<std::chrono::nanoseconds>();
+        dsu->GoAway();
+        return requests.size() * NS / duration.count();
     }
 
     Stats<double> CollectThroughputStats(DSU* dsu) {
@@ -131,6 +135,18 @@ private:
             if (useAdditionalWork)
                 RandomAdditionalWork(AdditionalWork_);
         }
+    }
+
+    static void ProduceSecondaryMetrics(Metrics& metrics) {
+        metrics["same_set_requests"] = metrics["same_set_requests_true"] + metrics["same_set_requests_false"];
+        metrics["requests"] = metrics["same_set_requests"] + metrics["union_requests"];
+
+        metrics["cross_node_read_per_op"] = metrics["cross_node_read"] / metrics["requests"];
+        metrics["cross_node_write_per_op"] = metrics["cross_node_write"] / metrics["requests"];
+        metrics["this_node_read_per_op"] = metrics["this_node_read"] / metrics["requests"];
+        metrics["this_node_read_success_per_op"] = metrics["this_node_read_success"] / metrics["requests"];
+        metrics["this_node_write_per_op"] = metrics["this_node_write"] / metrics["requests"];
+        metrics["global_data_read_write_per_op"] = metrics["global_data_read_write"] / metrics["requests"];
     }
 
 private:

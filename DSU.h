@@ -28,6 +28,7 @@ public:
     virtual void DoUnion(int u, int v) = 0;
     virtual int Find(int u) = 0;
     virtual bool DoSameSet(int u, int v) = 0;
+    virtual void GoAway() {}
     virtual ~DSU() = default;
 
     void Union(int u, int v) {

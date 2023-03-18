@@ -95,7 +95,7 @@ public:
         }
     }
 
-    bool DoSameSet(int u, int v) {
+    bool DoSameSet(int u, int v) override {
         int node = NUMAContext::CurrentThreadNode();
         // TODO try this optimization with node owners
 //        if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {

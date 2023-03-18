@@ -2,21 +2,23 @@
 
 #include "../DSU.h"
 #include "../lib/util.hpp"
+#include "../lib/nwire.hpp"
 
 #include <array>
 #include <sstream>
 
 
-template <bool Halfing, bool Stepping, bool AllowCrossNodeCompression=true>
-class DSU_Adaptive : public DSU {
+template <bool Halfing, bool Stepping, bool AllowCrossNodeCompression=false>
+class DSU_WireHelping : public DSU {
 public:
+    static_assert(!Stepping, "Stepping is not yet supported");
+
     std::string ClassName() override {
         using namespace std::string_literals;
-        int version = Stepping ? 3 : 2;
-        return "Adaptive"s + std::to_string(version) +  "/"s + (Halfing ? "halfing" : "squashing");
+        return "WireHelping/"s + (Halfing ? "halfing" : "squashing");
     };
 
-    DSU_Adaptive(NUMAContext* ctx, int size)
+    DSU_WireHelping(NUMAContext* ctx, int size)
         : DSU(ctx)
         , size(size), node_count(ctx->NodeCount()) {
         using namespace std::string_literals;
@@ -28,6 +30,21 @@ public:
             data[i] = (std::atomic<int> *) Ctx_->Allocate(i, sizeof(std::atomic<int>) * size);
         }
         doReInit();
+
+        std::vector<std::vector<int>> nodeTids(ctx->NodeCount(), std::vector<int>{});
+        for (size_t i = 0; i < ctx->MaxConcurrency(); ++i) {
+            nodeTids[ctx->NumaNodeForThread((int)i)].push_back((int)i);
+        }
+        std::vector<size_t> prevTid(ctx->NodeCount(), 0);
+        for (size_t i = 0; i < ctx->MaxConcurrency(); ++i) {
+            for (size_t node = 0; node < ctx->NodeCount(); ++node) {
+                if (ctx->NumaNodeForThread((int)i) == (int)node)
+                    wireLayout[node][i] = static_cast<int>(i);
+                else {
+                    wireLayout[node][i] = nodeTids[node][prevTid[node]++ % nodeTids[node].size()];
+                }
+            }
+        }
     }
 
     void ReInit() override {
@@ -41,7 +58,14 @@ public:
         }
     }
 
-    ~DSU_Adaptive() override {
+    void GoAway() override {
+        int tid = NUMAContext::CurrentThreadId();
+        int node = NUMAContext::CurrentThreadNode();
+        while (!wire.poison(tid))
+            satisfyWireRequests(tid, node);
+    }
+
+    ~DSU_WireHelping() override {
         for (int i = 0; i < node_count; i++) {
             Ctx_->Free(data[i], sizeof(int) * size);
         }
@@ -59,6 +83,8 @@ private:
 
 protected:
     void DoUnion(int u, int v) override {
+        satisfyWireRequests(NUMAContext::CurrentThreadId(), NUMAContext::CurrentThreadNode());
+
         DepthStats uStats, vStats;
 
         DoUnionWithStats(u, v, uStats, vStats);
@@ -73,10 +99,6 @@ protected:
 
     void DoUnionWithStats(int u, int v, DepthStats& uStats, DepthStats& vStats) {
         auto node = NUMAContext::CurrentThreadNode();
-        // TODO try this optimization with node owners
-//        if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
-//            return;
-//        }
         int u_, v_; // unused
         u = findLocalOnly(u, node, u_, uStats.local);
         v = findLocalOnly(v, node, v_, vStats.local);
@@ -112,6 +134,8 @@ protected:
     }
 
     bool DoSameSet(int u, int v) override {
+        satisfyWireRequests(NUMAContext::CurrentThreadId(), NUMAContext::CurrentThreadNode());
+
         DepthStats uStats, vStats;
         bool r;
         if constexpr(Stepping) {
@@ -160,7 +184,7 @@ protected:
                 if (par != u && !isDataOwner(parDat, node)) {
                     // copy non-root vertex to local memory
                     mThisNodeWrite.inc(1);
-                    data[node][u].store(mixDataOwner(parDat, node));
+                    data[node][u].compare_exchange_strong(localDat, mixDataOwner(parDat, node));
                 }
                 if (freeze) {
                     int vCur = readDataChecked(node, v);
@@ -177,9 +201,8 @@ protected:
                 if (!EnableCompaction) {
                     if (!isDataOwner(localDat, node)) {
                         // copy non-root vertex to local memory
-                        mThisNodeWrite.inc(2);
-                        data[node][u].store(mixDataOwner(parDat, node));
-                        data[node][par].store(mixDataOwner(grandDat, node));
+                        mThisNodeWrite.inc(1);
+                        data[node][u].compare_exchange_weak(localDat, mixDataOwner(grandDat, node));
                     }
                     u = grand;
                     continue;
@@ -189,15 +212,16 @@ protected:
                     if (AllowCrossNodeCompression || isDataOwner(grandDat, node)) {
                         // compress local if we know `par`
                         mThisNodeWrite.inc(1);
-                        data[node][u].store(mixDataOwner(grandDat, node));
+                        data[node][u].compare_exchange_weak(localDat, mixDataOwner(grandDat, node));
                     } else {
                         u = par;
                         continue;
                     }
                 } else {
                     // copy non-root vertex to local memory
+                    // TODO try without this
                     mThisNodeWrite.inc(1);
-                    data[node][u].store(mixDataOwner(grandDat, node));
+                    data[node][u].compare_exchange_weak(localDat, mixDataOwner(grandDat, node));
                 }
             }
             if constexpr(Halfing) {
@@ -226,22 +250,46 @@ protected:
                 return false;
         }
 
+        int tid = NUMAContext::CurrentThreadId();
+        int uWire = -1, vWire = -1;
+
         // make one step up outside of loop to save local read
         if (!isDataOwner(uDat, node)) {
-            mCrossNodeRead.inc(1);
-            uDat = readDataUnsafe(getAnyDataOwnerId(uDat), u);
-            ++uStats.crossNode;
+            uWire = tryPublishRequest(tid, getAnyDataOwnerId(uDat), u);
+            if (uWire == -1) {
+                mCrossNodeRead.inc(1);
+                uDat = readDataUnsafe(getAnyDataOwnerId(uDat), u);
+                u = getDataParent(uDat);
+                ++uStats.crossNode;
+            }
         }
         if (!isDataOwner(vDat, node)) {
-            mCrossNodeRead.inc(1);
-            vDat = readDataUnsafe(getAnyDataOwnerId(vDat), v);
-            ++vStats.crossNode;
+            vWire = tryPublishRequest(tid, getAnyDataOwnerId(vDat), v);
+            if (vWire == -1) {
+                mCrossNodeRead.inc(1);
+                vDat = readDataUnsafe(getAnyDataOwnerId(vDat), v);
+                v = getDataParent(vDat);
+                ++vStats.crossNode;
+            }
+        }
+
+        if (uWire == -1) {
+            uDat = find(u, node, EnableCompaction, uStats.crossNode);
+            u = getDataParent(uDat);
+        }
+        if (vWire == -1) {
+            vDat = find(v, node, EnableCompaction, vStats.crossNode);
+            v = getDataParent(vDat);
+        }
+        if (uWire != -1) {
+            u = wire.waitAndGet(uWire);
+        }
+        if (vWire != -1) {
+            v = wire.waitAndGet(vWire);
         }
 
         bool firstIter = true;
         while (true) {
-            u = getDataParent(uDat);
-            v = getDataParent(vDat);
             if (u == v) {
                 return true;
             }
@@ -295,7 +343,7 @@ private:
             } else {
                 // compress local
                 mThisNodeWrite.inc(1);
-                data[node][u].store(grandDat);
+                data[node][u].compare_exchange_weak(parDat, grandDat);
             }
             if constexpr(Halfing) {
                 u = grand;
@@ -306,7 +354,7 @@ private:
         }
     }
 
-    int find(int u, int node, bool compressPaths, size_t& depth) {
+    inline int find(int u, int node, bool compressPaths, size_t& depth) {
         if (compressPaths) {
             while (true) {
                 ++depth;
@@ -320,7 +368,7 @@ private:
                     if (par != u && !isDataOwner(parDat, node)) {
                         // copy non-root vertex to local memory
                         mThisNodeWrite.inc(1);
-                        data[node][u].store(mixDataOwner(parDat, node));
+                        data[node][u].compare_exchange_strong(localDat, mixDataOwner(parDat, node));
                     }
                     return grandDat;
                 } else {
@@ -328,15 +376,16 @@ private:
                         if (AllowCrossNodeCompression || isDataOwner(grandDat, node)) {
                             // compress local if we know about `par`
                             mThisNodeWrite.inc(1);
-                            data[node][u].store( mixDataOwner(grandDat, node));
+                            data[node][u].compare_exchange_weak(localDat, mixDataOwner(grandDat, node));
                         } else {
                             u = par; // else do not compress, but go to par even if Halfing enabled
                             continue;
                         }
                     } else {
                         // copy non-root vertex to local memory
+                        // TODO try without this
                         mThisNodeWrite.inc(1);
-                        data[node][u].store(mixDataOwner(grandDat, node));
+                        data[node][u].compare_exchange_weak(localDat, mixDataOwner(grandDat, node));
                     }
                 }
                 if constexpr(Halfing) {
@@ -395,6 +444,28 @@ private:
         }
     }
 
+    int getWireIdForRequest(int tid, int node) {
+        return wireLayout[node][tid];
+    }
+
+    int tryPublishRequest(int tid, int owner, int req) {
+        int w = getWireIdForRequest(tid, owner);
+        if (w <= tid) // TODO optimize
+            return -1;
+        if (wire.publishRequest(w, req))
+            return w;
+        return -1;
+    }
+
+    void satisfyWireRequests(int tid, int node) {
+        int req;
+        if (wire.readRequest(tid, req)) {
+            size_t depth;
+            int res = find(req, node, EnableCompaction, depth);
+            wire.satisfyRequest(tid, getDataParent(res));
+        }
+    }
+
     static inline bool getDataFinalized(int d) {
         return d & M_FINALIZED;
     }
@@ -423,14 +494,17 @@ private:
         return data | ((1 << ownerId) << M_SHIFT_OWNERS);
     }
 
-    int size;
-    int node_count;
-    std::vector<std::atomic<int>*> data;
-
     static constexpr int MAX_NUMA_NODES = 4;
+    static constexpr int MAX_THREADS = 256;
     static constexpr int MAX_VERTICES = (1 << (31 - MAX_NUMA_NODES)) - 1;
     static constexpr int M_FINALIZED = 1 << 31;
     static constexpr int M_SHIFT_OWNERS = 31 - MAX_NUMA_NODES;
     static constexpr int M_OWNERS = ((1 << MAX_NUMA_NODES) - 1) << M_SHIFT_OWNERS;
     static constexpr std::array<int, 1 << MAX_NUMA_NODES> OWNER_LOOKUP = makeOwnerLookupTable<MAX_NUMA_NODES>();
+
+    int size;
+    int node_count;
+    std::vector<std::atomic<int>*> data;
+    NWire<256> wire;
+    std::array<std::array<int, MAX_THREADS>, MAX_NUMA_NODES> wireLayout;
 };

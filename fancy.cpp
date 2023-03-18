@@ -16,6 +16,7 @@
 #include "implementations/DSU_AdaptiveSmart.h"
 #include "implementations/DSU_AdaptiveLocks.h"
 #include "implementations/DSU_LazyUnion.h"
+#include "implementations/DSU_WireHelping.h"
 #include "implementations/SeveralDSU.h"
 
 #include "workloads/components_v2.hpp"
@@ -28,6 +29,7 @@
 #include <iomanip>
 #include <thread>
 #include <regex>
+#include <algorithm>
 
 
 std::vector<std::unique_ptr<DSU>> GetAvailableDsus(NUMAContext* ctx, size_t N, const std::regex& filter) {
@@ -43,6 +45,7 @@ std::vector<std::unique_ptr<DSU>> GetAvailableDsus(NUMAContext* ctx, size_t N, c
         dsus.emplace_back(new DSU_AdaptiveLocks<T::value>(ctx, N));
         dsus.emplace_back(new DSU_AdaptiveSmart<T::value>(ctx, N));
         dsus.emplace_back(new DSU_LazyUnions<T::value>(ctx, N));
+        dsus.emplace_back(new DSU_WireHelping<T::value, false>(ctx, N));
     };
 
     construct(std::true_type{});
@@ -71,18 +74,20 @@ std::vector<std::unique_ptr<DSU>> GetAvailableDsus(NUMAContext* ctx, size_t N, c
     return dsus;
 }
 
-void PrepareDSUForWorkload(NUMAContext* ctx, DSU* dsu, const StaticWorkload& workload) {
+void PrepareDSUForWorkload(DSU* dsu, const StaticWorkload& workload) {
     dsu->ReInit();
 
     // FIXME This is a hack to test the conjecture.
-    PrepareDSUForWorkload<DSU_Adaptive<false, false>>(ctx, dsu, workload);
-    PrepareDSUForWorkload<DSU_Adaptive<true, false>>(ctx, dsu, workload);
-    PrepareDSUForWorkload<DSU_Adaptive<false, true>>(ctx, dsu, workload);
-    PrepareDSUForWorkload<DSU_Adaptive<true, true>>(ctx, dsu, workload);
-    PrepareDSUForWorkload<DSU_AdaptiveLocks<false>>(ctx, dsu, workload);
-    PrepareDSUForWorkload<DSU_AdaptiveLocks<true>>(ctx, dsu, workload);
-    PrepareDSUForWorkload<DSU_AdaptiveSmart<false>>(ctx, dsu, workload);
-    PrepareDSUForWorkload<DSU_AdaptiveSmart<true>>(ctx, dsu, workload);
+    PrepareDSUForWorkload<DSU_Adaptive<false, false>>(dsu, workload);
+    PrepareDSUForWorkload<DSU_Adaptive<true, false>>(dsu, workload);
+    PrepareDSUForWorkload<DSU_Adaptive<false, true>>(dsu, workload);
+    PrepareDSUForWorkload<DSU_Adaptive<true, true>>(dsu, workload);
+    PrepareDSUForWorkload<DSU_AdaptiveLocks<false>>(dsu, workload);
+    PrepareDSUForWorkload<DSU_AdaptiveLocks<true>>(dsu, workload);
+    PrepareDSUForWorkload<DSU_AdaptiveSmart<false>>(dsu, workload);
+    PrepareDSUForWorkload<DSU_AdaptiveSmart<true>>(dsu, workload);
+    PrepareDSUForWorkload<DSU_WireHelping<false, false>>(dsu, workload);
+    PrepareDSUForWorkload<DSU_WireHelping<true, false>>(dsu, workload);
 }
 
 
@@ -110,7 +115,7 @@ void RunBenchmark(NUMAContext* ctx, CsvFile& out, HistCsvFile& outH, const std::
                 DSU* dsu = ptr.get();
 
                 if (i == 0) {
-                    PrepareDSUForWorkload(ctx, dsu, workload);
+                    PrepareDSUForWorkload(dsu, workload);
                     DSU::EnableCompaction = params.Get<bool>("compact");
 
                     // warmup for the given parameter set
@@ -119,7 +124,7 @@ void RunBenchmark(NUMAContext* ctx, CsvFile& out, HistCsvFile& outH, const std::
                 }
 
                 for (size_t j = 0; j < numIterationsPerWorkload; ++j) {
-                    PrepareDSUForWorkload(ctx, dsu, workload);
+                    PrepareDSUForWorkload(dsu, workload);
                     DSU::EnableCompaction = params.Get<bool>("compact");
 
                     std::cout << "Benchmark iteration #" << j << " for workload #" << i << "; DSU " << dsu->ClassName()
@@ -135,7 +140,11 @@ void RunBenchmark(NUMAContext* ctx, CsvFile& out, HistCsvFile& outH, const std::
             auto histMetrics = benchmark.CollectRawHistMetricStats(dsu);
             std::cout << std::fixed << std::setprecision(3)
                       << dsu->ClassName() << ": " << result.mean << "+-" << result.stddev << std::endl;
-            for (const auto& [metric, value] : metrics) {
+            std::vector<std::string> metricNames(metrics.size());
+            std::transform(metrics.begin(), metrics.end(), metricNames.begin(), std::mem_fn(&decltype(metrics)::value_type::first));
+            std::sort(metricNames.begin(), metricNames.end());
+            for (const auto& metric : metricNames) {
+                auto value = metrics[metric];
                 std::cout << std::fixed << std::setprecision(3)
                      << "  :" << metric << ": "
                      << value.mean << "+-" << value.stddev << std::endl;
@@ -227,7 +236,7 @@ void RunStagedBenchmark(NUMAContext* ctx, CsvFile& out, HistCsvFile& histOut, co
                 DSU* dsu = ptr.get();
 
                 if (i == 0) {
-                    PrepareDSUForWorkload(ctx, dsu, stages[0]);
+                    PrepareDSUForWorkload(dsu, stages[0]);
 
                     for (size_t stageIndex = 0; stageIndex < stages.size(); ++stageIndex) {
                         DSU::EnableCompaction = parameters[stageIndex].Get<bool>("compact");
@@ -241,7 +250,7 @@ void RunStagedBenchmark(NUMAContext* ctx, CsvFile& out, HistCsvFile& histOut, co
                 }
 
                 for (size_t j = 0; j < numIterationsPerWorkload; ++j) {
-                    PrepareDSUForWorkload(ctx, dsu, stages[0]);
+                    PrepareDSUForWorkload(dsu, stages[0]);
 
                     for (size_t stageIndex = 0; stageIndex < stages.size(); ++stageIndex) {
                         DSU::EnableCompaction = parameters[stageIndex].Get<bool>("compact");

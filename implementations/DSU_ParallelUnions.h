@@ -70,28 +70,29 @@ public:
                 std::swap(uDepth, vDepth);
             }
             auto u_data = u_p * 2 + 1;
-            if (u_data % 2 == 0) { // FIXME
-#if defined(__x86_64__)
-                __builtin_ia32_pause();
-#endif
-                continue;
-            } else {
+            mGlobalDataAccess.inc(1);
+            if (to_union[u_p].compare_exchange_strong(u_data, v_p * 2)) {
+                mCrossNodeWrite.inc((node_count - 1) * 2);
+                mThisNodeWrite.inc(2);
+
+                for (int i = 0; i < node_count; i++) {
+                    data[i][u_p].store(v_p * 2, std::memory_order_release);
+                }
+
                 mGlobalDataAccess.inc(1);
-                if (to_union[u_p].compare_exchange_strong(u_data, v_p * 2)) {
-                    for (int i = 0; i < node_count; i++) {
-                        union_(u_p, v_p, i, (node == i));
-                    }
-                    u_data = v_p * 2;
-                    mGlobalDataAccess.inc(1);
-                    if (to_union[u_p].compare_exchange_strong(u_data, v_p * 2 + 1)) {
-                        mCrossNodeWrite.inc(node_count - 1);
-                        mThisNodeWrite.inc(1);
-                        for (int i = 0; i < node_count; i++) {
-                            auto par = data[i][u_p].load(std::memory_order_acquire);
-                            data[i][u_p].compare_exchange_strong(par, par | 1);
-                        }
-                    }
-                    break;
+                to_union[u_p].store(v_p * 2 + 1, std::memory_order_release);
+
+                for (int i = 0; i < node_count; i++) {
+                    auto par = v_p * 2;
+                    data[i][u_p].compare_exchange_strong(par, v_p * 2 + 1);
+                }
+                break;
+            } else {
+                while (!(u_data & 1)) {
+#if defined(__x86_64__)
+                    __builtin_ia32_pause();
+#endif
+                    u_data = to_union[u_p].load();
                 }
             }
         }
@@ -153,9 +154,8 @@ private:
                 if (par == grand) {
                     return par;
                 } else {
-                    auto par_data = (par << 1) | 1;
                     mThisNodeWrite.inc(1);
-                    data[node][cur].compare_exchange_weak(par_data, ((grand << 1) | 1));
+                    data[node][cur].store((grand << 1) | 1, std::memory_order_release);
                 }
                 if constexpr(Halfing) {
                     ++depth;
@@ -179,26 +179,6 @@ private:
                     return par;
                 }
                 cur = par;
-            }
-        }
-    }
-
-    void union_(int u, int v, int node, bool is_local) {
-        auto u_p = u;
-        auto v_p = v;
-        auto u_p_data = u_p * 2 + 1;
-        while (true) {
-            //u_p = find(u_p, node, is_local);
-            size_t depth;
-            v_p = find(v_p, node, is_local, depth);
-            if (u_p == v_p) {
-                return;
-            }
-
-            //auto u_p_data = u_p*2 + 1;
-            (is_local ? mThisNodeWrite : mCrossNodeWrite).inc(1);
-            if (data[node][u_p].compare_exchange_weak(u_p_data, v_p * 2)) {
-                return;
             }
         }
     }

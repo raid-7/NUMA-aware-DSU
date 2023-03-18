@@ -56,7 +56,7 @@ BaseMetrics<V> operator +(const BaseMetrics<V>& a, const BaseMetrics<V>& b) {
     return res;
 }
 
-using Metrics = BaseMetrics<size_t>;
+using Metrics = BaseMetrics<double>;
 
 std::ostream& operator <<(std::ostream& stream, const Metrics& metrics);
 
