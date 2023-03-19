@@ -52,6 +52,8 @@ public:
         if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
             mHistFindDepth.inc(1);
             mHistFindDepth.inc(1);
+            mHistLocalFindDepth.inc(1);
+            mHistLocalFindDepth.inc(1);
             return;
         }
 
@@ -99,6 +101,8 @@ public:
 
         mHistFindDepth.inc(uDepth);
         mHistFindDepth.inc(vDepth);
+        mHistLocalFindDepth.inc(uDepth);
+        mHistLocalFindDepth.inc(vDepth);
     }
 
     bool DoSameSet(int u, int v) override {
@@ -106,6 +110,8 @@ public:
         if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
             mHistFindDepth.inc(1);
             mHistFindDepth.inc(1);
+            mHistLocalFindDepth.inc(1);
+            mHistLocalFindDepth.inc(1);
             return true;
         }
 
@@ -130,6 +136,8 @@ public:
 
         mHistFindDepth.inc(uDepth);
         mHistFindDepth.inc(vDepth);
+        mHistLocalFindDepth.inc(uDepth);
+        mHistLocalFindDepth.inc(vDepth);
         return r;
     }
 
