@@ -107,6 +107,7 @@ public:
 
     bool DoSameSet(int u, int v) override {
         int node = NUMAContext::CurrentThreadNode();
+        mThisNodeRead.inc(2);
         if (data[node][u].load(std::memory_order_relaxed) == data[node][v].load(std::memory_order_relaxed)) {
             mHistFindDepth.inc(1);
             mHistFindDepth.inc(1);

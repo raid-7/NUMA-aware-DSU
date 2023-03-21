@@ -143,7 +143,7 @@ protected:
         while (true) {
             if (u == v)
                 return true;
-            if (!freeze && u > v)
+            if (!freeze && u < v)
                 std::swap(u, v);
             int localDat;
             int parDat = readDataChecked(node, u, localDat);
