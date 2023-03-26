@@ -8,6 +8,8 @@
 
 #include <barrier>
 #include <span>
+#include <string_view>
+#include <array>
 #include <map>
 
 
@@ -138,19 +140,68 @@ private:
     }
 
     static void ProduceSecondaryMetrics(Metrics& metrics) {
+        using namespace std::string_literals;
+
         metrics["same_set_requests"] = metrics["same_set_requests_true"] + metrics["same_set_requests_false"];
         metrics["requests"] = metrics["same_set_requests"] + metrics["union_requests"];
 
         metrics["cross_node_accesses"] = metrics["cross_node_read"] + metrics["cross_node_write"] +
                 metrics["global_data_read_write"];
 
-        metrics["cross_node_read_per_op"] = metrics["cross_node_read"] / metrics["requests"];
-        metrics["cross_node_write_per_op"] = metrics["cross_node_write"] / metrics["requests"];
-        metrics["this_node_read_per_op"] = metrics["this_node_read"] / metrics["requests"];
-        metrics["this_node_read_success_per_op"] = metrics["this_node_read_success"] / metrics["requests"];
-        metrics["this_node_write_per_op"] = metrics["this_node_write"] / metrics["requests"];
-        metrics["global_data_read_write_per_op"] = metrics["global_data_read_write"] / metrics["requests"];
-        metrics["cross_node_accesses_per_op"] = metrics["cross_node_accesses"] / metrics["requests"];
+
+        metrics["cross_node_read_in_same_set"] = metrics["cross_node_read_in_false_same_set"] + metrics["cross_node_read_in_true_same_set"];
+        metrics["cross_node_write_in_same_set"] = metrics["cross_node_write_in_false_same_set"] + metrics["cross_node_write_in_true_same_set"];
+        metrics["global_data_read_write_in_same_set"] = metrics["global_data_read_write_in_false_same_set"] + metrics["global_data_read_write_in_true_same_set"];
+
+        std::vector<std::string> perOpMetrics = {
+                "cross_node_read",
+                "cross_node_write",
+                "this_node_read",
+                "this_node_read_success",
+                "this_node_write",
+                "global_data_read_write",
+                "cross_node_accesses"
+        };
+
+        std::vector<std::string> perFalseSSMetrics = {
+                "cross_node_read_in_false_same_set",
+                "cross_node_write_in_false_same_set",
+                "global_data_read_write_in_false_same_set"
+        };
+
+        std::vector<std::string> perTrueSSMetrics = {
+                "cross_node_read_in_true_same_set",
+                "cross_node_write_in_true_same_set",
+                "global_data_read_write_in_true_same_set"
+        };
+
+        std::vector<std::string> perSSMetrics = {
+                "cross_node_read_in_same_set",
+                "cross_node_write_in_same_set",
+                "global_data_read_write_in_same_set"
+        };
+
+        std::vector<std::string> perUnionMetrics = {
+                "cross_node_read_in_union",
+                "cross_node_write_in_union",
+                "global_data_read_write_in_union"
+        };
+
+        for (const std::string& m : perOpMetrics) {
+            metrics[m + "_per_op"] = metrics[m] / metrics["requests"];
+        }
+        for (const std::string& m : perFalseSSMetrics) {
+            metrics[m + "_per_op"] = metrics[m] / metrics["same_set_requests_false"];
+        }
+        for (const std::string& m : perTrueSSMetrics) {
+            metrics[m + "_per_op"] = metrics[m] / metrics["same_set_requests_true"];
+        }
+        for (const std::string& m : perSSMetrics) {
+            metrics[m + "_per_op"] = metrics[m] / metrics["same_set_requests"];
+        }
+        for (const std::string& m : perUnionMetrics) {
+            metrics[m + "_per_op"] = metrics[m] / metrics["union_requests"];
+        }
     }
 
 private:

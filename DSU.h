@@ -34,39 +34,55 @@ public:
     void Union(int u, int v) {
         size_t beforeOpCNRead = mCrossNodeRead.get();
         size_t beforeOpCNWrite = mCrossNodeWrite.get();
-        size_t beforeOpCNAll = beforeOpCNRead + beforeOpCNWrite + mGlobalDataAccess.get();
+        size_t beforeOpGlobal = mGlobalDataAccess.get();
+        size_t beforeOpCNAll = beforeOpCNRead + beforeOpCNWrite + beforeOpGlobal;
 
         DoUnion(u, v);
 
         if (EnableMetrics) {
             size_t afterOpCNRead = mCrossNodeRead.get();
             size_t afterOpCNWrite = mCrossNodeWrite.get();
-            size_t afterOpCNAll = afterOpCNRead + afterOpCNWrite + mGlobalDataAccess.get();
+            size_t afterOpGlobal = mGlobalDataAccess.get();
+            size_t afterOpCNAll = afterOpCNRead + afterOpCNWrite + afterOpGlobal;
             mHistCrossNodeRead.inc(afterOpCNRead - beforeOpCNRead);
             mHistCrossNodeWrite.inc(afterOpCNWrite - beforeOpCNWrite);
             mHistAllCrossNodeAccess.inc(afterOpCNAll - beforeOpCNAll);
             mUnionRequests.inc(1);
+
+            mCrossNodeReadInUnion.inc(afterOpCNRead - beforeOpCNRead);
+            mCrossNodeWriteInUnion.inc(afterOpCNWrite - beforeOpCNWrite);
+            mGlobalDataAccessInUnion.inc(afterOpGlobal - beforeOpGlobal);
         }
     }
 
     bool SameSet(int u, int v) {
         size_t beforeOpCNRead = mCrossNodeRead.get();
         size_t beforeOpCNWrite = mCrossNodeWrite.get();
-        size_t beforeOpCNAll = beforeOpCNRead + beforeOpCNWrite + mGlobalDataAccess.get();
+        size_t beforeOpGlobal = mGlobalDataAccess.get();
+        size_t beforeOpCNAll = beforeOpCNRead + beforeOpCNWrite + beforeOpGlobal;
         bool r = DoSameSet(u, v);
 
         if (EnableMetrics) {
             size_t afterOpCNRead = mCrossNodeRead.get();
             size_t afterOpCNWrite = mCrossNodeWrite.get();
-            size_t afterOpCNAll = afterOpCNRead + afterOpCNWrite + mGlobalDataAccess.get();
+            size_t afterOpGlobal = mGlobalDataAccess.get();
+            size_t afterOpCNAll = afterOpCNRead + afterOpCNWrite + afterOpGlobal;
             mHistCrossNodeRead.inc(afterOpCNRead - beforeOpCNRead);
             mHistCrossNodeWrite.inc(afterOpCNWrite - beforeOpCNWrite);
             mHistAllCrossNodeAccess.inc(afterOpCNAll - beforeOpCNAll);
             mUnionRequests.inc(1);
             if (r) {
                 mSameSetRequestsTrue.inc(1);
+
+                mCrossNodeReadInTrueSameSet.inc(afterOpCNRead - beforeOpCNRead);
+                mCrossNodeWriteInTrueSameSet.inc(afterOpCNWrite - beforeOpCNWrite);
+                mGlobalDataAccessInTrueSameSet.inc(afterOpGlobal - beforeOpGlobal);
             } else {
                 mSameSetRequestsFalse.inc(1);
+
+                mCrossNodeReadInFalseSameSet.inc(afterOpCNRead - beforeOpCNRead);
+                mCrossNodeWriteInFalseSameSet.inc(afterOpCNWrite - beforeOpCNWrite);
+                mGlobalDataAccessInFalseSameSet.inc(afterOpGlobal - beforeOpGlobal);
             }
         }
         return r;
@@ -93,6 +109,16 @@ private:
     MetricsCollector::HistAccessor mHistCrossNodeRead = histogram("hist_cross_node_read", 500);
     MetricsCollector::HistAccessor mHistCrossNodeWrite = histogram("hist_cross_node_write", 500);
     MetricsCollector::HistAccessor mHistAllCrossNodeAccess = histogram("hist_all_cross_node_access", 500);
+
+    MetricsCollector::Accessor mCrossNodeReadInFalseSameSet = accessor("cross_node_read_in_false_same_set");
+    MetricsCollector::Accessor mCrossNodeWriteInFalseSameSet = accessor("cross_node_write_in_false_same_set");
+    MetricsCollector::Accessor mGlobalDataAccessInFalseSameSet = accessor("global_data_read_write_in_false_same_set");
+    MetricsCollector::Accessor mCrossNodeReadInTrueSameSet = accessor("cross_node_read_in_true_same_set");
+    MetricsCollector::Accessor mCrossNodeWriteInTrueSameSet = accessor("cross_node_write_in_true_same_set");
+    MetricsCollector::Accessor mGlobalDataAccessInTrueSameSet = accessor("global_data_read_write_in_true_same_set");
+    MetricsCollector::Accessor mCrossNodeReadInUnion = accessor("cross_node_read_in_union");
+    MetricsCollector::Accessor mCrossNodeWriteInUnion = accessor("cross_node_write_in_union");
+    MetricsCollector::Accessor mGlobalDataAccessInUnion = accessor("global_data_read_write_in_union");
 };
 
 
