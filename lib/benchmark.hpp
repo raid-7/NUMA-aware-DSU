@@ -141,12 +141,16 @@ private:
         metrics["same_set_requests"] = metrics["same_set_requests_true"] + metrics["same_set_requests_false"];
         metrics["requests"] = metrics["same_set_requests"] + metrics["union_requests"];
 
+        metrics["cross_node_accesses"] = metrics["cross_node_read"] + metrics["cross_node_write"] +
+                metrics["global_data_read_write"];
+
         metrics["cross_node_read_per_op"] = metrics["cross_node_read"] / metrics["requests"];
         metrics["cross_node_write_per_op"] = metrics["cross_node_write"] / metrics["requests"];
         metrics["this_node_read_per_op"] = metrics["this_node_read"] / metrics["requests"];
         metrics["this_node_read_success_per_op"] = metrics["this_node_read_success"] / metrics["requests"];
         metrics["this_node_write_per_op"] = metrics["this_node_write"] / metrics["requests"];
         metrics["global_data_read_write_per_op"] = metrics["global_data_read_write"] / metrics["requests"];
+        metrics["cross_node_accesses_per_op"] = metrics["cross_node_accesses"] / metrics["requests"];
     }
 
 private:

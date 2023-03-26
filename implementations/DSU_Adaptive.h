@@ -13,7 +13,8 @@ public:
     std::string ClassName() override {
         using namespace std::string_literals;
         int version = Stepping ? 3 : 2;
-        return "Adaptive"s + std::to_string(version) +  "/"s + (Halfing ? "halfing" : "squashing");
+        return "Adaptive"s + std::to_string(version) +  "/"s +
+            (Halfing ? "halfing" : "squashing");
     };
 
     DSU_Adaptive(NUMAContext* ctx, int size)
@@ -145,19 +146,17 @@ protected:
                 return true;
             if (!freeze && u < v)
                 std::swap(u, v);
-            int localDat;
+            int localDat, localParDat;
             int parDat = readDataChecked(node, u, localDat);
             int par = getDataParent(parDat);
             ++(isDataOwner(parDat, node) ? stats.local : stats.crossNode);
             if (par == v)
                 return true;
-            int grandDat = readDataChecked(node, par);
+            int grandDat = readDataChecked(node, par, localParDat);
             ++(isDataOwner(grandDat, node) ? stats.local : stats.crossNode);
             int grand = getDataParent(grandDat);
-            if (grand == v)
-                return true;
             if (par == grand) {
-                if (par != u && !isDataOwner(parDat, node)) {
+                if (par != u && !isDataOwner(localDat, node)) {
                     // copy non-root vertex to local memory
                     mThisNodeWrite.inc(1);
                     data[node][u].store(mixDataOwner(parDat, node));
@@ -177,8 +176,11 @@ protected:
                 if (!EnableCompaction) {
                     if (!isDataOwner(localDat, node)) {
                         // copy non-root vertex to local memory
-                        mThisNodeWrite.inc(2);
+                        mThisNodeWrite.inc(1);
                         data[node][u].store(mixDataOwner(parDat, node));
+                    }
+                    if (!isDataOwner(localParDat, node)) {
+                        mThisNodeWrite.inc(1);
                         data[node][par].store(mixDataOwner(grandDat, node));
                     }
                     u = grand;
@@ -186,7 +188,7 @@ protected:
                 }
 
                 if (isDataOwner(localDat, node)) {
-                    if (AllowCrossNodeCompression || isDataOwner(grandDat, node)) {
+                    if (AllowCrossNodeCompression || isDataOwner(localParDat, node)) {
                         // compress local if we know `par`
                         mThisNodeWrite.inc(1);
                         data[node][u].store(mixDataOwner(grandDat, node));
