@@ -181,8 +181,8 @@ protected:
                 }
                 if (prevVDat && prevV != v && !isDataOwner(prevVDat, node)) {
                     mThisNodeWrite.inc(1);
-                    data[node][v].compare_exchange_strong(prevVDat,
-                                                          makeData(v, (1 << node) | getDataOwners(prevVDat), true));
+                    data[node][prevV].compare_exchange_strong(
+                            prevVDat,makeData(v, (1 << node) | getDataOwners(prevVDat), true));
                 }
             }
 
