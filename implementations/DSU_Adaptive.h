@@ -118,7 +118,11 @@ protected:
         if constexpr(Stepping) {
             DepthStats stats;
 
-            r = DoSteppingSameSet(u, v, stats);
+            if constexpr (Halfing) {
+                r = DoSteppingSameSet(u, v, stats);
+            } else {
+                r = DoSteppingSameSetSquashingOnly(u, v, stats);
+            }
 
             uStats.local = stats.local / 2;
             uStats.crossNode = stats.crossNode / 2;
@@ -136,6 +140,62 @@ protected:
         mHistFindDepth.inc(vStats.total());
 
         return r;
+    }
+
+    bool DoSteppingSameSetSquashingOnly(int u, int v, DepthStats& stats) {
+        int node = NUMAContext::CurrentThreadNode();
+        int prevUDat = 0, prevVDat = 0;
+        int prevU = u, prevV = v;
+        while (true) {
+            if (u == v)
+                return true;
+            if (u < v) {
+                std::swap(u, v);
+                std::swap(prevU, prevV);
+                std::swap(prevUDat, prevVDat);
+            }
+
+            int localDat;
+            int parDat = readDataChecked(node, u, localDat);
+            int par = getDataParent(parDat);
+            ++(isDataOwner(parDat, node) ? stats.local : stats.crossNode);
+
+            if (EnableCompaction && prevU != u) {
+                // ordinary compaction
+                mThisNodeWrite.inc(1);
+                data[node][prevU].store(mixDataOwner(parDat, node));
+            }
+            if (!EnableCompaction && par != u && !isDataOwner(localDat, node)) {
+                // copy non-root vertex to local memory
+                mThisNodeWrite.inc(1);
+                data[node][u].store(mixDataOwner(parDat, node));
+            }
+
+            if (EnableCompaction && (par == u || par == v)) {
+                // we are going to return
+                // copy non-root vertices to local memory
+
+                if (par != u && !isDataOwner(localDat, node)) {
+                    mThisNodeWrite.inc(1);
+                    data[node][u].store(mixDataOwner(parDat, node));
+                }
+                if (prevVDat && prevV != v && !isDataOwner(prevVDat, node)) {
+                    mThisNodeWrite.inc(1);
+                    data[node][v].compare_exchange_strong(prevVDat,
+                                                          makeData(v, (1 << node) | getDataOwners(prevVDat), true));
+                }
+            }
+
+            if (par == v)
+                return true;
+            if (par == u) // u is root
+                // u cannot be the root of v, because v < u
+                return false;
+
+            prevU = u;
+            prevUDat = localDat;
+            u = par;
+        }
     }
 
     bool DoSteppingSameSet(int u, int v, DepthStats& stats) { // TODO stats
